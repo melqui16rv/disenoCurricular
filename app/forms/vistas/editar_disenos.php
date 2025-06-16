@@ -91,20 +91,22 @@
     <div class="form-row">
         <div class="form-group">
             <label for="horasDesarrolloLectiva"><i class="fas fa-book"></i> Horas Etapa Lectiva</label>
-            <input type="number" id="horasDesarrolloLectiva" name="horasDesarrolloLectiva" class="form-control" 
-                   step="0.01" value="<?php echo htmlspecialchars($diseño_actual['horasDesarrolloLectiva'] ?? ''); ?>"
-                   placeholder="Ejemplo: 1440.50 (puede dejarse vacío)">
+            <input type="text" id="horasDesarrolloLectiva" name="horasDesarrolloLectiva" class="form-control" 
+                   value="<?php echo htmlspecialchars($diseño_actual['horasDesarrolloLectiva'] ?? ''); ?>"
+                   placeholder="Ejemplo: 1440.50 (puede dejarse vacío)"
+                   pattern="^$|^\d*\.?\d+$" title="Ingrese un número decimal válido o deje vacío">
             <small class="text-muted">
-                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío si no aplica.
+                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío o borrarse completamente.
             </small>
         </div>
         <div class="form-group">
             <label for="horasDesarrolloProductiva"><i class="fas fa-industry"></i> Horas Etapa Productiva</label>
-            <input type="number" id="horasDesarrolloProductiva" name="horasDesarrolloProductiva" class="form-control" 
-                   step="0.01" value="<?php echo htmlspecialchars($diseño_actual['horasDesarrolloProductiva'] ?? ''); ?>"
-                   placeholder="Ejemplo: 880.75 (puede dejarse vacío)">
+            <input type="text" id="horasDesarrolloProductiva" name="horasDesarrolloProductiva" class="form-control" 
+                   value="<?php echo htmlspecialchars($diseño_actual['horasDesarrolloProductiva'] ?? ''); ?>"
+                   placeholder="Ejemplo: 880.75 (puede dejarse vacío)"
+                   pattern="^$|^\d*\.?\d+$" title="Ingrese un número decimal válido o deje vacío">
             <small class="text-muted">
-                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío si no aplica.
+                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío o borrarse completamente.
             </small>
         </div>
     </div>
@@ -112,20 +114,22 @@
     <div class="form-row">
         <div class="form-group">
             <label for="mesesDesarrolloLectiva"><i class="fas fa-calendar-alt"></i> Meses Etapa Lectiva</label>
-            <input type="number" id="mesesDesarrolloLectiva" name="mesesDesarrolloLectiva" class="form-control" 
-                   step="0.01" value="<?php echo htmlspecialchars($diseño_actual['mesesDesarrolloLectiva'] ?? ''); ?>"
-                   placeholder="Ejemplo: 18.5 (puede dejarse vacío)">
+            <input type="text" id="mesesDesarrolloLectiva" name="mesesDesarrolloLectiva" class="form-control" 
+                   value="<?php echo htmlspecialchars($diseño_actual['mesesDesarrolloLectiva'] ?? ''); ?>"
+                   placeholder="Ejemplo: 18.5 (puede dejarse vacío)"
+                   pattern="^$|^\d*\.?\d+$" title="Ingrese un número decimal válido o deje vacío">
             <small class="text-muted">
-                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío si no aplica.
+                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío o borrarse completamente.
             </small>
         </div>
         <div class="form-group">
             <label for="mesesDesarrolloProductiva"><i class="fas fa-calendar-check"></i> Meses Etapa Productiva</label>
-            <input type="number" id="mesesDesarrolloProductiva" name="mesesDesarrolloProductiva" class="form-control" 
-                   step="0.01" value="<?php echo htmlspecialchars($diseño_actual['mesesDesarrolloProductiva'] ?? ''); ?>"
-                   placeholder="Ejemplo: 6.0 (puede dejarse vacío)">
+            <input type="text" id="mesesDesarrolloProductiva" name="mesesDesarrolloProductiva" class="form-control" 
+                   value="<?php echo htmlspecialchars($diseño_actual['mesesDesarrolloProductiva'] ?? ''); ?>"
+                   placeholder="Ejemplo: 6.0 (puede dejarse vacío)"
+                   pattern="^$|^\d*\.?\d+$" title="Ingrese un número decimal válido o deje vacío">
             <small class="text-muted">
-                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío si no aplica.
+                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío o borrarse completamente.
             </small>
         </div>
     </div>
@@ -211,16 +215,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Calcular totales automáticamente en tiempo real
     function calcularTotales() {
-        const horasLectivasVal = document.getElementById('horasDesarrolloLectiva').value;
-        const horasProductivasVal = document.getElementById('horasDesarrolloProductiva').value;
-        const mesesLectivosVal = document.getElementById('mesesDesarrolloLectiva').value;
-        const mesesProductivosVal = document.getElementById('mesesDesarrolloProductiva').value;
+        const horasLectivasVal = document.getElementById('horasDesarrolloLectiva').value.trim();
+        const horasProductivasVal = document.getElementById('horasDesarrolloProductiva').value.trim();
+        const mesesLectivosVal = document.getElementById('mesesDesarrolloLectiva').value.trim();
+        const mesesProductivosVal = document.getElementById('mesesDesarrolloProductiva').value.trim();
         
-        // Convertir a números, permitiendo campos vacíos (null/0)
-        const horasLectivas = horasLectivasVal === '' ? 0 : parseFloat(horasLectivasVal) || 0;
-        const horasProductivas = horasProductivasVal === '' ? 0 : parseFloat(horasProductivasVal) || 0;
-        const mesesLectivos = mesesLectivosVal === '' ? 0 : parseFloat(mesesLectivosVal) || 0;
-        const mesesProductivos = mesesProductivosVal === '' ? 0 : parseFloat(mesesProductivosVal) || 0;
+        // Convertir a números, permitiendo campos completamente vacíos (null)
+        const horasLectivas = horasLectivasVal === '' ? 0 : (parseFloat(horasLectivasVal) || 0);
+        const horasProductivas = horasProductivasVal === '' ? 0 : (parseFloat(horasProductivasVal) || 0);
+        const mesesLectivos = mesesLectivosVal === '' ? 0 : (parseFloat(mesesLectivosVal) || 0);
+        const mesesProductivos = mesesProductivosVal === '' ? 0 : (parseFloat(mesesProductivosVal) || 0);
         
         // Calcular totales según especificación de BD: suma de lectiva + productiva
         const totalHoras = horasLectivas + horasProductivas;
@@ -238,12 +242,41 @@ document.addEventListener('DOMContentLoaded', function() {
         campoMeses.style.color = totalMeses > 0 ? '#28a745' : '#6c757d';
     }
     
+    // Función para validar campos numéricos
+    function validarCampoNumerico(campo) {
+        const valor = campo.value.trim();
+        const esValido = valor === '' || /^\d*\.?\d+$/.test(valor);
+        
+        if (esValido) {
+            campo.style.borderColor = '';
+            campo.style.backgroundColor = '';
+        } else {
+            campo.style.borderColor = '#dc3545';
+            campo.style.backgroundColor = '#f8d7da';
+        }
+        
+        return esValido;
+    }
+    
     // Agregar eventos para calcular totales en tiempo real
     ['horasDesarrolloLectiva', 'horasDesarrolloProductiva', 'mesesDesarrolloLectiva', 'mesesDesarrolloProductiva'].forEach(id => {
         const campo = document.getElementById(id);
-        campo.addEventListener('input', calcularTotales);
-        campo.addEventListener('change', calcularTotales);
-        campo.addEventListener('keyup', calcularTotales);
+        
+        // Validar mientras escribe
+        campo.addEventListener('input', function() {
+            validarCampoNumerico(this);
+            calcularTotales();
+        });
+        
+        campo.addEventListener('change', function() {
+            validarCampoNumerico(this);
+            calcularTotales();
+        });
+        
+        campo.addEventListener('blur', function() {
+            validarCampoNumerico(this);
+            calcularTotales();
+        });
     });
     
     // Calcular al cargar la página
@@ -251,8 +284,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Validación de formulario
     document.getElementById('formEditarDiseño').addEventListener('submit', function(e) {
-        // Permitir que los campos de horas puedan estar vacíos o ser 0
-        // No validar que el total sea mayor a cero
+        // Validar que los campos numéricos sean válidos antes de enviar
+        let esFormularioValido = true;
+        
+        ['horasDesarrolloLectiva', 'horasDesarrolloProductiva', 'mesesDesarrolloLectiva', 'mesesDesarrolloProductiva'].forEach(id => {
+            const campo = document.getElementById(id);
+            if (!validarCampoNumerico(campo)) {
+                esFormularioValido = false;
+            }
+        });
+        
+        if (!esFormularioValido) {
+            e.preventDefault();
+            alert('Por favor, corrija los valores en los campos de horas y meses. Pueden estar vacíos o contener números decimales válidos.');
+            return;
+        }
         
         if (!confirm('¿Estás seguro de actualizar este diseño curricular?')) {
             e.preventDefault();
