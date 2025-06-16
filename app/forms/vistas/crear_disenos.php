@@ -134,8 +134,6 @@
             <label for="nivelAcademicoIngreso"><i class="fas fa-school"></i> Nivel Académico de Ingreso *</label>
             <select id="nivelAcademicoIngreso" name="nivelAcademicoIngreso" class="form-control" required>
                 <option value="">Seleccionar nivel académico</option>
-                <option value="Preescolar" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Preescolar' ? 'selected' : ''; ?>>Preescolar (Jardín - Transición)</option>
-                <option value="Primaria" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Primaria' ? 'selected' : ''; ?>>Primaria (1° - 5°)</option>
                 <option value="Secundaria" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Secundaria' ? 'selected' : ''; ?>>Secundaria (6° - 9°)</option>
                 <option value="Media" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Media' ? 'selected' : ''; ?>>Media (10° - 11°)</option>
                 <option value="Técnico" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Técnico' ? 'selected' : ''; ?>>Técnico</option>

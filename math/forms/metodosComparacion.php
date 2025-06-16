@@ -5,7 +5,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/sql/conexion.php';
 require_once __DIR__ . '/../../sql/conexion.php';
 
 
-class cambiar_nombre_De_Esta_clase_Segun_necesidad extends Conexion{
+class comparacion extends Conexion{
     private $conexion;
 
     public function __construct() {

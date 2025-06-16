@@ -332,76 +332,238 @@ textarea.form-control {
     color: #dc3545;
 }
 
-/* Utilities */
-.text-center {
-    text-align: center;
+/* Estilos mejorados para paneles de información contextual */
+.info-panel {
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
 }
 
-.text-right {
-    text-align: right;
+.info-panel.diseño-panel {
+    border-left: 5px solid #007bff;
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
 }
 
-.text-muted {
-    color: #6c757d;
+.info-panel.competencia-panel {
+    border-left: 5px solid #28a745;
+    background: linear-gradient(135deg, #f8fff8 0%, #ffffff 100%);
 }
 
-.mb-3 {
+.info-panel .card-body {
+    padding: 2rem;
+    background: transparent;
+}
+
+.info-panel .card-title {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-panel .card-title i {
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+.info-panel .row {
     margin-bottom: 1rem;
 }
 
-.mt-3 {
-    margin-top: 1rem;
+.info-panel .row p {
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
-.hidden {
-    display: none;
-}
-
-.flex {
-    display: flex;
-}
-
-.flex-between {
-    display: flex;
-    justify-content: space-between;
+.info-panel .row p strong {
+    color: #2c3e50;
+    font-weight: 700;
+    display: inline-flex;
     align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
 }
 
-.flex-center {
+.info-panel .row p strong i {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    width: 16px;
+}
+
+.info-panel .text-muted {
+    color: #495057 !important;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    padding: 0.5rem 0;
+}
+
+.info-panel .text-muted.small {
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* Badges en paneles de información */
+.info-panel .badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.info-panel .badge.bg-success {
+    background: linear-gradient(45deg, #28a745, #20c997) !important;
+}
+
+.info-panel .badge.bg-secondary {
+    background: linear-gradient(45deg, #6c757d, #495057) !important;
+}
+
+.info-panel .badge.bg-info {
+    background: linear-gradient(45deg, #17a2b8, #007bff) !important;
+}
+
+/* Resaltado de valores importantes */
+.info-panel .text-success.fw-bold {
+    color: #28a745 !important;
+    font-weight: 700 !important;
+    font-size: 1.05rem;
+}
+
+.info-panel .text-primary.fw-bold {
+    color: #007bff !important;
+    font-weight: 700 !important;
+    font-size: 1.05rem;
+}
+
+/* Botones de toggle mejorados */
+.btn-toggle {
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-weight: 600;
+}
+
+.btn-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-primary.btn-toggle {
+    color: #007bff;
+    border-color: #007bff;
+    background: rgba(0, 123, 255, 0.1);
+}
+
+.btn-outline-primary.btn-toggle:hover {
+    background: #007bff;
+    color: white;
+}
+
+.btn-outline-success.btn-toggle {
+    color: #28a745;
+    border-color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.btn-outline-success.btn-toggle:hover {
+    background: #28a745;
+    color: white;
+}
+
+/* Espaciado para múltiples botones */
+.d-flex.gap-2 {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
 }
 
-/* Responsive */
+/* Organización de columnas en paneles */
+.info-panel .col-md-4,
+.info-panel .col-md-6 {
+    padding: 0.5rem;
+}
+
+.info-panel .col-md-4 {
+    border-right: 1px solid #e9ecef;
+}
+
+.info-panel .col-md-4:last-child {
+    border-right: none;
+}
+
+/* Animación mejorada para despliegue */
+@keyframes slideDownImproved {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 1000px;
+    }
+}
+
+.info-panel[style*="display: block"] {
+    animation: slideDownImproved 0.4s ease-out;
+}
+
+/* Texto truncado con indicador */
+.text-info {
+    color: #17a2b8 !important;
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* Responsive mejorado para paneles */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
+    .info-panel .card-body {
+        padding: 1.25rem;
     }
     
-    .header h1 {
-        font-size: 2rem;
-    }
-    
-    .nav-tabs {
+    .info-panel .row {
         flex-direction: column;
-        gap: 5px;
+        gap: 0.5rem;
     }
     
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+    .info-panel .col-md-4,
+    .info-panel .col-md-6 {
+        width: 100%;
+        padding: 0.25rem 0;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
     }
     
-    .table th,
-    .table td {
-        padding: 8px 10px;
-        font-size: 0.9rem;
+    .info-panel .col-md-4:last-child,
+    .info-panel .col-md-6:last-child {
+        border-bottom: none;
     }
     
-    .modal {
-        width: 95%;
-        padding: 1rem;
+    .btn-toggle {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.8rem;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    
+    .info-panel .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
     }
 }
 

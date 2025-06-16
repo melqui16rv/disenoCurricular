@@ -88,6 +88,29 @@ try {
 
     if ($accion === 'listar' || $accion === 'crear') {
         $diseños = $metodos->obtenerTodosLosDiseños();
+        
+        // Para crear competencias, cargar información del diseño
+        if ($accion === 'crear' && $tipo === 'competencias') {
+            $codigoDiseño = $_GET['codigoDiseño'] ?? '';
+            if ($codigoDiseño) {
+                $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
+            }
+        }
+        
+        // Para crear RAPs, cargar información de la competencia y el diseño
+        if ($accion === 'crear' && $tipo === 'raps') {
+            $codigoDiseñoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
+            if ($codigoDiseñoCompetencia) {
+                $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
+                
+                // Extraer código del diseño de la competencia
+                $partes = explode('-', $codigoDiseñoCompetencia);
+                if (count($partes) >= 3) {
+                    $codigoDiseño = $partes[0] . '-' . $partes[1];
+                    $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
+                }
+            }
+        }
     } elseif ($accion === 'ver_competencias') {
         $codigoDiseño = $_GET['codigo'] ?? '';
         $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
@@ -101,8 +124,29 @@ try {
             $diseño_actual = $metodos->obtenerDiseñoPorCodigo($_GET['codigo'] ?? '');
         } elseif ($tipo === 'competencias') {
             $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($_GET['codigo'] ?? '');
+            
+            // Cargar también información del diseño para mostrar contexto
+            if ($competencia_actual) {
+                $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+                if (count($partes) >= 3) {
+                    $codigoDiseño = $partes[0] . '-' . $partes[1];
+                    $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
+                }
+            }
         } elseif ($tipo === 'raps') {
             $rap_actual = $metodos->obtenerRapPorCodigo($_GET['codigo'] ?? '');
+            
+            // Cargar también información de la competencia y el diseño para mostrar contexto
+            if ($rap_actual) {
+                $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+                if (count($partes) >= 4) {
+                    $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
+                    $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoCompetencia);
+                    
+                    $codigoDiseño = $partes[0] . '-' . $partes[1];
+                    $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
+                }
+            }
         }
     }
 
