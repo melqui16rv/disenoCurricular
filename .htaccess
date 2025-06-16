@@ -1,0 +1,34 @@
+# Configuración específica para disenoCurricular
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Manejo de archivos estáticos (CSS, JS, imágenes)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^assets/ - [L]
+    
+    # Permitir acceso directo a archivos PHP existentes
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteCond %{REQUEST_URI} \.php$
+    RewriteRule . - [L]
+    
+    # Redirigir todas las demás solicitudes al index.php si el archivo no existe
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ app/forms/index.php [QSA,L]
+</IfModule>
+
+# Configuración de seguridad
+<Files "*.sql">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Configuración de PHP para mostrar errores (solo en desarrollo)
+# php_flag display_errors On
+# php_flag display_startup_errors On
+# php_value error_reporting "E_ALL"
