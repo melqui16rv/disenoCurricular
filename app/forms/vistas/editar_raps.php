@@ -486,58 +486,97 @@ function cargarComparacion() {
 function mostrarComparacion(data) {
     const content = document.getElementById('comparacionContent');
     
-    if (!data.success || data.comparacion.length === 0) {
+    if (!data.success || !data.data || data.data.length === 0) {
         content.innerHTML = `
-            <div class="alert alert-info">
+            <div class="alert alert-warning">
                 <i class="fas fa-info-circle"></i>
-                No se encontraron otros diseños curriculares con esta misma competencia.
+                <strong>Sin resultados:</strong> No se encontraron otros diseños curriculares con la misma competencia.
+                <br><small class="text-muted">Esto es normal si es el primer diseño que usa esta competencia.</small>
             </div>
         `;
         return;
     }
     
-    let html = '';
+    let html = `
+        <div class="alert alert-success mb-3">
+            <i class="fas fa-check-circle"></i>
+            <strong>¡Excelente!</strong> Se encontraron ${data.data.length} diseño(s) curricular(es) con la misma competencia para comparar.
+        </div>
+    `;
     
-    data.comparacion.forEach(item => {
+    data.data.forEach((item, index) => {
         const diseno = item.diseno;
         const raps = item.raps;
+        const totalHoras = item.totalHorasRaps || 0;
         
         html += `
-            <div class="mb-4 p-3" style="border: 1px solid #dee2e6; border-radius: 0.375rem; background-color: #f8f9fa;">
-                <h6 class="text-primary mb-3">
-                    <i class="fas fa-graduation-cap"></i> 
-                    ${diseno.nombrePrograma} (Versión ${diseno.versionPrograma})
-                </h6>
-                
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered mb-0">
-                        <thead class="thead-light">
-                            <tr>
-                                <th style="width: 20%;">Código RAP</th>
-                                <th style="width: 60%;">Resultado de Aprendizaje</th>
-                                <th style="width: 20%;">Horas</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <div class="card mb-3" style="border-left: 4px solid #007bff;">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="fas fa-graduation-cap"></i>
+                        <strong>${diseno.nombrePrograma}</strong> 
+                        <span class="badge badge-info ml-2">Versión ${diseno.versionPrograma}</span>
+                    </h6>
+                    <small class="text-muted">
+                        Código: ${diseno.codigoDiseño} | 
+                        RAPs: ${raps.length} | 
+                        Total Horas: ${totalHoras}h
+                    </small>
+                </div>
+                <div class="card-body">
         `;
         
-        raps.forEach(rap => {
+        if (raps.length === 0) {
             html += `
-                <tr>
-                    <td><code>${rap.codigoRapDiseño || 'N/A'}</code></td>
-                    <td>${rap.nombreRap || 'Sin descripción'}</td>
-                    <td class="text-center">${rap.horasDesarrolloRap || '0'} h</td>
-                </tr>
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    Este diseño curricular aún no tiene RAPs definidos para esta competencia.
+                </div>
             `;
-        });
+        } else {
+            html += `<div class="row">`;
+            raps.forEach((rap, rapIndex) => {
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-secondary h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge badge-secondary">${rap.codigoRapDiseño}</span>
+                                    <span class="badge badge-outline-primary">${rap.horasDesarrolloRap}h</span>
+                                </div>
+                                <p class="card-text small" style="line-height: 1.4;">
+                                    ${rap.nombreRap}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
         
         html += `
-                        </tbody>
-                    </table>
                 </div>
             </div>
         `;
     });
+    
+    // Agregar información de debug si está disponible
+    if (data.debug) {
+        html += `
+            <details class="mt-3">
+                <summary class="text-muted small" style="cursor: pointer;">
+                    <i class="fas fa-info-circle"></i> Información de depuración
+                </summary>
+                <div class="mt-2 p-2 bg-light small">
+                    <strong>Competencia buscada:</strong> ${data.debug.codigoCompetencia}<br>
+                    <strong>Diseño actual excluido:</strong> ${data.debug.disenoActual || 'Ninguno'}<br>
+                    <strong>Diseños encontrados:</strong> ${data.debug.totalDisenosEncontrados}<br>
+                    <strong>Comparaciones procesadas:</strong> ${data.debug.totalComparaciones}
+                </div>
+            </details>
+        `;
+    }
     
     content.innerHTML = html;
 }

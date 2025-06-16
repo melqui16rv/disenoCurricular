@@ -108,20 +108,110 @@ try {
             break;
 
         case 'obtener_comparacion_raps':
-            require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosComparacion.php';
-            
             $codigoCompetencia = $_POST['codigoCompetencia'] ?? '';
             $disenoActual = $_POST['disenoActual'] ?? '';
             
-            if ($codigoCompetencia) {
-                $metodosComparacion = new comparacion();
-                $comparacion = $metodosComparacion->obtenerComparacionRaps($codigoCompetencia, $disenoActual);
+            if (!$codigoCompetencia) {
+                $response['message'] = 'Código de competencia requerido';
+                break;
+            }
+            
+            try {
+                // Obtener conexión a la base de datos
+                require_once $_SERVER['DOCUMENT_ROOT'] . '/sql/conexion.php';
+                $conexionObj = new Conexion();
+                $conexion = $conexionObj->obtenerConexion();
+                
+                // Obtener diseños curriculares que tienen la misma competencia
+                // Simplificamos la consulta para que sea más robusta
+                $sql = "SELECT DISTINCT 
+                            d.codigoDiseño,
+                            d.nombrePrograma,
+                            d.versionPrograma,
+                            d.codigoPrograma,
+                            c.codigoDiseñoCompetencia,
+                            c.nombreCompetencia,
+                            c.horasDesarrolloCompetencia
+                        FROM competencias c
+                        INNER JOIN diseños d ON (
+                            CONCAT(d.codigoPrograma, '-', d.versionPrograma) = d.codigoDiseño 
+                            AND d.codigoDiseño = SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2)
+                        )
+                        WHERE c.codigoCompetencia = :codigoCompetencia";
+                
+                // Excluir el diseño actual si se proporciona
+                if ($disenoActual && trim($disenoActual) !== '') {
+                    $sql .= " AND d.codigoDiseño != :disenoActual";
+                }
+                
+                $sql .= " ORDER BY d.nombrePrograma, d.versionPrograma";
+                
+                $stmt = $conexion->prepare($sql);
+                $stmt->bindParam(':codigoCompetencia', $codigoCompetencia, PDO::PARAM_STR);
+                
+                if ($disenoActual && trim($disenoActual) !== '') {
+                    $stmt->bindParam(':disenoActual', $disenoActual, PDO::PARAM_STR);
+                }
+                
+                $stmt->execute();
+                $disenosConMismaCompetencia = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $comparacion = [];
+                
+                // Para cada diseño, obtener sus RAPs
+                foreach ($disenosConMismaCompetencia as $diseno) {
+                    // Buscar RAPs que coincidan con el patrón del diseño-competencia
+                    $sqlRaps = "SELECT 
+                                    codigoDiseñoCompetenciaRap,
+                                    codigoRapAutomatico,
+                                    codigoRapDiseño,
+                                    nombreRap,
+                                    horasDesarrolloRap
+                                FROM raps 
+                                WHERE codigoDiseñoCompetenciaRap LIKE :patronCompetencia
+                                ORDER BY codigoRapAutomatico";
+                    
+                    $stmtRaps = $conexion->prepare($sqlRaps);
+                    $patronCompetencia = $diseno['codigoDiseñoCompetencia'] . '-%';
+                    $stmtRaps->bindParam(':patronCompetencia', $patronCompetencia, PDO::PARAM_STR);
+                    $stmtRaps->execute();
+                    
+                    $raps = $stmtRaps->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    // Siempre agregar el diseño, incluso si no tiene RAPs (para mostrar que existe)
+                    $comparacion[] = [
+                        'diseno' => $diseno,
+                        'raps' => $raps,
+                        'totalRaps' => count($raps),
+                        'totalHorasRaps' => array_sum(array_column($raps, 'horasDesarrolloRap'))
+                    ];
+                }
                 
                 $response['success'] = true;
-                $response['comparacion'] = $comparacion;
+                $response['data'] = $comparacion; // Cambié 'comparacion' por 'data' para consistencia
                 $response['message'] = 'Comparación obtenida exitosamente';
-            } else {
-                $response['message'] = 'Código de competencia requerido';
+                $response['totalDisenos'] = count($comparacion);
+                
+                // Debug información más detallada
+                $response['debug'] = [
+                    'codigoCompetencia' => $codigoCompetencia,
+                    'disenoActual' => $disenoActual,
+                    'totalDisenosEncontrados' => count($disenosConMismaCompetencia),
+                    'totalComparaciones' => count($comparacion),
+                    'sqlUsado' => $sql,
+                    'patronesBusqueda' => array_column($comparacion, 'diseno')
+                ];
+                
+            } catch (PDOException $e) {
+                error_log("Error PDO en obtener_comparacion_raps: " . $e->getMessage());
+                $response['success'] = false;
+                $response['message'] = 'Error en la base de datos: ' . $e->getMessage();
+                $response['error_details'] = $e->getMessage();
+            } catch (Exception $e) {
+                error_log("Error general en obtener_comparacion_raps: " . $e->getMessage());
+                $response['success'] = false;
+                $response['message'] = 'Error general: ' . $e->getMessage();
+                $response['error_details'] = $e->getMessage();
             }
             break;
             
