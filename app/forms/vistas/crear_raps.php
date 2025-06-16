@@ -181,6 +181,33 @@
         <code><?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>-1</code>
     </div>
 
+    <!-- Sección de Comparación de RAPs -->
+    <div class="card mb-4" style="border: 2px solid #17a2b8;">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-balance-scale"></i> Comparar RAPs de la misma competencia
+                <button type="button" class="btn btn-sm btn-outline-light float-right" onclick="toggleComparacion()" id="btnToggleComparacion">
+                    <i class="fas fa-eye"></i> Ver comparación
+                </button>
+            </h5>
+        </div>
+        <div id="comparacionPanel" class="card-body" style="display: none;">
+            <p class="text-muted mb-3">
+                <i class="fas fa-info-circle"></i> 
+                Consulta cómo otros diseños curriculares han definido los RAPs para esta misma competencia.
+            </p>
+            
+            <div id="comparacionContent">
+                <div class="text-center">
+                    <div class="spinner-border text-info" role="status">
+                        <span class="sr-only">Cargando comparación...</span>
+                    </div>
+                    <p class="mt-2">Cargando datos de comparación...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="form-row">
         <div class="form-group" style="grid-column: 1 / -1;">
             <label for="nombreRap"><i class="fas fa-bullseye"></i> Resultado de Aprendizaje *</label>
@@ -303,5 +330,116 @@ function toggleCompetenciaInfo() {
         panel.style.display = 'none';
         btn.innerHTML = '<i class="fas fa-eye"></i> Ver competencia';
     }
+}
+
+// Función para mostrar/ocultar sección de comparación de RAPs
+function toggleComparacion() {
+    const panel = document.getElementById('comparacionPanel');
+    const btn = document.getElementById('btnToggleComparacion');
+    
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        btn.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar comparación';
+        
+        // Cargar datos de comparación si no se han cargado
+        if (!panel.dataset.loaded) {
+            cargarComparacion();
+            panel.dataset.loaded = 'true';
+        }
+        
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+        panel.style.display = 'none';
+        btn.innerHTML = '<i class="fas fa-eye"></i> Ver comparación';
+    }
+}
+
+// Función para cargar datos de comparación via AJAX
+function cargarComparacion() {
+    const codigoCompetencia = '<?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>';
+    const partes = codigoCompetencia.split('-');
+    const codigoCompetenciaReal = partes[2]; // Extraer código de competencia
+    const disenoActual = partes[0] + '-' + partes[1]; // Extraer código de diseño actual
+    
+    fetch('/app/forms/control/ajax.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `accion=obtener_comparacion_raps&codigoCompetencia=${codigoCompetenciaReal}&disenoActual=${disenoActual}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        mostrarComparacion(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('comparacionContent').innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Error al cargar la comparación. Intenta nuevamente.
+            </div>
+        `;
+    });
+}
+
+// Función para mostrar los datos de comparación
+function mostrarComparacion(data) {
+    const content = document.getElementById('comparacionContent');
+    
+    if (!data.success || data.comparacion.length === 0) {
+        content.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                No se encontraron otros diseños curriculares con esta misma competencia.
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    data.comparacion.forEach(item => {
+        const diseno = item.diseno;
+        const raps = item.raps;
+        
+        html += `
+            <div class="mb-4 p-3" style="border: 1px solid #dee2e6; border-radius: 0.375rem; background-color: #f8f9fa;">
+                <h6 class="text-primary mb-3">
+                    <i class="fas fa-graduation-cap"></i> 
+                    ${diseno.nombrePrograma} (Versión ${diseno.versionPrograma})
+                </h6>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 20%;">Código RAP</th>
+                                <th style="width: 60%;">Resultado de Aprendizaje</th>
+                                <th style="width: 20%;">Horas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+        
+        raps.forEach(rap => {
+            html += `
+                <tr>
+                    <td><code>${rap.codigoRapDiseño || 'N/A'}</code></td>
+                    <td>${rap.nombreRap || 'Sin descripción'}</td>
+                    <td class="text-center">${rap.horasDesarrolloRap || '0'} h</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    });
+    
+    content.innerHTML = html;
 }
 </script>

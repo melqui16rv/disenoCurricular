@@ -106,6 +106,24 @@ try {
                 $response['data'] = $raps;
             }
             break;
+
+        case 'obtener_comparacion_raps':
+            require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosComparacion.php';
+            
+            $codigoCompetencia = $_POST['codigoCompetencia'] ?? '';
+            $disenoActual = $_POST['disenoActual'] ?? '';
+            
+            if ($codigoCompetencia) {
+                $metodosComparacion = new comparacion();
+                $comparacion = $metodosComparacion->obtenerComparacionRaps($codigoCompetencia, $disenoActual);
+                
+                $response['success'] = true;
+                $response['comparacion'] = $comparacion;
+                $response['message'] = 'Comparación obtenida exitosamente';
+            } else {
+                $response['message'] = 'Código de competencia requerido';
+            }
+            break;
             
         default:
             $response['message'] = 'Acción no válida';

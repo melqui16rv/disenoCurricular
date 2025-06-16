@@ -1,7 +1,7 @@
 CREATE TABLE `diseños`(
-    `codigoDiseño` VARCHAR(255), -- en el registro se debe concatenear: "codigoPrograma{tabla:diseños}-versionPograma{tabla:diseños}" 
+    `codigoDiseño` VARCHAR(255), -- en el registro se debe concatenear: "codigoPrograma{tabla:diseños}-versionPrograma{tabla:diseños}" 
     -- ejemplo final: codigoPrograma=124101
-    -- versionPograma=1
+    -- versionPrograma=1
     -- codigoDiseño=124101-1
     `codigoPrograma` VARCHAR(255),
     `versionPrograma` VARCHAR(255),
