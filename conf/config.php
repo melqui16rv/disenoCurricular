@@ -1,5 +1,5 @@
 <?php
-$_SERVER['DOCUMENT_ROOT'] = '/home/appscide/public_html/viaticosApp';
+$_SERVER['DOCUMENT_ROOT'] = '/home/appscide/public_html/disenoCurricular';
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conf/auth.php';
 
