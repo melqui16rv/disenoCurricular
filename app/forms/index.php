@@ -3,26 +3,26 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conf/config.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDiseños.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/disenoCurricular/conf/config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDisenos.php';
 
-$metodos = new MetodosDiseños();
+$metodos = new MetodosDisenos();
 
 // Manejar acciones
 $accion = $_GET['accion'] ?? 'listar';
-$tipo = $_GET['tipo'] ?? 'diseños';
+$tipo = $_GET['tipo'] ?? 'disenos';
 $mensaje = '';
 $tipoMensaje = '';
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if ($accion === 'crear' && $tipo === 'diseños') {
+        if ($accion === 'crear' && $tipo === 'disenos') {
             if ($metodos->insertarDiseño($_POST)) {
                 $mensaje = 'Diseño creado exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'listar';
             }
-        } elseif ($accion === 'editar' && $tipo === 'diseños') {
+        } elseif ($accion === 'editar' && $tipo === 'disenos') {
             if ($metodos->actualizarDiseño($_POST['codigoDiseño'], $_POST)) {
                 $mensaje = 'Diseño actualizado exitosamente';
                 $tipoMensaje = 'success';
@@ -57,7 +57,7 @@ try {
 
     if ($accion === 'eliminar') {
         $codigo = $_GET['codigo'] ?? '';
-        if ($tipo === 'diseños' && $codigo) {
+        if ($tipo === 'disenos' && $codigo) {
             if ($metodos->eliminarDiseño($codigo)) {
                 $mensaje = 'Diseño eliminado exitosamente';
                 $tipoMensaje = 'success';
@@ -97,7 +97,7 @@ try {
         $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
         $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetencia);
     } elseif ($accion === 'editar') {
-        if ($tipo === 'diseños') {
+        if ($tipo === 'disenos') {
             $diseño_actual = $metodos->obtenerDiseñoPorCodigo($_GET['codigo'] ?? '');
         } elseif ($tipo === 'competencias') {
             $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($_GET['codigo'] ?? '');
@@ -164,7 +164,7 @@ try {
             <?php 
             switch ($accion) {
                 case 'listar':
-                    include 'vistas/listar_diseños.php';
+                    include 'vistas/listar_disenos.php';
                     break;
                 case 'crear':
                     include 'vistas/crear_' . $tipo . '.php';
@@ -179,7 +179,7 @@ try {
                     include 'vistas/listar_raps.php';
                     break;
                 default:
-                    include 'vistas/listar_diseños.php';
+                    include 'vistas/listar_disenos.php';
             }
             ?>
         </div>

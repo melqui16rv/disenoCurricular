@@ -8,7 +8,7 @@ USE `disenos_curriculares`;
 CREATE TABLE IF NOT EXISTS `diseños` (
     `codigoDiseño` VARCHAR(255) NOT NULL,
     `codigoPrograma` VARCHAR(255) NOT NULL,
-    `versionPograma` VARCHAR(255) NOT NULL,
+    `versionPrograma` VARCHAR(255) NOT NULL,
     `nombrePrograma` VARCHAR(255) NOT NULL,
     `lineaTecnologica` VARCHAR(255) DEFAULT NULL,
     `redTecnologica` VARCHAR(255) DEFAULT NULL,

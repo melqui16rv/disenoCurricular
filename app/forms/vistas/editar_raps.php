@@ -14,11 +14,11 @@
 <?php else: ?>
 
 <form method="POST" id="formEditarRap">
-    <input type="hidden" name="codigoDiseñoCompetenciaRap" value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap']); ?>">
+    <input type="hidden" name="codigoDiseñoCompetenciaRap" value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>">
     
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        <strong>Código del RAP:</strong> <?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap']); ?>
+        <strong>Código del RAP:</strong> <?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>
         (No se puede modificar el código)
     </div>
 
@@ -26,14 +26,14 @@
         <div class="form-group">
             <label><i class="fas fa-hashtag"></i> Código Técnico del RAP</label>
             <input type="text" class="form-control" readonly 
-                   value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap']); ?>"
+                   value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>"
                    style="background: #e9ecef; font-family: monospace;">
             <small class="text-muted">Este código técnico no se puede modificar</small>
         </div>
         <div class="form-group">
             <label for="horasDesarrolloRap"><i class="fas fa-clock"></i> Horas de Desarrollo *</label>
             <input type="number" id="horasDesarrolloRap" name="horasDesarrolloRap" class="form-control" required 
-                   min="0" step="0.01" value="<?php echo htmlspecialchars($rap_actual['horasDesarrolloRap']); ?>">
+                   min="0" step="0.01" value="<?php echo htmlspecialchars($rap_actual['horasDesarrolloRap'] ?? ''); ?>">
         </div>
     </div>
 
@@ -41,7 +41,7 @@
         <div class="form-group">
             <label for="codigoRapDiseño"><i class="fas fa-tag"></i> Código del RAP (Diseño) *</label>
             <input type="text" id="codigoRapDiseño" name="codigoRapDiseño" class="form-control" required 
-                   value="<?php echo htmlspecialchars($rap_actual['codigoRapDiseño']); ?>"
+                   value="<?php echo htmlspecialchars($rap_actual['codigoRapDiseño'] ?? ''); ?>"
                    placeholder="Ejemplo: RA1" maxlength="20">
             <small class="text-muted">
                 <i class="fas fa-info-circle"></i> Este es el código que aparece en el diseño curricular
@@ -50,7 +50,7 @@
         <div class="form-group">
             <label><i class="fas fa-key"></i> ID Automático</label>
             <input type="text" class="form-control" readonly 
-                   value="<?php echo htmlspecialchars($rap_actual['codigoRapAutomatico']); ?>"
+                   value="<?php echo htmlspecialchars($rap_actual['codigoRapAutomatico'] ?? ''); ?>"
                    style="background: #e9ecef; text-align: center; font-weight: bold;">
             <small class="text-muted">ID generado automáticamente</small>
         </div>
@@ -60,7 +60,7 @@
         <div class="form-group" style="grid-column: 1 / -1;">
             <label for="nombreRap"><i class="fas fa-bullseye"></i> Resultado de Aprendizaje *</label>
             <textarea id="nombreRap" name="nombreRap" class="form-control" rows="6" required 
-                      placeholder="Describe detalladamente el resultado de aprendizaje que el estudiante debe lograr..."><?php echo htmlspecialchars($rap_actual['nombreRap']); ?></textarea>
+                      placeholder="Describe detalladamente el resultado de aprendizaje que el estudiante debe lograr..."><?php echo htmlspecialchars($rap_actual['nombreRap'] ?? ''); ?></textarea>
             <small class="text-muted">
                 Describe claramente qué debe saber hacer el estudiante al finalizar este resultado de aprendizaje.
             </small>

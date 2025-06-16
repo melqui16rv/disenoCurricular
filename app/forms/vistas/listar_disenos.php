@@ -4,7 +4,7 @@
             <h2 class="card-title"><i class="fas fa-list"></i> Diseños Curriculares</h2>
             <p class="card-subtitle">Gestiona todos los programas formativos del SENA</p>
         </div>
-        <a href="?accion=crear&tipo=diseños" class="btn btn-primary">
+        <a href="?accion=crear&tipo=disenos" class="btn btn-primary">
             <i class="fas fa-plus"></i> Nuevo Diseño
         </a>
     </div>
@@ -15,7 +15,7 @@
         <i class="fas fa-folder-open" style="font-size: 4rem; color: #bdc3c7; margin-bottom: 1rem;"></i>
         <h3 style="color: #7f8c8d;">No hay diseños curriculares registrados</h3>
         <p style="color: #95a5a6;">Comienza creando tu primer diseño curricular</p>
-        <a href="?accion=crear&tipo=diseños" class="btn btn-primary mt-3">
+        <a href="?accion=crear&tipo=disenos" class="btn btn-primary mt-3">
             <i class="fas fa-plus"></i> Crear Primer Diseño
         </a>
     </div>
@@ -42,42 +42,42 @@
                             </span>
                         </td>
                         <td>
-                            <strong><?php echo htmlspecialchars($diseño['nombrePrograma']); ?></strong>
+                            <strong><?php echo htmlspecialchars($diseño['nombrePrograma'] ?? ''); ?></strong>
                             <br>
                             <small class="text-muted">
-                                Código: <?php echo htmlspecialchars($diseño['codigoPrograma']); ?> 
-                                | Versión: <?php echo htmlspecialchars($diseño['versionPrograma']); ?>
+                                Código: <?php echo htmlspecialchars($diseño['codigoPrograma'] ?? ''); ?> 
+                                | Versión: <?php echo htmlspecialchars($diseño['versionPrograma'] ?? ''); ?>
                             </small>
                         </td>
                         <td>
                             <div style="font-size: 0.9rem;">
-                                <div><strong>Red:</strong> <?php echo htmlspecialchars($diseño['redTecnologica']); ?></div>
-                                <div><strong>Línea:</strong> <?php echo htmlspecialchars($diseño['lineaTecnologica']); ?></div>
+                                <div><strong>Red:</strong> <?php echo htmlspecialchars($diseño['redTecnologica'] ?? ''); ?></div>
+                                <div><strong>Línea:</strong> <?php echo htmlspecialchars($diseño['lineaTecnologica'] ?? ''); ?></div>
                             </div>
                         </td>
                         <td>
                             <div style="font-size: 0.9rem;">
-                                <div><i class="fas fa-book" style="color: #3498db;"></i> Lectivas: <strong><?php echo number_format($diseño['horasDesarrolloLectiva'], 0); ?></strong></div>
-                                <div><i class="fas fa-industry" style="color: #e74c3c;"></i> Productivas: <strong><?php echo number_format($diseño['horasDesarrolloProductiva'], 0); ?></strong></div>
+                                <div><i class="fas fa-book" style="color: #3498db;"></i> Lectivas: <strong><?php echo number_format($diseño['horasDesarrolloLectiva'] ?? 0, 0); ?></strong></div>
+                                <div><i class="fas fa-industry" style="color: #e74c3c;"></i> Productivas: <strong><?php echo number_format($diseño['horasDesarrolloProductiva'] ?? 0, 0); ?></strong></div>
                                 <div style="border-top: 1px solid #eee; margin-top: 3px; padding-top: 3px;">
-                                    <i class="fas fa-calculator" style="color: #27ae60;"></i> Total: <strong><?php echo number_format($diseño['horasDesarrolloDiseño'], 0); ?></strong>
+                                    <i class="fas fa-calculator" style="color: #27ae60;"></i> Total: <strong><?php echo number_format($diseño['horasDesarrolloDiseño'] ?? 0, 0); ?></strong>
                                 </div>
                             </div>
                         </td>
                         <td>
                             <div style="font-size: 0.9rem;">
-                                <div><i class="fas fa-book" style="color: #3498db;"></i> Lectivos: <strong><?php echo number_format($diseño['mesesDesarrolloLectiva'], 1); ?></strong></div>
-                                <div><i class="fas fa-industry" style="color: #e74c3c;"></i> Productivos: <strong><?php echo number_format($diseño['mesesDesarrolloProductiva'], 1); ?></strong></div>
+                                <div><i class="fas fa-book" style="color: #3498db;"></i> Lectivos: <strong><?php echo number_format($diseño['mesesDesarrolloLectiva'] ?? 0, 1); ?></strong></div>
+                                <div><i class="fas fa-industry" style="color: #e74c3c;"></i> Productivos: <strong><?php echo number_format($diseño['mesesDesarrolloProductiva'] ?? 0, 1); ?></strong></div>
                                 <div style="border-top: 1px solid #eee; margin-top: 3px; padding-top: 3px;">
-                                    <i class="fas fa-calculator" style="color: #27ae60;"></i> Total: <strong><?php echo number_format($diseño['mesesDesarrolloDiseño'], 1); ?></strong>
+                                    <i class="fas fa-calculator" style="color: #27ae60;"></i> Total: <strong><?php echo number_format($diseño['mesesDesarrolloDiseño'] ?? 0, 1); ?></strong>
                                 </div>
                             </div>
                         </td>
                         <td>
                             <div style="font-size: 0.9rem;">
-                                <div><strong><?php echo htmlspecialchars($diseño['nivelAcademicoIngreso']); ?></strong></div>
-                                <div>Grado: <span style="color: #e74c3c; font-weight: bold;"><?php echo htmlspecialchars($diseño['gradoNivelAcademico']); ?></span></div>
-                                <div>Edad mín: <span style="color: #3498db;"><?php echo htmlspecialchars($diseño['edadMinima']); ?> años</span></div>
+                                <div><strong><?php echo htmlspecialchars($diseño['nivelAcademicoIngreso'] ?? ''); ?></strong></div>
+                                <div>Grado: <span style="color: #e74c3c; font-weight: bold;"><?php echo htmlspecialchars($diseño['gradoNivelAcademico'] ?? ''); ?></span></div>
+                                <div>Edad mín: <span style="color: #3498db;"><?php echo htmlspecialchars($diseño['edadMinima'] ?? ''); ?> años</span></div>
                             </div>
                         </td>
                         <td>
@@ -86,11 +86,11 @@
                                    class="btn btn-primary btn-sm" title="Ver Competencias">
                                     <i class="fas fa-tasks"></i> Competencias
                                 </a>
-                                <a href="?accion=editar&tipo=diseños&codigo=<?php echo urlencode($diseño['codigoDiseño']); ?>" 
+                                <a href="?accion=editar&tipo=disenos&codigo=<?php echo urlencode($diseño['codigoDiseño']); ?>" 
                                    class="btn btn-warning btn-sm" title="Editar">
                                     <i class="fas fa-edit"></i> Editar
                                 </a>
-                                <a href="?accion=eliminar&tipo=diseños&codigo=<?php echo urlencode($diseño['codigoDiseño']); ?>" 
+                                <a href="?accion=eliminar&tipo=disenos&codigo=<?php echo urlencode($diseño['codigoDiseño']); ?>" 
                                    class="btn btn-danger btn-sm" 
                                    onclick="return confirm('¿Estás seguro de eliminar este diseño? Se eliminarán también todas sus competencias y RAPs asociados.')"
                                    title="Eliminar">

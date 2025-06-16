@@ -1,7 +1,7 @@
 CREATE TABLE `diseños`(
     `codigoDiseño` VARCHAR(255), -- CSV
     `codigoPrograma` VARCHAR(255), -- CSV
-    `versionPograma` VARCHAR(255), -- CSV
+    `versionPrograma` VARCHAR(255), -- CSV
     `nombrePrograma` VARCHAR(255), -- CSV
     `lineaTecnologica` VARCHAR(255), -- FORMS - aqui puede ser muy difil saber loque va a tener por lo que es abierto este campo
     `redTecnologica` VARCHAR(255), -- FORMS

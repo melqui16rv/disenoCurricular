@@ -14,11 +14,11 @@
 <?php else: ?>
 
 <form method="POST" id="formEditarCompetencia">
-    <input type="hidden" name="codigoDiseñoCompetencia" value="<?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia']); ?>">
+    <input type="hidden" name="codigoDiseñoCompetencia" value="<?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia'] ?? ''); ?>">
     
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        <strong>Código de la Competencia:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia']); ?>
+        <strong>Código de la Competencia:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia'] ?? ''); ?>
         (No se puede modificar el código)
     </div>
 
@@ -26,13 +26,13 @@
         <div class="form-group">
             <label><i class="fas fa-hashtag"></i> Código de la Competencia</label>
             <input type="text" class="form-control" readonly 
-                   value="<?php echo htmlspecialchars($competencia_actual['codigoCompetencia']); ?>"
+                   value="<?php echo htmlspecialchars($competencia_actual['codigoCompetencia'] ?? ''); ?>"
                    style="background: #e9ecef;">
         </div>
         <div class="form-group">
             <label for="horasDesarrolloCompetencia"><i class="fas fa-clock"></i> Horas de Desarrollo *</label>
             <input type="number" id="horasDesarrolloCompetencia" name="horasDesarrolloCompetencia" class="form-control" required 
-                   min="0" step="0.01" value="<?php echo htmlspecialchars($competencia_actual['horasDesarrolloCompetencia']); ?>">
+                   min="0" step="0.01" value="<?php echo htmlspecialchars($competencia_actual['horasDesarrolloCompetencia'] ?? ''); ?>">
         </div>
     </div>
 
@@ -40,7 +40,7 @@
         <div class="form-group" style="grid-column: 1 / -1;">
             <label for="nombreCompetencia"><i class="fas fa-star"></i> Nombre de la Competencia *</label>
             <input type="text" id="nombreCompetencia" name="nombreCompetencia" class="form-control" required 
-                   value="<?php echo htmlspecialchars($competencia_actual['nombreCompetencia']); ?>"
+                   value="<?php echo htmlspecialchars($competencia_actual['nombreCompetencia'] ?? ''); ?>"
                    placeholder="Ejemplo: Desarrollar el sistema que cumpla con los requisitos de la solución informática">
         </div>
     </div>
@@ -49,7 +49,7 @@
         <div class="form-group" style="grid-column: 1 / -1;">
             <label for="normaUnidadCompetencia"><i class="fas fa-file-alt"></i> Norma de Unidad de Competencia</label>
             <textarea id="normaUnidadCompetencia" name="normaUnidadCompetencia" class="form-control" rows="4" 
-                      placeholder="Descripción de la norma de unidad de competencia..."><?php echo htmlspecialchars($competencia_actual['normaUnidadCompetencia']); ?></textarea>
+                      placeholder="Descripción de la norma de unidad de competencia..."><?php echo htmlspecialchars($competencia_actual['normaUnidadCompetencia'] ?? ''); ?></textarea>
         </div>
     </div>
 
@@ -61,7 +61,7 @@
         <div class="form-group" style="grid-column: 1 / -1;">
             <label for="requisitosAcademicosInstructor"><i class="fas fa-graduation-cap"></i> Requisitos Académicos del Instructor</label>
             <textarea id="requisitosAcademicosInstructor" name="requisitosAcademicosInstructor" class="form-control" rows="4" 
-                      placeholder="Ejemplo: Profesional en Ingeniería de Sistemas, Ingeniería de Software, Tecnología en Desarrollo de Software o áreas afines..."><?php echo htmlspecialchars($competencia_actual['requisitosAcademicosInstructor']); ?></textarea>
+                      placeholder="Ejemplo: Profesional en Ingeniería de Sistemas, Ingeniería de Software, Tecnología en Desarrollo de Software o áreas afines..."><?php echo htmlspecialchars($competencia_actual['requisitosAcademicosInstructor'] ?? ''); ?></textarea>
         </div>
     </div>
 
@@ -69,7 +69,7 @@
         <div class="form-group" style="grid-column: 1 / -1;">
             <label for="experienciaLaboralInstructor"><i class="fas fa-briefcase"></i> Experiencia Laboral del Instructor</label>
             <textarea id="experienciaLaboralInstructor" name="experienciaLaboralInstructor" class="form-control" rows="4" 
-                      placeholder="Ejemplo: Veinticuatro (24) meses de experiencia: de los cuales dieciocho (18) meses estarán relacionados con el ejercicio de la profesión u ocupación objeto de la formación profesional..."><?php echo htmlspecialchars($competencia_actual['experienciaLaboralInstructor']); ?></textarea>
+                      placeholder="Ejemplo: Veinticuatro (24) meses de experiencia: de los cuales dieciocho (18) meses estarán relacionados con el ejercicio de la profesión u ocupación objeto de la formación profesional..."><?php echo htmlspecialchars($competencia_actual['experienciaLaboralInstructor'] ?? ''); ?></textarea>
         </div>
     </div>
 

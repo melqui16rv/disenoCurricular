@@ -1,8 +1,6 @@
 <?php
-// Configuración de rutas del proyecto
 $_SERVER['DOCUMENT_ROOT'] = '/home/appscide/public_html/disenoCurricular';
 
-// Configurar BASE_URL para desarrollo local y producción
 if (isset($_SERVER['HTTP_HOST'])) {
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];

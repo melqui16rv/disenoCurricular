@@ -7,9 +7,9 @@ error_reporting(E_ALL);
 header('Content-Type: application/json');
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conf/config.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDiseños.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDisenos.php';
 
-$metodos = new MetodosDiseños();
+$metodos = new MetodosDisenos();
 $response = ['success' => false, 'message' => '', 'data' => null];
 
 try {

@@ -4,7 +4,7 @@ CREATE TABLE `diseños`(
     -- versionPograma=1
     -- codigoDiseño=124101-1
     `codigoPrograma` VARCHAR(255),
-    `versionPograma` VARCHAR(255),
+    `versionPrograma` VARCHAR(255),
     --"nuevo campo:
     `nombrePrograma` VARCHAR(255),
     --"

@@ -67,7 +67,7 @@
                         </td>
                         <td>
                             <span style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;">
-                                <?php echo number_format($rap['horasDesarrolloRap'], 0); ?>h
+                                <?php echo number_format($rap['horasDesarrolloRap'] ?? 0, 0); ?>h
                             </span>
                         </td>
                         <td>
@@ -99,7 +99,9 @@
             <div class="text-center">
                 <h3 style="margin: 0; font-size: 2rem; color: #fff;">
                     <?php 
-                    $totalHorasRaps = array_sum(array_column($raps, 'horasDesarrolloRap'));
+                    $totalHorasRaps = array_sum(array_map(function($rap) { 
+                        return $rap['horasDesarrolloRap'] ?? 0; 
+                    }, $raps));
                     echo number_format($totalHorasRaps, 0);
                     ?>
                 </h3>
@@ -109,8 +111,9 @@
                 <h3 style="margin: 0; font-size: 2rem; color: #fff;">
                     <?php 
                     $porcentajeCobertura = 0;
-                    if ($competencia_actual && $competencia_actual['horasDesarrolloCompetencia'] > 0) {
-                        $porcentajeCobertura = ($totalHorasRaps / $competencia_actual['horasDesarrolloCompetencia']) * 100;
+                    $horasCompetencia = $competencia_actual['horasDesarrolloCompetencia'] ?? 0;
+                    if ($competencia_actual && $horasCompetencia > 0) {
+                        $porcentajeCobertura = ($totalHorasRaps / $horasCompetencia) * 100;
                     }
                     echo number_format($porcentajeCobertura, 1);
                     ?>%
@@ -129,13 +132,13 @@
     <?php if ($porcentajeCobertura > 100): ?>
         <div class="alert alert-warning" style="margin-top: 1rem;">
             <i class="fas fa-exclamation-triangle"></i>
-            <strong>Atención:</strong> Las horas de los RAPs (<?php echo number_format($totalHorasRaps, 0); ?>h) 
-            superan las horas asignadas a la competencia (<?php echo number_format($competencia_actual['horasDesarrolloCompetencia'], 0); ?>h).
+            <strong>Atención:</strong> Las horas de los RAPs (<?php echo number_format($totalHorasRaps ?? 0, 0); ?>h) 
+            superan las horas asignadas a la competencia (<?php echo number_format($competencia_actual['horasDesarrolloCompetencia'] ?? 0, 0); ?>h).
         </div>
     <?php elseif ($porcentajeCobertura < 100 && $porcentajeCobertura > 0): ?>
         <div class="alert alert-info" style="margin-top: 1rem;">
             <i class="fas fa-info-circle"></i>
-            <strong>Información:</strong> Faltan <?php echo number_format($competencia_actual['horasDesarrolloCompetencia'] - $totalHorasRaps, 0); ?> 
+            <strong>Información:</strong> Faltan <?php echo number_format(($competencia_actual['horasDesarrolloCompetencia'] ?? 0) - ($totalHorasRaps ?? 0), 0); ?> 
             horas por cubrir en esta competencia.
         </div>
     <?php endif; ?>

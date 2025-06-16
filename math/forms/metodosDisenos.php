@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../sql/conexion.php';
 
-class MetodosDiseños extends Conexion {
+class MetodosDisenos extends Conexion {
     private $conexion;
 
     public function __construct() {
