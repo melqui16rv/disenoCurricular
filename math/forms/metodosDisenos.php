@@ -35,17 +35,20 @@ class MetodosDisenos extends Conexion {
             // Generar codigoDiseño concatenando codigoPrograma y versionPrograma
             $codigoDiseño = $datos['codigoPrograma'] . '-' . $datos['versionPrograma'];
             
-            // Calcular campos derivados solo si ambos campos están presentes
-            $horasDesarrolloDiseño = 0;
-            $mesesDesarrolloDiseño = 0;
+            // Función auxiliar para convertir valores vacíos a números
+            $convertirANumero = function($valor) {
+                return (empty($valor) || $valor === '') ? 0 : (float)$valor;
+            };
             
-            if (isset($datos['horasDesarrolloLectiva']) && isset($datos['horasDesarrolloProductiva'])) {
-                $horasDesarrolloDiseño = $datos['horasDesarrolloLectiva'] + $datos['horasDesarrolloProductiva'];
-            }
+            // Convertir campos numéricos
+            $horasLectiva = $convertirANumero($datos['horasDesarrolloLectiva'] ?? '');
+            $horasProductiva = $convertirANumero($datos['horasDesarrolloProductiva'] ?? '');
+            $mesesLectiva = $convertirANumero($datos['mesesDesarrolloLectiva'] ?? '');
+            $mesesProductiva = $convertirANumero($datos['mesesDesarrolloProductiva'] ?? '');
             
-            if (isset($datos['mesesDesarrolloLectiva']) && isset($datos['mesesDesarrolloProductiva'])) {
-                $mesesDesarrolloDiseño = $datos['mesesDesarrolloLectiva'] + $datos['mesesDesarrolloProductiva'];
-            }
+            // Calcular campos derivados
+            $horasDesarrolloDiseño = $horasLectiva + $horasProductiva;
+            $mesesDesarrolloDiseño = $mesesLectiva + $mesesProductiva;
 
             $sql = "INSERT INTO diseños (codigoDiseño, codigoPrograma, versionPrograma, nombrePrograma, 
                     lineaTecnologica, redTecnologica, redConocimiento, horasDesarrolloLectiva, 
@@ -58,8 +61,8 @@ class MetodosDisenos extends Conexion {
             return $stmt->execute([
                 $codigoDiseño, $datos['codigoPrograma'], $datos['versionPrograma'], $datos['nombrePrograma'],
                 $datos['lineaTecnologica'], $datos['redTecnologica'], $datos['redConocimiento'],
-                $datos['horasDesarrolloLectiva'] ?? 0, $datos['horasDesarrolloProductiva'] ?? 0,
-                $datos['mesesDesarrolloLectiva'] ?? 0, $datos['mesesDesarrolloProductiva'] ?? 0,
+                $horasLectiva, $horasProductiva,
+                $mesesLectiva, $mesesProductiva,
                 $horasDesarrolloDiseño, $mesesDesarrolloDiseño, $datos['nivelAcademicoIngreso'],
                 $datos['gradoNivelAcademico'], $datos['formacionTrabajoDesarrolloHumano'],
                 $datos['edadMinima'], $datos['requisitosAdicionales']
@@ -71,17 +74,20 @@ class MetodosDisenos extends Conexion {
 
     public function actualizarDiseño($codigoDiseño, $datos) {
         try {
-            // Calcular campos derivados solo si ambos campos están presentes
-            $horasDesarrolloDiseño = 0;
-            $mesesDesarrolloDiseño = 0;
+            // Función auxiliar para convertir valores vacíos a números
+            $convertirANumero = function($valor) {
+                return (empty($valor) || $valor === '') ? 0 : (float)$valor;
+            };
             
-            if (isset($datos['horasDesarrolloLectiva']) && isset($datos['horasDesarrolloProductiva'])) {
-                $horasDesarrolloDiseño = $datos['horasDesarrolloLectiva'] + $datos['horasDesarrolloProductiva'];
-            }
+            // Convertir campos numéricos
+            $horasLectiva = $convertirANumero($datos['horasDesarrolloLectiva'] ?? '');
+            $horasProductiva = $convertirANumero($datos['horasDesarrolloProductiva'] ?? '');
+            $mesesLectiva = $convertirANumero($datos['mesesDesarrolloLectiva'] ?? '');
+            $mesesProductiva = $convertirANumero($datos['mesesDesarrolloProductiva'] ?? '');
             
-            if (isset($datos['mesesDesarrolloLectiva']) && isset($datos['mesesDesarrolloProductiva'])) {
-                $mesesDesarrolloDiseño = $datos['mesesDesarrolloLectiva'] + $datos['mesesDesarrolloProductiva'];
-            }
+            // Calcular campos derivados
+            $horasDesarrolloDiseño = $horasLectiva + $horasProductiva;
+            $mesesDesarrolloDiseño = $mesesLectiva + $mesesProductiva;
 
             $sql = "UPDATE diseños SET nombrePrograma = ?, lineaTecnologica = ?, redTecnologica = ?, 
                     redConocimiento = ?, horasDesarrolloLectiva = ?, horasDesarrolloProductiva = ?, 
@@ -94,8 +100,8 @@ class MetodosDisenos extends Conexion {
             return $stmt->execute([
                 $datos['nombrePrograma'], $datos['lineaTecnologica'], $datos['redTecnologica'],
                 $datos['redConocimiento'], 
-                $datos['horasDesarrolloLectiva'] ?? 0, $datos['horasDesarrolloProductiva'] ?? 0,
-                $datos['mesesDesarrolloLectiva'] ?? 0, $datos['mesesDesarrolloProductiva'] ?? 0,
+                $horasLectiva, $horasProductiva,
+                $mesesLectiva, $mesesProductiva,
                 $horasDesarrolloDiseño, $mesesDesarrolloDiseño, $datos['nivelAcademicoIngreso'],
                 $datos['gradoNivelAcademico'], $datos['formacionTrabajoDesarrolloHumano'],
                 $datos['edadMinima'], $datos['requisitosAdicionales'], $codigoDiseño
@@ -132,6 +138,14 @@ class MetodosDisenos extends Conexion {
 
     public function insertarCompetencia($codigoDiseño, $datos) {
         try {
+            // Función auxiliar para convertir valores vacíos a números
+            $convertirANumero = function($valor) {
+                return (empty($valor) || $valor === '') ? 0 : (float)$valor;
+            };
+            
+            // Convertir campo numérico
+            $horasDesarrolloCompetencia = $convertirANumero($datos['horasDesarrolloCompetencia'] ?? '');
+            
             $codigoDiseñoCompetencia = $codigoDiseño . '-' . $datos['codigoCompetencia'];
             
             $sql = "INSERT INTO competencias (codigoDiseñoCompetencia, codigoCompetencia, nombreCompetencia, 
@@ -141,7 +155,7 @@ class MetodosDisenos extends Conexion {
             $stmt = $this->conexion->prepare($sql);
             return $stmt->execute([
                 $codigoDiseñoCompetencia, $datos['codigoCompetencia'], $datos['nombreCompetencia'],
-                $datos['normaUnidadCompetencia'], $datos['horasDesarrolloCompetencia'],
+                $datos['normaUnidadCompetencia'], $horasDesarrolloCompetencia,
                 $datos['requisitosAcademicosInstructor'], $datos['experienciaLaboralInstructor']
             ]);
         } catch (PDOException $e) {
@@ -151,6 +165,14 @@ class MetodosDisenos extends Conexion {
 
     public function actualizarCompetencia($codigoDiseñoCompetencia, $datos) {
         try {
+            // Función auxiliar para convertir valores vacíos a números
+            $convertirANumero = function($valor) {
+                return (empty($valor) || $valor === '') ? 0 : (float)$valor;
+            };
+            
+            // Convertir campo numérico
+            $horasDesarrolloCompetencia = $convertirANumero($datos['horasDesarrolloCompetencia'] ?? '');
+            
             $sql = "UPDATE competencias SET nombreCompetencia = ?, normaUnidadCompetencia = ?, 
                     horasDesarrolloCompetencia = ?, requisitosAcademicosInstructor = ?, 
                     experienciaLaboralInstructor = ? WHERE codigoDiseñoCompetencia = ?";
@@ -158,7 +180,7 @@ class MetodosDisenos extends Conexion {
             $stmt = $this->conexion->prepare($sql);
             return $stmt->execute([
                 $datos['nombreCompetencia'], $datos['normaUnidadCompetencia'],
-                $datos['horasDesarrolloCompetencia'], $datos['requisitosAcademicosInstructor'],
+                $horasDesarrolloCompetencia, $datos['requisitosAcademicosInstructor'],
                 $datos['experienciaLaboralInstructor'], $codigoDiseñoCompetencia
             ]);
         } catch (PDOException $e) {
@@ -200,6 +222,14 @@ class MetodosDisenos extends Conexion {
 
     public function insertarRap($codigoDiseñoCompetencia, $datos) {
         try {
+            // Función auxiliar para convertir valores vacíos a números
+            $convertirANumero = function($valor) {
+                return (empty($valor) || $valor === '') ? 0 : (float)$valor;
+            };
+            
+            // Convertir campo numérico
+            $horasDesarrolloRap = $convertirANumero($datos['horasDesarrolloRap'] ?? '');
+            
             // Primero insertamos para obtener el codigoRapAutomatico
             $sql = "INSERT INTO raps (codigoRapDiseño, nombreRap, horasDesarrolloRap) 
                     VALUES (?, ?, ?)";
@@ -208,7 +238,7 @@ class MetodosDisenos extends Conexion {
             $result = $stmt->execute([
                 $datos['codigoRapDiseño'], 
                 $datos['nombreRap'], 
-                $datos['horasDesarrolloRap']
+                $horasDesarrolloRap
             ]);
             
             if ($result) {
@@ -232,13 +262,21 @@ class MetodosDisenos extends Conexion {
 
     public function actualizarRap($codigoDiseñoCompetenciaRap, $datos) {
         try {
+            // Función auxiliar para convertir valores vacíos a números
+            $convertirANumero = function($valor) {
+                return (empty($valor) || $valor === '') ? 0 : (float)$valor;
+            };
+            
+            // Convertir campo numérico
+            $horasDesarrolloRap = $convertirANumero($datos['horasDesarrolloRap'] ?? '');
+            
             $sql = "UPDATE raps SET codigoRapDiseño = ?, nombreRap = ?, horasDesarrolloRap = ? 
                     WHERE codigoDiseñoCompetenciaRap = ?";
             $stmt = $this->conexion->prepare($sql);
             return $stmt->execute([
                 $datos['codigoRapDiseño'], 
                 $datos['nombreRap'], 
-                $datos['horasDesarrolloRap'], 
+                $horasDesarrolloRap, 
                 $codigoDiseñoCompetenciaRap
             ]);
         } catch (PDOException $e) {

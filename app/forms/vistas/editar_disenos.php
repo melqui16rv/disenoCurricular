@@ -164,10 +164,13 @@
             <label for="nivelAcademicoIngreso"><i class="fas fa-school"></i> Nivel Académico de Ingreso *</label>
             <select id="nivelAcademicoIngreso" name="nivelAcademicoIngreso" class="form-control" required>
                 <option value="">Seleccionar nivel académico</option>
-                <option value="Primaria" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Primaria' ? 'selected' : ''; ?>>Primaria</option>
-                <option value="Básica Secundaria" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Básica Secundaria' ? 'selected' : ''; ?>>Básica Secundaria</option>
-                <option value="Media Académica" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Media Académica' ? 'selected' : ''; ?>>Media Académica</option>
-                <option value="Media Técnica" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Media Técnica' ? 'selected' : ''; ?>>Media Técnica</option>
+                <option value="Preescolar" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Preescolar' ? 'selected' : ''; ?>>Preescolar (Jardín - Transición)</option>
+                <option value="Primaria" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Primaria' ? 'selected' : ''; ?>>Primaria (1° - 5°)</option>
+                <option value="Secundaria" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Secundaria' ? 'selected' : ''; ?>>Secundaria (6° - 9°)</option>
+                <option value="Media" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Media' ? 'selected' : ''; ?>>Media (10° - 11°)</option>
+                <option value="Técnico" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Técnico' ? 'selected' : ''; ?>>Técnico</option>
+                <option value="Tecnológico" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Tecnológico' ? 'selected' : ''; ?>>Tecnológico</option>
+                <option value="Universitario" <?php echo ($diseño_actual['nivelAcademicoIngreso'] ?? '') === 'Universitario' ? 'selected' : ''; ?>>Universitario (Pregrado)</option>
             </select>
         </div>
         <div class="form-group">

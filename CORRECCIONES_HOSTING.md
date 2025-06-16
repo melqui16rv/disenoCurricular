@@ -5,14 +5,16 @@ Sistema de gestión curricular del SENA con errores de compatibilidad en servido
 1. Caracteres especiales "ñ" en nombres de archivos causaban errores "file not found"
 2. Valores nulos en base de datos generaban warnings PHP deprecated
 3. Inconsistencias en nombres de campos de base de datos
+4. **🔴 Bug crítico:** TypeError con campos numéricos vacíos en operaciones matemáticas
 
 ### 🔧 CORRECCIONES APLICADAS
 
 #### 1. **NOMBRES DE ARCHIVOS SIN CARACTERES ESPECIALES**
-- ❌ `metodosDiseños.php` → ✅ `metodosDisenos.php`
-- ❌ `crear_diseños.php` → ✅ `crear_disenos.php`
-- ❌ `editar_diseños.php` → ✅ `editar_disenos.php`
-- ❌ `listar_diseños.php` → ✅ `listar_disenos.php`
+**Archivos renombrados:**
+- `metodosDiseños.php` → `metodosDisenos.php`
+- `crear_diseños.php` → `crear_disenos.php`
+- `editar_diseños.php` → `editar_disenos.php`
+- `listar_diseños.php` → `listar_disenos.php`
 
 #### 2. **ACTUALIZACIÓN DE REFERENCIAS EN CÓDIGO**
 **Archivo:** `/app/forms/index.php`
@@ -64,6 +66,32 @@ $totalHoras = array_sum(array_filter(array_column($raps, 'horasDesarrolloRap'), 
 - ❌ Campo en BD: `versionPograma` (faltaba "r")
 - ✅ Campo corregido: `versionPrograma` (el usuario corrigió en la BD)
 
+#### 5. **🆕 CORRECCIÓN DEL BUG CRÍTICO: OPERACIONES MATEMÁTICAS CON CAMPOS VACÍOS**
+**Problema:** Error `TypeError: Unsupported operand types: string + string` cuando se enviaban campos de horas/meses vacíos desde formularios.
+
+**Archivos corregidos:** `/math/forms/metodosDisenos.php`
+
+**Métodos actualizados con manejo seguro de campos vacíos:**
+- ✅ `insertarDiseño()` - Protección para campos de horas y meses
+- ✅ `actualizarDiseño()` - Protección para campos de horas y meses
+- ✅ `insertarCompetencia()` - Protección para horas de competencia
+- ✅ `actualizarCompetencia()` - Protección para horas de competencia
+- ✅ `insertarRap()` - Protección para horas de RAP
+- ✅ `actualizarRap()` - Protección para horas de RAP
+
+**Función auxiliar implementada:**
+```php
+$convertirANumero = function($valor) {
+    return (empty($valor) || $valor === '') ? 0 : (float)$valor;
+};
+```
+
+**Beneficios:**
+- ✅ Manejo seguro de campos vacíos en formularios
+- ✅ Conversión automática de strings vacíos a números válidos
+- ✅ Eliminación de errores TypeError en actualizaciones
+- ✅ Compatibilidad con formularios flexibles (campos opcionales)
+
 ### 🏗️ ESTRUCTURA FINAL COMPATIBLE CON HOSTING
 
 ```
@@ -77,7 +105,7 @@ disenoCurricular/
 │       ├── editar_competencias.php ✅ (null protection)
 │       └── editar_raps.php ✅ (null protection)
 └── math/forms/
-    └── metodosDisenos.php ✅ (sin ñ + clase renombrada)
+    └── metodosDisenos.php ✅ (sin ñ + clase renombrada + bug fix)
 ```
 
 ### 🎉 BENEFICIOS PARA HOSTING
@@ -87,6 +115,8 @@ disenoCurricular/
 3. **✅ Referencias Actualizadas:** Todas las rutas y clases corregidas
 4. **✅ Base de Datos Consistente:** Campo `versionPrograma` corregido
 5. **✅ Navegación Funcional:** URLs sin caracteres problemáticos
+6. **✅ Sin Errores TypeError:** Manejo seguro de campos numéricos vacíos
+7. **✅ Formularios Flexibles:** Campos opcionales funcionan correctamente
 
 ### 🔍 VERIFICACIÓN FINAL
 
@@ -94,12 +124,8 @@ disenoCurricular/
 **Archivos renombrados:** ✅ TODOS los archivos sin "ñ"
 **Protección null:** ✅ APLICADA en todos los formularios y vistas
 **Referencias actualizadas:** ✅ TODAS las rutas y clases corregidas
+**Bug TypeError:** ✅ RESUELTO con manejo seguro de campos vacíos
 
-### 🚀 LISTO PARA PRODUCCIÓN
+---
 
-El sistema está completamente preparado para funcionar en servidor de hosting sin errores de:
-- ❌ Archivos no encontrados por caracteres especiales
-- ❌ Warnings por valores nulos
-- ❌ Inconsistencias en nombres de campos
-
-**Estado:** ✅ **TOTALMENTE COMPATIBLE CON HOSTING**
+**✨ El sistema está 100% listo para ser subido al hosting sin errores.**
