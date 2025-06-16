@@ -40,12 +40,13 @@ CREATE TABLE `competencias`(
     PRIMARY KEY(`codigoDiseñoCompetencia`)
 );
 CREATE TABLE `raps`(
-    `codigoDiseñoCompetenciaRap` VARCHAR(255), -- en el registro se debe concatenear: "codigoDiseño{tabla:diseños}-codigoCompetencia{tabla:competencias}-codigoRap{tabla:raps}"
+    `codigoDiseñoCompetenciaRap` VARCHAR(255), -- en el registro se debe concatenear: "codigoDiseño{tabla:diseños}-codigoCompetencia{tabla:competencias}-codigoRapAutomatico{tabla:raps}"
     -- ejemplo final: codigoDiseño=124101-1
     -- codigoCompetencia=220201501
-    -- codigoRap=RA1
-    -- codigoDiseñoCompetenciaRap=124101-1-220201501-RA1
-    `codigoRap` VARCHAR(55),
+    -- codigoRapAutomatico=1
+    -- codigoDiseñoCompetenciaRap=124101-1-220201501-1
+    `codigoRapAutomatico` int NOT NULL AUTO_INCREMENT,
+    `codigoRapDiseño` VARCHAR(55),
     `nombreRap` TEXT,
     `horasDesarrolloRap` DECIMAL(10,2),
     PRIMARY KEY(`codigoDiseñoCompetenciaRap`)

@@ -3,21 +3,188 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conf/config.php'; //este siempre va a ir de primero ya que con este es donde se inicializan las rutas para que funsionen correctamente las demas
-require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosGenerales.php'; //despus ya podemos llamar los demas archivos haciendolo mas facil gracias al config.php..
-require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/puedes crear otro archivo y agregar mas metodos y llamarlos des esta manera.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conf/config.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDiseños.php';
 
+$metodos = new MetodosDiseños();
+
+// Manejar acciones
+$accion = $_GET['accion'] ?? 'listar';
+$tipo = $_GET['tipo'] ?? 'diseños';
+$mensaje = '';
+$tipoMensaje = '';
+
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($accion === 'crear' && $tipo === 'diseños') {
+            if ($metodos->insertarDiseño($_POST)) {
+                $mensaje = 'Diseño creado exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'listar';
+            }
+        } elseif ($accion === 'editar' && $tipo === 'diseños') {
+            if ($metodos->actualizarDiseño($_POST['codigoDiseño'], $_POST)) {
+                $mensaje = 'Diseño actualizado exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'listar';
+            }
+        } elseif ($accion === 'crear' && $tipo === 'competencias') {
+            if ($metodos->insertarCompetencia($_POST['codigoDiseño'], $_POST)) {
+                $mensaje = 'Competencia creada exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'ver_competencias';
+            }
+        } elseif ($accion === 'editar' && $tipo === 'competencias') {
+            if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetencia'], $_POST)) {
+                $mensaje = 'Competencia actualizada exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'ver_competencias';
+            }
+        } elseif ($accion === 'crear' && $tipo === 'raps') {
+            if ($metodos->insertarRap($_POST['codigoDiseñoCompetencia'], $_POST)) {
+                $mensaje = 'RAP creado exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'ver_raps';
+            }
+        } elseif ($accion === 'editar' && $tipo === 'raps') {
+            if ($metodos->actualizarRap($_POST['codigoDiseñoCompetenciaRap'], $_POST)) {
+                $mensaje = 'RAP actualizado exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'ver_raps';
+            }
+        }
+    }
+
+    if ($accion === 'eliminar') {
+        $codigo = $_GET['codigo'] ?? '';
+        if ($tipo === 'diseños' && $codigo) {
+            if ($metodos->eliminarDiseño($codigo)) {
+                $mensaje = 'Diseño eliminado exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'listar';
+            }
+        } elseif ($tipo === 'competencias' && $codigo) {
+            if ($metodos->eliminarCompetencia($codigo)) {
+                $mensaje = 'Competencia eliminada exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'ver_competencias';
+            }
+        } elseif ($tipo === 'raps' && $codigo) {
+            if ($metodos->eliminarRap($codigo)) {
+                $mensaje = 'RAP eliminado exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'ver_raps';
+            }
+        }
+    }
+
+    // Obtener datos según la acción
+    $diseños = [];
+    $competencias = [];
+    $raps = [];
+    $diseño_actual = null;
+    $competencia_actual = null;
+    $rap_actual = null;
+
+    if ($accion === 'listar' || $accion === 'crear') {
+        $diseños = $metodos->obtenerTodosLosDiseños();
+    } elseif ($accion === 'ver_competencias') {
+        $codigoDiseño = $_GET['codigo'] ?? '';
+        $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
+        $competencias = $metodos->obtenerCompetenciasPorDiseño($codigoDiseño);
+    } elseif ($accion === 'ver_raps') {
+        $codigoDiseñoCompetencia = $_GET['codigo'] ?? '';
+        $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
+        $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetencia);
+    } elseif ($accion === 'editar') {
+        if ($tipo === 'diseños') {
+            $diseño_actual = $metodos->obtenerDiseñoPorCodigo($_GET['codigo'] ?? '');
+        } elseif ($tipo === 'competencias') {
+            $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($_GET['codigo'] ?? '');
+        } elseif ($tipo === 'raps') {
+            $rap_actual = $metodos->obtenerRapPorCodigo($_GET['codigo'] ?? '');
+        }
+    }
+
+} catch (Exception $e) {
+    $mensaje = 'Error: ' . $e->getMessage();
+    $tipoMensaje = 'danger';
+}
 ?>
-<!-- para lamar estilos css u otros archivos puedes llamarlos de esta manera: -->
-<!-- <link rel="stylesheet" href="<?php //echo BASE_URL; ?>assets/css/presupuesto/index_presupuesto.css"> -->
+
 <!DOCTYPE html>
- <html lang="en">
- <head>
+<html lang="es">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
- </head>
- <body>
-    <h1>Prueba vista en cPanel</h1>
- </body>
- </html>
+    <title>Sistema de Diseños Curriculares</title>
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/forms/estilosPrincipales.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Navegación -->
+        <?php include 'vistas/nav.php'; ?>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-graduation-cap"></i> Sistema de Diseños Curriculares</h1>
+            <p>Gestión integral de programas formativos del SENA</p>
+        </div>
+
+        <!-- Mensajes -->
+        <?php if ($mensaje): ?>
+            <div class="alert alert-<?php echo $tipoMensaje; ?>">
+                <i class="fas fa-<?php echo $tipoMensaje === 'success' ? 'check-circle' : 'exclamation-triangle'; ?>"></i>
+                <?php echo htmlspecialchars($mensaje); ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Navegación por breadcrumb -->
+        <?php if ($accion !== 'listar'): ?>
+            <div class="breadcrumb">
+                <a href="?accion=listar"><i class="fas fa-home"></i> Inicio</a>
+                <span class="separator">/</span>
+                <?php if ($accion === 'ver_competencias'): ?>
+                    <span class="current">Competencias del Diseño <?php echo htmlspecialchars($_GET['codigo'] ?? ''); ?></span>
+                <?php elseif ($accion === 'ver_raps'): ?>
+                    <a href="?accion=ver_competencias&codigo=<?php echo htmlspecialchars(explode('-', $_GET['codigo'])[0] . '-' . explode('-', $_GET['codigo'])[1]); ?>">Competencias</a>
+                    <span class="separator">/</span>
+                    <span class="current">RAPs de la Competencia</span>
+                <?php elseif ($accion === 'crear'): ?>
+                    <span class="current">Crear Nuevo <?php echo ucfirst($tipo); ?></span>
+                <?php elseif ($accion === 'editar'): ?>
+                    <span class="current">Editar <?php echo ucfirst($tipo); ?></span>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Contenido principal -->
+        <div class="card fade-in">
+            <?php 
+            switch ($accion) {
+                case 'listar':
+                    include 'vistas/listar_diseños.php';
+                    break;
+                case 'crear':
+                    include 'vistas/crear_' . $tipo . '.php';
+                    break;
+                case 'editar':
+                    include 'vistas/editar_' . $tipo . '.php';
+                    break;
+                case 'ver_competencias':
+                    include 'vistas/listar_competencias.php';
+                    break;
+                case 'ver_raps':
+                    include 'vistas/listar_raps.php';
+                    break;
+                default:
+                    include 'vistas/listar_diseños.php';
+            }
+            ?>
+        </div>
+    </div>
+
+    <script src="<?php echo BASE_URL; ?>assets/js/forms/scripts.js"></script>
+</body>
+</html>
