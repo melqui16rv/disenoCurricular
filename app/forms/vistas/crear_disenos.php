@@ -28,22 +28,19 @@
     <div class="form-row">
         <div class="form-group">
             <label for="lineaTecnologica"><i class="fas fa-sitemap"></i> Línea Tecnológica *</label>
-            <select id="lineaTecnologica" name="lineaTecnologica" class="form-control" required>
-                <option value="">Seleccionar línea tecnológica</option>
-                <option value="Tecnologías de la Información y las Comunicaciones">Tecnologías de la Información y las Comunicaciones</option>
-                <option value="Producción Industrial">Producción Industrial</option>
-                <option value="Diseño">Diseño</option>
-                <option value="Logística y Transporte">Logística y Transporte</option>
-                <option value="Gestión de la Información">Gestión de la Información</option>
-                <option value="Cliente">Cliente</option>
-                <option value="Materiales y Herramientas">Materiales y Herramientas</option>
-                <option value="Tecnologías del Ambiente, la Salud y la Seguridad">Tecnologías del Ambiente, la Salud y la Seguridad</option>
-            </select>
+            <input type="text" id="lineaTecnologica" name="lineaTecnologica" class="form-control" required 
+                   placeholder="Ejemplo: Tecnologías de la Información y las Comunicaciones">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Campo abierto - Escriba la línea tecnológica correspondiente
+            </small>
         </div>
         <div class="form-group">
             <label for="redTecnologica"><i class="fas fa-network-wired"></i> Red Tecnológica *</label>
             <input type="text" id="redTecnologica" name="redTecnologica" class="form-control" required 
                    placeholder="Ejemplo: Tecnologías de la Información y las Comunicaciones">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Campo abierto - Escriba la red tecnológica correspondiente
+            </small>
         </div>
     </div>
 
@@ -52,6 +49,9 @@
             <label for="redConocimiento"><i class="fas fa-brain"></i> Red de Conocimiento *</label>
             <input type="text" id="redConocimiento" name="redConocimiento" class="form-control" required 
                    placeholder="Ejemplo: Red de Conocimiento en Tecnologías de la Información">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Campo abierto - Escriba la red de conocimiento correspondiente
+            </small>
         </div>
     </div>
 
@@ -61,19 +61,25 @@
     
     <div class="alert alert-info" style="margin-bottom: 1rem;">
         <i class="fas fa-info-circle"></i>
-        <strong>Información:</strong> Puede llenar las horas O los meses de desarrollo, no es necesario completar ambos campos.
+        <strong>Información:</strong> Los campos de horas y meses pueden dejarse vacíos si no aplican al programa. Permite cualquier valor numérico decimal.
     </div>
 
     <div class="form-row">
         <div class="form-group">
             <label for="horasDesarrolloLectiva"><i class="fas fa-book"></i> Horas Etapa Lectiva</label>
             <input type="number" id="horasDesarrolloLectiva" name="horasDesarrolloLectiva" class="form-control" 
-                   min="0" step="0.01" placeholder="0.00">
+                   step="0.01" placeholder="Ejemplo: 1440.50 (puede dejarse vacío)">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío si no aplica.
+            </small>
         </div>
         <div class="form-group">
             <label for="horasDesarrolloProductiva"><i class="fas fa-industry"></i> Horas Etapa Productiva</label>
             <input type="number" id="horasDesarrolloProductiva" name="horasDesarrolloProductiva" class="form-control" 
-                   min="0" step="0.01" placeholder="0.00">
+                   step="0.01" placeholder="Ejemplo: 880.75 (puede dejarse vacío)">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío si no aplica.
+            </small>
         </div>
     </div>
 
@@ -81,25 +87,37 @@
         <div class="form-group">
             <label for="mesesDesarrolloLectiva"><i class="fas fa-calendar-alt"></i> Meses Etapa Lectiva</label>
             <input type="number" id="mesesDesarrolloLectiva" name="mesesDesarrolloLectiva" class="form-control" 
-                   min="0" step="0.01" placeholder="0.00">
+                   step="0.01" placeholder="Ejemplo: 18.5 (puede dejarse vacío)">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío si no aplica.
+            </small>
         </div>
         <div class="form-group">
             <label for="mesesDesarrolloProductiva"><i class="fas fa-calendar-check"></i> Meses Etapa Productiva</label>
             <input type="number" id="mesesDesarrolloProductiva" name="mesesDesarrolloProductiva" class="form-control" 
-                   min="0" step="0.01" placeholder="0.00">
+                   step="0.01" placeholder="Ejemplo: 6.0 (puede dejarse vacío)">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Permite decimales. Puede dejarse vacío si no aplica.
+            </small>
         </div>
     </div>
 
-    <div class="form-row" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+    <div class="form-row" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #28a745;">
         <div class="form-group">
-            <label><i class="fas fa-calculator"></i> Total Horas (Calculado automáticamente)</label>
-            <input type="text" id="totalHoras" class="form-control" readonly placeholder="0.00" 
-                   style="background: #e9ecef; font-weight: bold;">
+            <label><i class="fas fa-calculator"></i> Total Horas de Desarrollo</label>
+            <input type="text" id="totalHoras" name="horasDesarrolloDiseño" class="form-control" readonly placeholder="0.00" 
+                   style="background: #e9ecef; font-weight: bold; color: #28a745;">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Se calcula automáticamente: Horas Lectiva + Horas Productiva
+            </small>
         </div>
         <div class="form-group">
-            <label><i class="fas fa-calendar"></i> Total Meses (Calculado automáticamente)</label>
-            <input type="text" id="totalMeses" class="form-control" readonly placeholder="0.00" 
-                   style="background: #e9ecef; font-weight: bold;">
+            <label><i class="fas fa-calendar"></i> Total Meses de Desarrollo</label>
+            <input type="text" id="totalMeses" name="mesesDesarrolloDiseño" class="form-control" readonly placeholder="0.00" 
+                   style="background: #e9ecef; font-weight: bold; color: #28a745;">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Se calcula automáticamente: Meses Lectiva + Meses Productiva
+            </small>
         </div>
     </div>
 
@@ -116,10 +134,6 @@
                 <option value="Básica Secundaria">Básica Secundaria</option>
                 <option value="Media Académica">Media Académica</option>
                 <option value="Media Técnica">Media Técnica</option>
-                <option value="Técnico Profesional">Técnico Profesional</option>
-                <option value="Tecnológico">Tecnológico</option>
-                <option value="Universitario">Universitario</option>
-                <option value="Especialización">Especialización</option>
             </select>
         </div>
         <div class="form-group">
@@ -165,24 +179,45 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Calcular totales automáticamente
+    // Calcular totales automáticamente en tiempo real
     function calcularTotales() {
-        const horasLectivas = parseFloat(document.getElementById('horasDesarrolloLectiva').value) || 0;
-        const horasProductivas = parseFloat(document.getElementById('horasDesarrolloProductiva').value) || 0;
-        const mesesLectivos = parseFloat(document.getElementById('mesesDesarrolloLectiva').value) || 0;
-        const mesesProductivos = parseFloat(document.getElementById('mesesDesarrolloProductiva').value) || 0;
+        const horasLectivasVal = document.getElementById('horasDesarrolloLectiva').value;
+        const horasProductivasVal = document.getElementById('horasDesarrolloProductiva').value;
+        const mesesLectivosVal = document.getElementById('mesesDesarrolloLectiva').value;
+        const mesesProductivosVal = document.getElementById('mesesDesarrolloProductiva').value;
         
+        // Convertir a números, permitiendo campos vacíos (null/0)
+        const horasLectivas = horasLectivasVal === '' ? 0 : parseFloat(horasLectivasVal) || 0;
+        const horasProductivas = horasProductivasVal === '' ? 0 : parseFloat(horasProductivasVal) || 0;
+        const mesesLectivos = mesesLectivosVal === '' ? 0 : parseFloat(mesesLectivosVal) || 0;
+        const mesesProductivos = mesesProductivosVal === '' ? 0 : parseFloat(mesesProductivosVal) || 0;
+        
+        // Calcular totales según especificación de BD: suma de lectiva + productiva
         const totalHoras = horasLectivas + horasProductivas;
         const totalMeses = mesesLectivos + mesesProductivos;
         
+        // Actualizar campos calculados
         document.getElementById('totalHoras').value = totalHoras.toFixed(2);
         document.getElementById('totalMeses').value = totalMeses.toFixed(2);
+        
+        // Cambiar color según si hay valores
+        const campoHoras = document.getElementById('totalHoras');
+        const campoMeses = document.getElementById('totalMeses');
+        
+        campoHoras.style.color = totalHoras > 0 ? '#28a745' : '#6c757d';
+        campoMeses.style.color = totalMeses > 0 ? '#28a745' : '#6c757d';
     }
     
-    // Agregar eventos para calcular totales
+    // Agregar eventos para calcular totales en tiempo real
     ['horasDesarrolloLectiva', 'horasDesarrolloProductiva', 'mesesDesarrolloLectiva', 'mesesDesarrolloProductiva'].forEach(id => {
-        document.getElementById(id).addEventListener('input', calcularTotales);
+        const campo = document.getElementById(id);
+        campo.addEventListener('input', calcularTotales);
+        campo.addEventListener('change', calcularTotales);
+        campo.addEventListener('keyup', calcularTotales);
     });
+    
+    // Calcular al cargar la página
+    calcularTotales();
     
     // Validación de formulario
     document.getElementById('formDiseño').addEventListener('submit', function(e) {
@@ -195,12 +230,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const totalHoras = parseFloat(document.getElementById('totalHoras').value) || 0;
-        if (totalHoras <= 0) {
-            e.preventDefault();
-            alert('El total de horas debe ser mayor a cero.');
-            return;
-        }
+        // Permitir que los campos de horas puedan estar vacíos o ser 0
+        // No validar que el total sea mayor a cero
         
         if (!confirm('¿Estás seguro de crear este diseño curricular?')) {
             e.preventDefault();

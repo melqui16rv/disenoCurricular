@@ -8,18 +8,18 @@ CREATE TABLE `diseños`(
     --"nuevo campo:
     `nombrePrograma` VARCHAR(255),
     --"
-    `lineaTecnologica` VARCHAR(255),
-    `redTecnologica` VARCHAR(255),
-    `redConocimiento` VARCHAR(255),
+    `lineaTecnologica` VARCHAR(255), -- este campo tiene que ser abierto no se puede con listas desplegables
+    `redTecnologica` VARCHAR(255), -- este campo tiene que ser abierto no se puede con listas desplegables
+    `redConocimiento` VARCHAR(255), -- este campo tiene que ser abierto no se puede con listas desplegables
     --"nuevo campo:
-    `horasDesarrolloLectiva` DECIMAL(10,2),
-    `horasDesarrolloProductiva` DECIMAL(10,2),
-    `mesesDesarrolloLectiva` DECIMAL(10,2),
-    `mesesDesarrolloProductiva` DECIMAL(10,2),
+    `horasDesarrolloLectiva` DECIMAL(10,2), -- este campo se puede poner cualquier valor incluso 0 o null
+    `horasDesarrolloProductiva` DECIMAL(10,2), -- este campo se puede poner cualquier valor incluso 0 o null
+    `mesesDesarrolloLectiva` DECIMAL(10,2), -- este campo se puede poner cualquier valor incluso 0 o null
+    `mesesDesarrolloProductiva` DECIMAL(10,2), -- este campo se puede poner cualquier valor incluso 0 o null
     --"
-    `horasDesarrolloDiseño` DECIMAL(10,2), -- es la suma entre: horasDesarrolloLectiva+horasDesarrolloProductiva
-    `mesesDesarrolloDiseño` DECIMAL(10,2), -- es la suma entre: mesesDesarrolloLectiva+mesesDesarrolloProductiva
-    `nivelAcademicoIngreso` VARCHAR(255),
+    `horasDesarrolloDiseño` DECIMAL(10,2), -- es la suma entre: horasDesarrolloLectiva+horasDesarrolloProductiva - si esta en cero o null pues da resultado 0
+    `mesesDesarrolloDiseño` DECIMAL(10,2), -- es la suma entre: mesesDesarrolloLectiva+mesesDesarrolloProductiva - si esta en cero o null pues da resultado 0
+    `nivelAcademicoIngreso` VARCHAR(255), -- en este campo pon menos en la lista desplegable de los formularios pon los basicos
     `gradoNivelAcademico` INT, -- antes estaba en VARCHAR(255) pero ahora se cambio a INT
     `formacionTrabajoDesarrolloHumano` ENUM('Si', 'No'),
     `edadMinima` INT,
