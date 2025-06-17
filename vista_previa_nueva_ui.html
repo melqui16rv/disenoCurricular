@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista Previa - Nueva UI Comparación RAPs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; background: #f8f9fa; }
+        .demo-container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card-header[style*="cursor: pointer"]:hover { background-color: #e8f4f8 !important; }
+        .badge-outline-primary { border: 1px solid #007bff; color: #007bff; background: transparent; }
+        .demo-note { background: #d1ecf1; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-note">
+            <h5><i class="fas fa-info-circle"></i> Vista Previa - Nueva UI de Comparación de RAPs</h5>
+            <p class="mb-0">Esta es una simulación de cómo se verá la nueva interfaz mejorada. <strong>Click en los headers</strong> para expandir/colapsar cada diseño.</p>
+        </div>
+
+        <div id="comparacionContent">
+            <!-- El contenido se generará con JavaScript simulando la respuesta AJAX -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simulación de datos de respuesta AJAX
+        const datosDemo = {
+            success: true,
+            data: [
+                {
+                    diseno: {
+                        codigoDiseño: "228106-1",
+                        nombrePrograma: "Técnico en Programación de Software",
+                        versionPrograma: "1"
+                    },
+                    raps: [
+                        {
+                            codigoRapDiseño: "RA1",
+                            nombreRap: "Aplicar algoritmos de programación básica para la solución de problemas según requerimientos del cliente",
+                            horasDesarrolloRap: 80
+                        },
+                        {
+                            codigoRapDiseño: "RA2", 
+                            nombreRap: "Construir bases de datos relacionales de acuerdo con el diseño físico y lógico definido",
+                            horasDesarrolloRap: 120
+                        },
+                        {
+                            codigoRapDiseño: "RA3",
+                            nombreRap: "Desarrollar aplicaciones web dinámicas aplicando frameworks y tecnologías del lado del servidor",
+                            horasDesarrolloRap: 100
+                        },
+                        {
+                            codigoRapDiseño: "RA4",
+                            nombreRap: "Implementar aplicaciones móviles multiplataforma según especificaciones técnicas y de diseño",
+                            horasDesarrolloRap: 90
+                        }
+                    ],
+                    totalRaps: 4,
+                    totalHorasRaps: 390
+                },
+                {
+                    diseno: {
+                        codigoDiseño: "228106-2",
+                        nombrePrograma: "Técnico en Programación de Software",
+                        versionPrograma: "2"
+                    },
+                    raps: [
+                        {
+                            codigoRapDiseño: "RA1",
+                            nombreRap: "Desarrollar algoritmos de programación aplicando principios de lógica computacional y estructuras de datos",
+                            horasDesarrolloRap: 85
+                        },
+                        {
+                            codigoRapDiseño: "RA2",
+                            nombreRap: "Diseñar e implementar bases de datos relacionales y no relacionales según arquitectura definida",
+                            horasDesarrolloRap: 130
+                        },
+                        {
+                            codigoRapDiseño: "RA3",
+                            nombreRap: "Crear aplicaciones web responsivas utilizando tecnologías front-end y back-end modernas",
+                            horasDesarrolloRap: 110
+                        }
+                    ],
+                    totalRaps: 3,
+                    totalHorasRaps: 325
+                },
+                {
+                    diseno: {
+                        codigoDiseño: "228107-1",
+                        nombrePrograma: "Tecnólogo en Desarrollo de Software",
+                        versionPrograma: "1"
+                    },
+                    raps: [
+                        {
+                            codigoRapDiseño: "RA1",
+                            nombreRap: "Analizar requerimientos de software aplicando metodologías de ingeniería de software",
+                            horasDesarrolloRap: 60
+                        },
+                        {
+                            codigoRapDiseño: "RA2",
+                            nombreRap: "Diseñar arquitecturas de software escalables y mantenibles según patrones de diseño establecidos",
+                            horasDesarrolloRap: 80
+                        },
+                        {
+                            codigoRapDiseño: "RA3",
+                            nombreRap: "Implementar soluciones de software utilizando lenguajes de programación orientados a objetos",
+                            horasDesarrolloRap: 120
+                        },
+                        {
+                            codigoRapDiseño: "RA4",
+                            nombreRap: "Gestionar bases de datos relacionales y no relacionales aplicando técnicas de optimización",
+                            horasDesarrolloRap: 100
+                        },
+                        {
+                            codigoRapDiseño: "RA5",
+                            nombreRap: "Desplegar aplicaciones en entornos de producción utilizando herramientas de integración continua",
+                            horasDesarrolloRap: 70
+                        }
+                    ],
+                    totalRaps: 5,
+                    totalHorasRaps: 430
+                }
+            ],
+            debug: {
+                codigoCompetencia: "220201501",
+                disenoActual: "124101-1",
+                totalDisenosEncontrados: 3,
+                totalComparaciones: 3
+            }
+        };
+
+        // Función para mostrar los datos de comparación (nueva versión mejorada)
+        function mostrarComparacion(data) {
+            const content = document.getElementById('comparacionContent');
+            
+            if (!data.success || !data.data || data.data.length === 0) {
+                content.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Sin resultados:</strong> No se encontraron otros diseños curriculares con la misma competencia.
+                        <br><small class="text-muted">Esto es normal si es el primer diseño que usa esta competencia.</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="alert alert-success mb-3">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>¡Excelente!</strong> Se encontraron ${data.data.length} diseño(s) curricular(es) con la misma competencia para comparar.
+                </div>
+            `;
+            
+            data.data.forEach((item, index) => {
+                const diseno = item.diseno;
+                const raps = item.raps;
+                const totalHoras = item.totalHorasRaps || 0;
+                const disenoId = `diseno-${index}`;
+                
+                html += `
+                    <div class="card mb-3" style="border-left: 4px solid #007bff;">
+                        <div class="card-header bg-light p-2" style="cursor: pointer;" onclick="toggleDisenoRaps('${disenoId}')">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <i class="fas fa-graduation-cap text-primary"></i>
+                                        <strong>${diseno.nombrePrograma}</strong> 
+                                        <span class="badge badge-info ml-2">Versión ${diseno.versionPrograma}</span>
+                                    </h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-code"></i> Código: ${diseno.codigoDiseño} | 
+                                        <i class="fas fa-list"></i> RAPs: ${raps.length} | 
+                                        <i class="fas fa-clock"></i> Total Horas: ${totalHoras}h
+                                    </small>
+                                </div>
+                                <div class="text-center">
+                                    <i class="fas fa-chevron-down text-primary" id="chevron-${disenoId}"></i>
+                                    <br><small class="text-muted">Click para expandir</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body" id="${disenoId}" style="display: none;">
+                `;
+                
+                if (raps.length === 0) {
+                    html += `
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle"></i>
+                            Este diseño curricular aún no tiene RAPs definidos para esta competencia.
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width: 100px;"><i class="fas fa-hashtag"></i> Código</th>
+                                        <th><i class="fas fa-bullseye"></i> Resultado de Aprendizaje</th>
+                                        <th style="width: 80px;"><i class="fas fa-clock"></i> Horas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    raps.forEach((rap, rapIndex) => {
+                        html += `
+                            <tr>
+                                <td>
+                                    <span class="badge badge-secondary">${rap.codigoRapDiseño}</span>
+                                </td>
+                                <td class="small" style="line-height: 1.4;">
+                                    ${rap.nombreRap}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge badge-outline-primary">${rap.horasDesarrolloRap}h</span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Agregar información de debug si está disponible
+            if (data.debug) {
+                html += `
+                    <details class="mt-3">
+                        <summary class="text-muted small" style="cursor: pointer;">
+                            <i class="fas fa-info-circle"></i> Información de depuración
+                        </summary>
+                        <div class="mt-2 p-2 bg-light small">
+                            <strong>Competencia buscada:</strong> ${data.debug.codigoCompetencia}<br>
+                            <strong>Diseño actual excluido:</strong> ${data.debug.disenoActual || 'Ninguno'}<br>
+                            <strong>Diseños encontrados:</strong> ${data.debug.totalDisenosEncontrados}<br>
+                            <strong>Comparaciones procesadas:</strong> ${data.debug.totalComparaciones}
+                        </div>
+                    </details>
+                `;
+            }
+            
+            content.innerHTML = html;
+        }
+
+        // Función para expandir/colapsar RAPs de un diseño
+        function toggleDisenoRaps(disenoId) {
+            const panel = document.getElementById(disenoId);
+            const chevron = document.getElementById(`chevron-${disenoId}`);
+            
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+                chevron.className = 'fas fa-chevron-up text-primary';
+                chevron.parentElement.querySelector('small').textContent = 'Click para colapsar';
+            } else {
+                panel.style.display = 'none';
+                chevron.className = 'fas fa-chevron-down text-primary';
+                chevron.parentElement.querySelector('small').textContent = 'Click para expandir';
+            }
+        }
+
+        // Cargar la vista previa al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarComparacion(datosDemo);
+        });
+    </script>
+</body>
+</html>

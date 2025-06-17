@@ -409,22 +409,31 @@ function mostrarComparacion(data) {
         const diseno = item.diseno;
         const raps = item.raps;
         const totalHoras = item.totalHorasRaps || 0;
+        const disenoId = `diseno-${index}`;
         
         html += `
             <div class="card mb-3" style="border-left: 4px solid #007bff;">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">
-                        <i class="fas fa-graduation-cap"></i>
-                        <strong>${diseno.nombrePrograma}</strong> 
-                        <span class="badge badge-info ml-2">Versión ${diseno.versionPrograma}</span>
-                    </h6>
-                    <small class="text-muted">
-                        Código: ${diseno.codigoDiseño} | 
-                        RAPs: ${raps.length} | 
-                        Total Horas: ${totalHoras}h
-                    </small>
+                <div class="card-header bg-light p-2" style="cursor: pointer;" onclick="toggleDisenoRaps('${disenoId}')">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="fas fa-graduation-cap text-primary"></i>
+                                <strong>${diseno.nombrePrograma}</strong> 
+                                <span class="badge badge-info ml-2">Versión ${diseno.versionPrograma}</span>
+                            </h6>
+                            <small class="text-muted">
+                                <i class="fas fa-code"></i> Código: ${diseno.codigoDiseño} | 
+                                <i class="fas fa-list"></i> RAPs: ${raps.length} | 
+                                <i class="fas fa-clock"></i> Total Horas: ${totalHoras}h
+                            </small>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-chevron-down text-primary" id="chevron-${disenoId}"></i>
+                            <br><small class="text-muted">Click para expandir</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="${disenoId}" style="display: none;">
         `;
         
         if (raps.length === 0) {
@@ -435,25 +444,40 @@ function mostrarComparacion(data) {
                 </div>
             `;
         } else {
-            html += `<div class="row">`;
+            html += `
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 100px;"><i class="fas fa-hashtag"></i> Código</th>
+                                <th><i class="fas fa-bullseye"></i> Resultado de Aprendizaje</th>
+                                <th style="width: 80px;"><i class="fas fa-clock"></i> Horas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
             raps.forEach((rap, rapIndex) => {
                 html += `
-                    <div class="col-md-6 mb-3">
-                        <div class="card border-secondary h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span class="badge badge-secondary">${rap.codigoRapDiseño}</span>
-                                    <span class="badge badge-outline-primary">${rap.horasDesarrolloRap}h</span>
-                                </div>
-                                <p class="card-text small" style="line-height: 1.4;">
-                                    ${rap.nombreRap}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    <tr>
+                        <td>
+                            <span class="badge badge-secondary">${rap.codigoRapDiseño}</span>
+                        </td>
+                        <td class="small" style="line-height: 1.4;">
+                            ${rap.nombreRap}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-outline-primary">${rap.horasDesarrolloRap}h</span>
+                        </td>
+                    </tr>
                 `;
             });
-            html += `</div>`;
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
         }
         
         html += `
@@ -478,6 +502,25 @@ function mostrarComparacion(data) {
             </details>
         `;
     }
+    
+    content.innerHTML = html;
+}
+
+// Función para expandir/colapsar RAPs de un diseño
+function toggleDisenoRaps(disenoId) {
+    const panel = document.getElementById(disenoId);
+    const chevron = document.getElementById(`chevron-${disenoId}`);
+    
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        chevron.className = 'fas fa-chevron-up text-primary';
+        chevron.parentElement.querySelector('small').textContent = 'Click para colapsar';
+    } else {
+        panel.style.display = 'none';
+        chevron.className = 'fas fa-chevron-down text-primary';
+        chevron.parentElement.querySelector('small').textContent = 'Click para expandir';
+    }
+}
     
     content.innerHTML = html;
 }
