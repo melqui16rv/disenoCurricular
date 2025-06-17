@@ -521,7 +521,4 @@ function toggleDisenoRaps(disenoId) {
         chevron.parentElement.querySelector('small').textContent = 'Click para expandir';
     }
 }
-    
-    content.innerHTML = html;
-}
 </script>
