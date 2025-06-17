@@ -1,28 +1,32 @@
 <?php
-// Debug para la funcionalidad de comparación de RAPs
+// Debug para la funcionalidad de comparación de RAPs - VERSIÓN MEJORADA
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-header('Content-Type: application/json');
+echo "<h1>Debug de Comparación de RAPs - Versión Mejorada</h1>";
 
-// Datos de prueba
-$codigoCompetencia = '220201501'; // Competencia que existe en múltiples diseños
-$disenoActual = '124101-1'; // Diseño a excluir
+// Datos de prueba específicos de tu base de datos
+$codigoCompetencia = '220201501'; // Esta competencia está en múltiples diseños según tu SQL
+$disenoActual = '124101-1'; // Este diseño debe ser excluido
 
-echo "<h1>Debug de Comparación de RAPs</h1>";
 echo "<p><strong>Competencia a buscar:</strong> $codigoCompetencia</p>";
 echo "<p><strong>Diseño actual a excluir:</strong> $disenoActual</p>";
 
 try {
-    // Intentar conexión
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/sql/conexion.php';
+    // Intentar conexión (funciona tanto en local como en hosting)
+    $conexionPath = __DIR__ . '/sql/conexion.php';
+    if (!file_exists($conexionPath)) {
+        $conexionPath = $_SERVER['DOCUMENT_ROOT'] . '/sql/conexion.php';
+    }
+    
+    require_once $conexionPath;
     $conexionObj = new Conexion();
     $conexion = $conexionObj->obtenerConexion();
     
     echo "<p style='color: green;'>✓ Conexión a la base de datos exitosa</p>";
     
-    // Consulta principal - buscar diseños con la misma competencia
+    // Probar la consulta exacta que usa ajax.php
     $sql = "SELECT DISTINCT 
                 d.codigoDiseño,
                 d.nombrePrograma,
@@ -44,7 +48,7 @@ try {
     
     $sql .= " ORDER BY d.nombrePrograma, d.versionPrograma";
     
-    echo "<h3>Consulta SQL:</h3>";
+    echo "<h3>Consulta SQL usada en ajax.php:</h3>";
     echo "<pre style='background: #f5f5f5; padding: 10px;'>" . htmlspecialchars($sql) . "</pre>";
     
     $stmt = $conexion->prepare($sql);
@@ -58,7 +62,7 @@ try {
     $disenosConMismaCompetencia = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     echo "<h3>Diseños encontrados con la competencia $codigoCompetencia:</h3>";
-    echo "<p><strong>Total:</strong> " . count($disenosConMismaCompetencia) . "</p>";
+    echo "<p><strong>Total encontrados:</strong> " . count($disenosConMismaCompetencia) . "</p>";
     
     if (count($disenosConMismaCompetencia) > 0) {
         echo "<table border='1' style='border-collapse: collapse; width: 100%;'>";
@@ -76,8 +80,10 @@ try {
         }
         echo "</table>";
         
-        // Ahora buscar RAPs para cada diseño
-        echo "<h3>RAPs por cada diseño:</h3>";
+        // Ahora probar la búsqueda de RAPs
+        echo "<h3>Probando búsqueda de RAPs para cada diseño:</h3>";
+        
+        $comparacion = [];
         
         foreach ($disenosConMismaCompetencia as $diseno) {
             echo "<h4>Diseño: " . htmlspecialchars($diseno['nombrePrograma']) . " (v" . htmlspecialchars($diseno['versionPrograma']) . ")</h4>";
@@ -120,9 +126,71 @@ try {
             } else {
                 echo "<p style='color: #888;'>Sin RAPs para este diseño.</p>";
             }
+            
+            // Agregar a la comparación tal como lo hace ajax.php
+            $comparacion[] = [
+                'diseno' => $diseno,
+                'raps' => $raps,
+                'totalRaps' => count($raps),
+                'totalHorasRaps' => array_sum(array_column($raps, 'horasDesarrolloRap'))
+            ];
         }
+        
+        // Simular la respuesta de ajax.php
+        echo "<hr>";
+        echo "<h3>Simulación de respuesta AJAX (lo que debería recibir JavaScript):</h3>";
+        
+        $response = [
+            'success' => true,
+            'data' => $comparacion,
+            'message' => 'Comparación obtenida exitosamente',
+            'totalDisenos' => count($comparacion),
+            'debug' => [
+                'codigoCompetencia' => $codigoCompetencia,
+                'disenoActual' => $disenoActual,
+                'totalDisenosEncontrados' => count($disenosConMismaCompetencia),
+                'totalComparaciones' => count($comparacion),
+                'sqlUsado' => $sql
+            ]
+        ];
+        
+        echo "<pre style='background: #f8f9fa; padding: 15px; border: 1px solid #ddd;'>";
+        echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        echo "</pre>";
+        
     } else {
-        echo "<p style='color: orange;'>No se encontraron diseños con la competencia especificada.</p>";
+        echo "<p style='color: orange;'>❌ No se encontraron diseños con la competencia especificada.</p>";
+        echo "<p><strong>Posibles causas:</strong></p>";
+        echo "<ul>";
+        echo "<li>La competencia '$codigoCompetencia' no existe en la tabla competencias</li>";
+        echo "<li>Problema con el JOIN entre las tablas competencias y diseños</li>";
+        echo "<li>El diseño actual '$disenoActual' es el único que tiene esa competencia</li>";
+        echo "</ul>";
+        
+        // Hacer consultas de verificación
+        echo "<h4>Verificaciones:</h4>";
+        
+        // 1. ¿Existe la competencia?
+        $checkComp = $conexion->prepare("SELECT COUNT(*) as total FROM competencias WHERE codigoCompetencia = ?");
+        $checkComp->execute([$codigoCompetencia]);
+        $totalComp = $checkComp->fetch()['total'];
+        echo "<p>1. Competencias con código '$codigoCompetencia': <strong>$totalComp</strong></p>";
+        
+        // 2. ¿Existen diseños?
+        $checkDisenos = $conexion->prepare("SELECT COUNT(*) as total FROM diseños");
+        $checkDisenos->execute();
+        $totalDisenos = $checkDisenos->fetch()['total'];
+        echo "<p>2. Total de diseños en la base: <strong>$totalDisenos</strong></p>";
+        
+        // 3. ¿Qué competencias existen?
+        $listComp = $conexion->prepare("SELECT DISTINCT codigoCompetencia FROM competencias LIMIT 5");
+        $listComp->execute();
+        $competencias = $listComp->fetchAll();
+        echo "<p>3. Algunas competencias disponibles: ";
+        foreach ($competencias as $comp) {
+            echo "<code>" . $comp['codigoCompetencia'] . "</code> ";
+        }
+        echo "</p>";
     }
     
 } catch (PDOException $e) {
@@ -132,21 +200,32 @@ try {
 }
 
 echo "<hr>";
-echo "<h3>Resumen de cambios realizados:</h3>";
+echo "<h3>Instrucciones para resolver el problema:</h3>";
 echo "<ol>";
-echo "<li>✓ Corregida la consulta SQL en ajax.php</li>";
-echo "<li>✓ Simplificada la lógica del JOIN entre competencias y diseños</li>";
-echo "<li>✓ Mejorado el manejo de errores y debug</li>";
-echo "<li>✓ Actualizada la función JavaScript mostrarComparacion() en crear_raps.php</li>";
-echo "<li>✓ Actualizada la función JavaScript mostrarComparacion() en editar_raps.php</li>";
-echo "<li>✓ Cambiado 'data.comparacion' por 'data.data' para consistencia</li>";
+echo "<li><strong>Subir este archivo</strong> al directorio raíz de tu hosting</li>";
+echo "<li><strong>Ejecutarlo</strong> en el navegador: tu-dominio.com/debug_ajax_comparacion.php</li>";
+echo "<li><strong>Si NO aparecen diseños:</strong>";
+echo "<ul>";
+echo "<li>Verificar que la tabla 'diseños' tenga el acento (no 'disenos')</li>";
+echo "<li>Verificar que los datos existen en la base de datos</li>";
+echo "<li>Probar con otra competencia de la lista mostrada</li>";
+echo "</ul>";
+echo "</li>";
+echo "<li><strong>Si aparecen diseños pero NO RAPs:</strong>";
+echo "<ul>";
+echo "<li>Verificar que existen RAPs en la tabla 'raps'</li>";
+echo "<li>Verificar el formato del código: debe ser 'diseño-competencia-numeroRap'</li>";
+echo "</ul>";
+echo "</li>";
+echo "<li><strong>Si todo funciona aquí pero no en la aplicación:</strong>";
+echo "<ul>";
+echo "<li>El problema está en la llamada JavaScript o en ajax.php</li>";
+echo "<li>Verificar la consola del navegador para errores JavaScript</li>";
+echo "<li>Verificar que ajax.php devuelve el JSON correctamente</li>";
+echo "</ul>";
+echo "</li>";
 echo "</ol>";
 
-echo "<h3>Instrucciones:</h3>";
-echo "<ol>";
-echo "<li>Sube este archivo debug_ajax_comparacion.php al directorio raíz de tu hosting</li>";
-echo "<li>Visita la URL de este archivo para ver si la consulta funciona</li>";
-echo "<li>Si funciona aquí, entonces sube los archivos ajax.php, crear_raps.php y editar_raps.php actualizados</li>";
-echo "<li>Prueba la funcionalidad real en el sistema</li>";
-echo "</ol>";
+echo "<hr>";
+echo "<p><strong>Estado del debug:</strong> " . date('Y-m-d H:i:s') . "</p>";
 ?>

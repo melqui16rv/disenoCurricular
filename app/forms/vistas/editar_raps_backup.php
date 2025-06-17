@@ -1,14 +1,25 @@
 <div class="card-header">
-    <h2 class="card-title"><i class="fas fa-plus-circle"></i> Crear Nuevo RAP</h2>
-    <p class="card-subtitle">Agregar Resultado de Aprendizaje a la competencia</p>
+    <h2 class="card-title"><i class="fas fa-edit"></i> Editar RAP</h2>
+    <p class="card-subtitle">Modificar Resultado de Aprendizaje</p>
 </div>
 
-<form method="POST" id="formRap">
-    <input type="hidden" name="codigoDiseñoCompetencia" value="<?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>">
+<?php if (!$rap_actual): ?>
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        No se encontró el RAP especificado.
+    </div>
+    <a href="?accion=listar" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Volver al listado
+    </a>
+<?php else: ?>
+
+<form method="POST" id="formEditarRap">
+    <input type="hidden" name="codigoDiseñoCompetenciaRap" value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>">
     
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        <strong>Competencia:</strong> <?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>
+        <strong>Código del RAP:</strong> <?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>
+        (No se puede modificar el código)
         <div class="d-flex gap-2 mt-2">
             <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" onclick="toggleDiseñoInfo()" id="btnToggleDiseño">
                 <i class="fas fa-eye"></i> Ver diseño curricular
@@ -27,8 +38,11 @@
                 Información del Diseño Curricular
             </h5>
             <?php 
-            $codigoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
-            if ($codigoCompetencia && isset($diseño_actual) && $diseño_actual): 
+            // Extraer código de la competencia del RAP
+            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+            $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
+            
+            if (isset($diseño_actual) && $diseño_actual): 
             ?>
                 <div class="row">
                     <div class="col-md-6">
@@ -97,8 +111,11 @@
                 Información de la Competencia
             </h5>
             <?php 
-            $codigoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
-            if ($codigoCompetencia && isset($competencia_actual) && $competencia_actual): 
+            // Extraer código de la competencia del RAP
+            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+            $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
+            
+            if (isset($competencia_actual) && $competencia_actual): 
             ?>
                 <div class="row">
                     <div class="col-md-6">
@@ -109,8 +126,8 @@
                     <div class="col-md-6">
                         <?php 
                         // Extraer información del diseño de la competencia
-                        $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
-                        $codigoDiseño = $partes[0] . '-' . $partes[1];
+                        $partesDiseño = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+                        $codigoDiseño = $partesDiseño[0] . '-' . $partesDiseño[1];
                         ?>
                         <p><strong><i class="fas fa-file-alt"></i> Pertenece al Diseño:</strong> <?php echo htmlspecialchars($codigoDiseño); ?></p>
                         <?php if (isset($diseño_actual) && $diseño_actual): ?>
@@ -157,30 +174,6 @@
         </div>
     </div>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label for="codigoRapDiseño"><i class="fas fa-hashtag"></i> Código del RAP (Diseño) *</label>
-            <input type="text" id="codigoRapDiseño" name="codigoRapDiseño" class="form-control" required 
-                   placeholder="Ejemplo: RA1" maxlength="20">
-            <small class="text-muted">
-                <i class="fas fa-info-circle"></i> Este es el código que aparecerá en el diseño curricular. 
-                El código técnico completo se generará automáticamente.
-            </small>
-        </div>
-        <div class="form-group">
-            <label for="horasDesarrolloRap"><i class="fas fa-clock"></i> Horas de Desarrollo *</label>
-            <input type="number" id="horasDesarrolloRap" name="horasDesarrolloRap" class="form-control" required 
-                   min="0" step="0.01" placeholder="0.00">
-        </div>
-    </div>
-
-    <div class="alert alert-info" style="margin: 1rem 0;">
-        <i class="fas fa-lightbulb"></i> 
-        <strong>Código Automático:</strong> El sistema generará automáticamente un código técnico único.
-        <br><strong>Ejemplo:</strong> Si este es el primer RAP de la competencia, el código será: 
-        <code><?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>-1</code>
-    </div>
-
     <!-- Sección de Comparación de RAPs -->
     <div class="card mb-4" style="border: 2px solid #17a2b8;">
         <div class="card-header bg-info text-white">
@@ -209,10 +202,44 @@
     </div>
 
     <div class="form-row">
+        <div class="form-group">
+            <label><i class="fas fa-hashtag"></i> Código Técnico del RAP</label>
+            <input type="text" class="form-control" readonly 
+                   value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>"
+                   style="background: #e9ecef; font-family: monospace;">
+            <small class="text-muted">Este código técnico no se puede modificar</small>
+        </div>
+        <div class="form-group">
+            <label for="horasDesarrolloRap"><i class="fas fa-clock"></i> Horas de Desarrollo *</label>
+            <input type="number" id="horasDesarrolloRap" name="horasDesarrolloRap" class="form-control" required 
+                   min="0" step="0.01" value="<?php echo htmlspecialchars($rap_actual['horasDesarrolloRap'] ?? ''); ?>">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="codigoRapDiseño"><i class="fas fa-tag"></i> Código del RAP (Diseño) *</label>
+            <input type="text" id="codigoRapDiseño" name="codigoRapDiseño" class="form-control" required 
+                   value="<?php echo htmlspecialchars($rap_actual['codigoRapDiseño'] ?? ''); ?>"
+                   placeholder="Ejemplo: RA1" maxlength="20">
+            <small class="text-muted">
+                <i class="fas fa-info-circle"></i> Este es el código que aparece en el diseño curricular
+            </small>
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-key"></i> ID Automático</label>
+            <input type="text" class="form-control" readonly 
+                   value="<?php echo htmlspecialchars($rap_actual['codigoRapAutomatico'] ?? ''); ?>"
+                   style="background: #e9ecef; text-align: center; font-weight: bold;">
+            <small class="text-muted">ID generado automáticamente</small>
+        </div>
+    </div>
+
+    <div class="form-row">
         <div class="form-group" style="grid-column: 1 / -1;">
             <label for="nombreRap"><i class="fas fa-bullseye"></i> Resultado de Aprendizaje *</label>
             <textarea id="nombreRap" name="nombreRap" class="form-control" rows="6" required 
-                      placeholder="Describe detalladamente el resultado de aprendizaje que el estudiante debe lograr..."></textarea>
+                      placeholder="Describe detalladamente el resultado de aprendizaje que el estudiante debe lograr..."><?php echo htmlspecialchars($rap_actual['nombreRap'] ?? ''); ?></textarea>
             <small class="text-muted">
                 Describe claramente qué debe saber hacer el estudiante al finalizar este resultado de aprendizaje.
             </small>
@@ -220,11 +247,16 @@
     </div>
 
     <div class="flex-between" style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #e9ecef;">
-        <a href="?accion=ver_raps&codigo=<?php echo urlencode($_GET['codigoDiseñoCompetencia'] ?? ''); ?>" class="btn btn-secondary">
+        <?php 
+        // Extraer el código de la competencia del RAP
+        $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+        $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
+        ?>
+        <a href="?accion=ver_raps&codigo=<?php echo urlencode($codigoCompetencia); ?>" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Cancelar
         </a>
         <button type="submit" class="btn btn-success">
-            <i class="fas fa-save"></i> Guardar RAP
+            <i class="fas fa-save"></i> Actualizar RAP
         </button>
     </div>
 </form>
@@ -232,14 +264,14 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Validación de formulario
-    document.getElementById('formRap').addEventListener('submit', function(e) {
-        const codigoRapDiseño = document.getElementById('codigoRapDiseño').value.trim();
+    document.getElementById('formEditarRap').addEventListener('submit', function(e) {
         const nombreRap = document.getElementById('nombreRap').value.trim();
+        const codigoRapDiseño = document.getElementById('codigoRapDiseño').value.trim();
         const horas = parseFloat(document.getElementById('horasDesarrolloRap').value) || 0;
         
-        if (!codigoRapDiseño || !nombreRap) {
+        if (!nombreRap || !codigoRapDiseño) {
             e.preventDefault();
-            alert('Por favor, completa el código del RAP y resultado de aprendizaje.');
+            alert('Por favor, completa el resultado de aprendizaje y el código del RAP.');
             return;
         }
         
@@ -255,24 +287,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (!confirm('¿Estás seguro de crear este RAP? El código técnico se generará automáticamente.')) {
+        if (!confirm('¿Estás seguro de actualizar este RAP?')) {
             e.preventDefault();
-        }
-    });
-    
-    // Mostrar vista previa del código completo
-    document.getElementById('codigoRapDiseño').addEventListener('input', function() {
-        const codigoCompetencia = '<?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>';
-        const codigoRap = this.value.trim();
-        
-        // Actualizar el texto de ayuda
-        const helpText = this.nextElementSibling;
-        if (helpText) {
-            if (codigoRap) {
-                helpText.innerHTML = '<i class="fas fa-info-circle"></i> Código para diseño: <strong>' + codigoRap + '</strong><br>El código técnico completo se generará automáticamente al guardar.';
-            } else {
-                helpText.innerHTML = '<i class="fas fa-info-circle"></i> Este es el código que aparecerá en el diseño curricular. El código técnico completo se generará automáticamente.';
-            }
         }
     });
     
@@ -332,7 +348,90 @@ function toggleCompetenciaInfo() {
     }
 }
 
-// Función para mostrar/ocultar sección de comparación de RAPs
+// Función para mostrar/ocultar sección de comparación
+function toggleComparacion() {
+    const panel = document.getElementById('comparacionPanel');
+    const btn = document.getElementById('btnToggleComparacion');
+    
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        btn.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar comparación';
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // Cargar datos de comparación mediante AJAX
+        cargarDatosComparacion();
+    } else {
+        panel.style.display = 'none';
+        btn.innerHTML = '<i class="fas fa-eye"></i> Ver comparación';
+    }
+}
+
+// Función para cargar datos de comparación
+function cargarDatosComparacion() {
+    const comparacionContent = document.getElementById('comparacionContent');
+    comparacionContent.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-info" role="status">
+                <span class="sr-only">Cargando comparación...</span>
+            </div>
+            <p class="mt-2">Cargando datos de comparación...</p>
+        </div>
+    `;
+    
+    // Simulación de carga de datos (reemplazar con llamada AJAX real)
+    setTimeout(() => {
+        comparacionContent.innerHTML = `
+            <table class="table table-striped table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Código RAP</th>
+                        <th>Resultado de Aprendizaje</th>
+                        <th>Horas de Desarrollo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    // Ejemplo de datos (reemplazar con datos reales de la base de datos)
+                    $raps_similares = [
+                        [
+                            'codigoDiseñoCompetenciaRap' => 'COMP-2023-001',
+                            'nombreRap' => 'Aplicar conocimientos matemáticos en la resolución de problemas.',
+                            'horasDesarrolloRap' => 40
+                        ],
+                        [
+                            'codigoDiseñoCompetenciaRap' => 'COMP-2023-002',
+                            'nombreRap' => 'Desarrollar habilidades comunicativas en inglés.',
+                            'horasDesarrolloRap' => 30
+                        ],
+                        [
+                            'codigoDiseñoCompetenciaRap' => 'COMP-2023-003',
+                            'nombreRap' => 'Implementar proyectos de manera efectiva.',
+                            'horasDesarrolloRap' => 50
+                        ]
+                    ];
+                    
+                    foreach ($raps_similares as $index => $rap): ?>
+                    <tr>
+                        <td><?php echo $index + 1; ?></td>
+                        <td><?php echo htmlspecialchars($rap['codigoDiseñoCompetenciaRap']); ?></td>
+                        <td><?php echo nl2br(htmlspecialchars($rap['nombreRap'])); ?></td>
+                        <td><?php echo number_format($rap['horasDesarrolloRap'], 0); ?> horas</td>
+                        <td>
+                            <a href="?accion=ver_rap&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaRap']); ?>" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        `;
+    }, 1500);
+}
+
+// Función para mostrar/ocultar comparación
 function toggleComparacion() {
     const panel = document.getElementById('comparacionPanel');
     const btn = document.getElementById('btnToggleComparacion');
@@ -356,12 +455,12 @@ function toggleComparacion() {
 
 // Función para cargar datos de comparación via AJAX
 function cargarComparacion() {
-    const codigoCompetencia = '<?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>';
-    const partes = codigoCompetencia.split('-');
+    const codigoRapCompleto = '<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>';
+    const partes = codigoRapCompleto.split('-');
     const codigoCompetenciaReal = partes[2]; // Extraer código de competencia
     const disenoActual = partes[0] + '-' + partes[1]; // Extraer código de diseño actual
     
-    fetch('./control/ajax.php', {
+    fetch('/app/forms/control/ajax.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -482,3 +581,5 @@ function mostrarComparacion(data) {
     content.innerHTML = html;
 }
 </script>
+
+<?php endif; ?>

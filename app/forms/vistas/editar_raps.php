@@ -356,89 +356,6 @@ function toggleComparacion() {
     if (panel.style.display === 'none' || panel.style.display === '') {
         panel.style.display = 'block';
         btn.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar comparación';
-        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        
-        // Cargar datos de comparación mediante AJAX
-        cargarDatosComparacion();
-    } else {
-        panel.style.display = 'none';
-        btn.innerHTML = '<i class="fas fa-eye"></i> Ver comparación';
-    }
-}
-
-// Función para cargar datos de comparación
-function cargarDatosComparacion() {
-    const comparacionContent = document.getElementById('comparacionContent');
-    comparacionContent.innerHTML = `
-        <div class="text-center">
-            <div class="spinner-border text-info" role="status">
-                <span class="sr-only">Cargando comparación...</span>
-            </div>
-            <p class="mt-2">Cargando datos de comparación...</p>
-        </div>
-    `;
-    
-    // Simulación de carga de datos (reemplazar con llamada AJAX real)
-    setTimeout(() => {
-        comparacionContent.innerHTML = `
-            <table class="table table-striped table-bordered">
-                <thead class="thead-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Código RAP</th>
-                        <th>Resultado de Aprendizaje</th>
-                        <th>Horas de Desarrollo</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    // Ejemplo de datos (reemplazar con datos reales de la base de datos)
-                    $raps_similares = [
-                        [
-                            'codigoDiseñoCompetenciaRap' => 'COMP-2023-001',
-                            'nombreRap' => 'Aplicar conocimientos matemáticos en la resolución de problemas.',
-                            'horasDesarrolloRap' => 40
-                        ],
-                        [
-                            'codigoDiseñoCompetenciaRap' => 'COMP-2023-002',
-                            'nombreRap' => 'Desarrollar habilidades comunicativas en inglés.',
-                            'horasDesarrolloRap' => 30
-                        ],
-                        [
-                            'codigoDiseñoCompetenciaRap' => 'COMP-2023-003',
-                            'nombreRap' => 'Implementar proyectos de manera efectiva.',
-                            'horasDesarrolloRap' => 50
-                        ]
-                    ];
-                    
-                    foreach ($raps_similares as $index => $rap): ?>
-                    <tr>
-                        <td><?php echo $index + 1; ?></td>
-                        <td><?php echo htmlspecialchars($rap['codigoDiseñoCompetenciaRap']); ?></td>
-                        <td><?php echo nl2br(htmlspecialchars($rap['nombreRap'])); ?></td>
-                        <td><?php echo number_format($rap['horasDesarrolloRap'], 0); ?> horas</td>
-                        <td>
-                            <a href="?accion=ver_rap&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaRap']); ?>" class="btn btn-sm btn-info">
-                                <i class="fas fa-eye"></i> Ver
-                            </a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        `;
-    }, 1500);
-}
-
-// Función para mostrar/ocultar comparación
-function toggleComparacion() {
-    const panel = document.getElementById('comparacionPanel');
-    const btn = document.getElementById('btnToggleComparacion');
-    
-    if (panel.style.display === 'none') {
-        panel.style.display = 'block';
-        btn.innerHTML = '<i class="fas fa-eye-slash"></i> Ocultar comparación';
         
         // Cargar datos de comparación si no se han cargado
         if (!panel.dataset.loaded) {
@@ -460,7 +377,17 @@ function cargarComparacion() {
     const codigoCompetenciaReal = partes[2]; // Extraer código de competencia
     const disenoActual = partes[0] + '-' + partes[1]; // Extraer código de diseño actual
     
-    fetch('/app/forms/control/ajax.php', {
+    // Mostrar indicador de carga
+    document.getElementById('comparacionContent').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-info" role="status">
+                <span class="sr-only">Cargando comparación...</span>
+            </div>
+            <p class="mt-2">Cargando datos de comparación...</p>
+        </div>
+    `;
+    
+    fetch('./control/ajax.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',

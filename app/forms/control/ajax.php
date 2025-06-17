@@ -1,13 +1,29 @@
 <?php
 // Controlador AJAX para operaciones del sistema de diseños curriculares
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+
+// Iniciar buffer de salida para capturar cualquier error antes del JSON
+ob_start();
+
+ini_set('display_errors', 0); // Desactivar errores en producción
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conf/config.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDisenos.php';
+try {
+    // Incluir configuración primero
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/disenoCurricular/conf/config.php';
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDisenos.php';
+} catch (Exception $e) {
+    // Limpiar buffer y enviar error JSON
+    ob_clean();
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Error de configuración: ' . $e->getMessage(),
+        'error_type' => 'config_error'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 $metodos = new MetodosDisenos();
 $response = ['success' => false, 'message' => '', 'data' => null];
@@ -117,7 +133,7 @@ try {
             }
             
             try {
-                // Obtener conexión a la base de datos
+                // Obtener conexión a la base de datos usando la configuración
                 require_once $_SERVER['DOCUMENT_ROOT'] . '/sql/conexion.php';
                 $conexionObj = new Conexion();
                 $conexion = $conexionObj->obtenerConexion();
@@ -224,5 +240,7 @@ try {
     $response['message'] = 'Error: ' . $e->getMessage();
 }
 
+// Limpiar cualquier salida previa antes del JSON
+ob_clean();
 echo json_encode($response, JSON_UNESCAPED_UNICODE);
 ?>
