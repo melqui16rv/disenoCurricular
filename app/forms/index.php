@@ -199,6 +199,8 @@ try {
                     <span class="current">Crear Nuevo <?php echo ucfirst($tipo); ?></span>
                 <?php elseif ($accion === 'editar'): ?>
                     <span class="current">Editar <?php echo ucfirst($tipo); ?></span>
+                <?php elseif ($accion === 'completar_informacion'): ?>
+                    <span class="current">Completar Información Faltante</span>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
@@ -221,6 +223,9 @@ try {
                     break;
                 case 'ver_raps':
                     include 'vistas/listar_raps.php';
+                    break;
+                case 'completar_informacion':
+                    include 'vistas/completar_informacion.php';
                     break;
                 default:
                     include 'vistas/listar_disenos.php';

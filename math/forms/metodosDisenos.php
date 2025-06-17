@@ -330,5 +330,16 @@ class MetodosDisenos extends Conexion {
             throw new Exception("Error al obtener RAP: " . $e->getMessage());
         }
     }
+
+    // Método auxiliar para ejecutar consultas personalizadas
+    public function ejecutarConsulta($sql, $params = []) {
+        try {
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Error al ejecutar consulta: " . $e->getMessage());
+        }
+    }
 }
 ?>

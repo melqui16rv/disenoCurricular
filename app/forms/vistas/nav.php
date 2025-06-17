@@ -17,6 +17,10 @@
                     <i class="fas fa-home"></i> Inicio
                 </a>
                 
+                <a href="?accion=completar_informacion" class="nav-link <?php echo ($accion === 'completar_informacion') ? 'active' : ''; ?>">
+                    <i class="fas fa-clipboard-check"></i> Completar Información
+                </a>
+                
                 <?php if ($accion === 'ver_competencias' && isset($diseño_actual)): ?>
                     <span class="nav-link active">
                         <i class="fas fa-tasks"></i> Competencias
