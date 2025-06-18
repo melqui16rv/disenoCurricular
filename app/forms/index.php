@@ -33,24 +33,42 @@ try {
                 $mensaje = 'Competencia creada exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_competencias';
+                
+                // Establecer código del diseño para la redirección
+                $_GET['codigo'] = $_POST['codigoDiseño'];
             }
         } elseif ($accion === 'editar' && $tipo === 'competencias') {
             if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetencia'], $_POST)) {
                 $mensaje = 'Competencia actualizada exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_competencias';
+                
+                // Extraer código del diseño de la competencia para la redirección
+                $partes = explode('-', $_POST['codigoDiseñoCompetencia']);
+                if (count($partes) >= 3) {
+                    $_GET['codigo'] = $partes[0] . '-' . $partes[1];
+                }
             }
         } elseif ($accion === 'crear' && $tipo === 'raps') {
             if ($metodos->insertarRap($_POST['codigoDiseñoCompetencia'], $_POST)) {
                 $mensaje = 'RAP creado exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_raps';
+                
+                // Establecer código de la competencia para la redirección
+                $_GET['codigo'] = $_POST['codigoDiseñoCompetencia'];
             }
         } elseif ($accion === 'editar' && $tipo === 'raps') {
             if ($metodos->actualizarRap($_POST['codigoDiseñoCompetenciaRap'], $_POST)) {
                 $mensaje = 'RAP actualizado exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_raps';
+                
+                // Extraer código de la competencia desde el código del RAP para la redirección
+                $partes = explode('-', $_POST['codigoDiseñoCompetenciaRap']);
+                if (count($partes) >= 4) {
+                    $_GET['codigo'] = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
+                }
             }
         } elseif ($accion === 'completar' && $tipo === 'disenos') {
             if ($metodos->actualizarDiseño($_POST['codigoDiseño'], $_POST)) {
@@ -86,12 +104,24 @@ try {
                 $mensaje = 'Competencia eliminada exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_competencias';
+                
+                // Extraer código del diseño de la competencia para la redirección
+                $partes = explode('-', $codigo);
+                if (count($partes) >= 3) {
+                    $_GET['codigo'] = $partes[0] . '-' . $partes[1];
+                }
             }
         } elseif ($tipo === 'raps' && $codigo) {
             if ($metodos->eliminarRap($codigo)) {
                 $mensaje = 'RAP eliminado exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_raps';
+                
+                // Extraer código de la competencia desde el código del RAP para la redirección
+                $partes = explode('-', $codigo);
+                if (count($partes) >= 4) {
+                    $_GET['codigo'] = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
+                }
             }
         }
     }
