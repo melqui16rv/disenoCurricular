@@ -22,27 +22,19 @@ function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '') {
     foreach ($diseños as $diseño) {
         $camposFaltantes = [];
         
-        // Validar campos requeridos
-        if (empty($diseño['nombrePrograma'])) $camposFaltantes[] = 'Nombre del Programa';
-        if (empty($diseño['versionPrograma'])) $camposFaltantes[] = 'Versión';
+        // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
+        
+        // 1. Campos de tecnología y conocimiento
         if (empty($diseño['lineaTecnologica'])) $camposFaltantes[] = 'Línea Tecnológica';
         if (empty($diseño['redTecnologica'])) $camposFaltantes[] = 'Red Tecnológica';
         if (empty($diseño['redConocimiento'])) $camposFaltantes[] = 'Red de Conocimiento';
-        if (empty($diseño['nivelAcademicoIngreso'])) $camposFaltantes[] = 'Nivel Académico de Ingreso';
-        if (empty($diseño['gradoNivelAcademico']) || $diseño['gradoNivelAcademico'] == 0) $camposFaltantes[] = 'Grado del Nivel Académico';
-        if (empty($diseño['formacionTrabajoDesarrolloHumano'])) $camposFaltantes[] = 'Formación en Trabajo y Desarrollo Humano';
-        if (empty($diseño['edadMinima']) || $diseño['edadMinima'] == 0) $camposFaltantes[] = 'Edad Mínima';
-        if (empty($diseño['requisitosAdicionales'])) $camposFaltantes[] = 'Requisitos Adicionales';
         
-        // Validaciones especiales para horas y meses
-        $horasLectiva = (int)($diseño['horasDesarrolloLectiva'] ?? 0);
-        $mesesLectiva = (int)($diseño['mesesDesarrolloLectiva'] ?? 0);
-        $horasProductiva = (int)($diseño['horasDesarrolloProductiva'] ?? 0);
-        $mesesProductiva = (int)($diseño['mesesDesarrolloProductiva'] ?? 0);
-        $horasTotal = (int)($diseño['horasDesarrolloDiseño'] ?? 0);
-        $mesesTotal = (int)($diseño['mesesDesarrolloDiseño'] ?? 0);
+        // 2. Validación de horas y meses (solo si NINGUNO de los dos sistemas está completo)
+        $horasLectiva = (float)($diseño['horasDesarrolloLectiva'] ?? 0);
+        $horasProductiva = (float)($diseño['horasDesarrolloProductiva'] ?? 0);
+        $mesesLectiva = (float)($diseño['mesesDesarrolloLectiva'] ?? 0);
+        $mesesProductiva = (float)($diseño['mesesDesarrolloProductiva'] ?? 0);
         
-        // Validar que al menos uno de los dos sistemas (horas O meses) esté completo
         $tieneHorasCompletas = ($horasLectiva > 0 && $horasProductiva > 0);
         $tieneMesesCompletos = ($mesesLectiva > 0 && $mesesProductiva > 0);
         
@@ -50,10 +42,12 @@ function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '') {
             $camposFaltantes[] = 'Debe completar HORAS (Lectivas + Productivas) O MESES (Lectivos + Productivos)';
         }
         
-        // Validar totales solo si están incompletos
-        if ($horasTotal <= 0 && $mesesTotal <= 0) {
-            $camposFaltantes[] = 'Debe completar Horas Totales O Meses Totales';
-        }
+        // 3. Campos académicos y requisitos
+        if (empty($diseño['nivelAcademicoIngreso'])) $camposFaltantes[] = 'Nivel Académico de Ingreso';
+        if (empty($diseño['gradoNivelAcademico']) || $diseño['gradoNivelAcademico'] == 0) $camposFaltantes[] = 'Grado del Nivel Académico';
+        if (empty($diseño['formacionTrabajoDesarrolloHumano'])) $camposFaltantes[] = 'Formación en Trabajo y Desarrollo Humano';
+        if (empty($diseño['edadMinima']) || $diseño['edadMinima'] == 0) $camposFaltantes[] = 'Edad Mínima';
+        if (empty($diseño['requisitosAdicionales'])) $camposFaltantes[] = 'Requisitos Adicionales';
         
         if (!empty($camposFaltantes)) {
             $diseño['camposFaltantes'] = $camposFaltantes;
@@ -85,13 +79,23 @@ function obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda = '') 
     foreach ($competencias as $competencia) {
         $camposFaltantes = [];
         
-        // Validar campos requeridos
-        if (empty($competencia['nombreCompetencia'])) $camposFaltantes[] = 'Nombre de la Competencia';
-        if (empty($competencia['tipoCompetencia'])) $camposFaltantes[] = 'Tipo de Competencia';
+        // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
         
-        // Validar horas (debe ser > 0)
-        $horas = (int)($competencia['horasDesarrolloCompetencia'] ?? 0);
-        if ($horas <= 0) $camposFaltantes[] = 'Horas (debe ser > 0)';
+        // 1. Nombre de la competencia
+        if (empty($competencia['nombreCompetencia'])) $camposFaltantes[] = 'Nombre de la Competencia';
+        
+        // 2. Norma unidad competencia
+        if (empty($competencia['normaUnidadCompetencia'])) $camposFaltantes[] = 'Norma Unidad Competencia';
+        
+        // 3. Horas de desarrollo (debe ser > 0)
+        $horas = (float)($competencia['horasDesarrolloCompetencia'] ?? 0);
+        if ($horas <= 0) $camposFaltantes[] = 'Horas de Desarrollo (debe ser > 0)';
+        
+        // 4. Requisitos académicos del instructor
+        if (empty($competencia['requisitosAcademicosInstructor'])) $camposFaltantes[] = 'Requisitos Académicos del Instructor';
+        
+        // 5. Experiencia laboral del instructor
+        if (empty($competencia['experienciaLaboralInstructor'])) $camposFaltantes[] = 'Experiencia Laboral del Instructor';
         
         if (!empty($camposFaltantes)) {
             $competencia['camposFaltantes'] = $camposFaltantes;
@@ -125,12 +129,17 @@ function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '') {
     foreach ($raps as $rap) {
         $camposFaltantes = [];
         
-        // Validar campos requeridos
+        // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
+        
+        // 1. Código RAP diseño
+        if (empty($rap['codigoRapDiseño'])) $camposFaltantes[] = 'Código RAP Diseño';
+        
+        // 2. Nombre del RAP
         if (empty($rap['nombreRap'])) $camposFaltantes[] = 'Nombre del RAP';
         
-        // Validar horas (debe ser > 0)
-        $horas = (int)($rap['horasDesarrolloRap'] ?? 0);
-        if ($horas <= 0) $camposFaltantes[] = 'Horas (debe ser > 0)';
+        // 3. Horas de desarrollo (debe ser > 0)
+        $horas = (float)($rap['horasDesarrolloRap'] ?? 0);
+        if ($horas <= 0) $camposFaltantes[] = 'Horas de Desarrollo (debe ser > 0)';
         
         if (!empty($camposFaltantes)) {
             $rap['camposFaltantes'] = $camposFaltantes;
@@ -280,7 +289,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                                             </div>
                                         </td>
                                         <td class="actions">
-                                            <a href="?accion=editar&tipo=disenos&codigo=<?php echo urlencode($diseño['codigoDiseño']); ?>" class="btn-edit">
+                                            <a href="?accion=completar&tipo=disenos&codigo=<?php echo urlencode($diseño['codigoDiseño']); ?>" class="btn-edit">
                                                 <i class="fas fa-edit"></i> Completar
                                             </a>
                                         </td>
@@ -321,7 +330,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                                             </div>
                                         </td>
                                         <td class="actions">
-                                            <a href="?accion=editar&tipo=competencias&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetencia']); ?>" class="btn-edit">
+                                            <a href="?accion=completar&tipo=competencias&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetencia']); ?>" class="btn-edit">
                                                 <i class="fas fa-edit"></i> Completar
                                             </a>
                                         </td>
@@ -364,7 +373,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                                             </div>
                                         </td>
                                         <td class="actions">
-                                            <a href="?accion=editar&tipo=raps&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaRap']); ?>" class="btn-edit">
+                                            <a href="?accion=completar&tipo=raps&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaRap']); ?>" class="btn-edit">
                                                 <i class="fas fa-edit"></i> Completar
                                             </a>
                                         </td>

@@ -1,0 +1,48 @@
+con el conocimiento que tienes quiero que me ayudes a generar una vista que ayude a chequiar los registros que les faltan infomración para que el usuario pueda completarla. esta vista tendra: buscador y filtros, pero esto debe funsionar de la siguiente manera.
+
+en esta vista o vistas que se generen, vamos a trabajar solo con los registros que les faltan datos en las tablas diseños, competencias y raps. en estos campos:
+
+diseños:
+lineaTecnologica
+redTecnologica
+redConocimiento
+
+---para el caso de las horas y meses haremos esta busqueda:
+si tiene datos en los dos campos de horas pues no hace falta que tenga información en los campos de los meses ya que los diseños curriculares solo van a tener la información de desarrollo en un campo siendo horas o por meses, por lo que si solo tiene infomración en meses no hace falta que las tenga en horas de igual manera al reves, cuando si tiene que traerlo a esta nueva interfaz es cuando no tiene nada en esos campos
+horasDesarrolloLectiva
+horasDesarrolloProductiva
+mesesDesarrolloLectiva
+mesesDesarrolloProductiva
+
+Continuamos con los siguientes campos:
+nivelAcademicoIngreso
+gradoNivelAcademico
+formacionTrabajoDesarrolloHumano
+edadMinima
+requisitosAdicionales
+
+si no dije algun campo de la tabla "diseños" no lo vamos a tener en cuenta para nuestras vistas que vamos a generar ya que asi este bacio no las necesitamos..
+
+continuamos con la siguiene tabla:
+"competencias":
+nombreCompetencia
+normaUnidadCompetencia
+horasDesarrolloCompetencia
+requisitosAcademicosInstructor
+experienciaLaboralInstructor
+
+continuamos con la siguiene tabla:
+"raps":
+codigoRapDiseño
+nombreRap
+horasDesarrolloRap
+
+esos campos de las tablas que te dije son los registros que si o si tiene que tener datos, si no tienen datos entonces con esos vamos a trabajar para que el usuario cargue la información utilizando algo para editar ese campo. si los campos numericos tienen valor numerico(0) o (0.0) tambien trabajamos con esos ya que eso no es valido, por lo que el usuario debe llenar esoso campos.
+
+te pase una imagen con un medio boseto de como deberia quedar dentro de la estructura visual que ya tenemos, pero no significa que debe quedar asi pero si la logica.
+cosas para tener en cuenta de la image:
+
+la tabla o los resultados que se muestran dan a entender que si o si les falta algo por llenar.
+hay filtros por secciónes para que asi el usaurio pueda de una por ejemplo filtrar todos los registros que les falta algo en los raps, competencias o diseños.
+ademas deben estar funsionales los 2 buscadores por de la tabla {diseños: "codigoDiseño", "nombrePrograma"}.
+los colores no deben quedar asi solo es para que puedas diferenciar tu manten los estilos de la app para que no quede rara

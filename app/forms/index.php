@@ -52,6 +52,24 @@ try {
                 $tipoMensaje = 'success';
                 $accion = 'ver_raps';
             }
+        } elseif ($accion === 'completar' && $tipo === 'disenos') {
+            if ($metodos->actualizarDiseño($_POST['codigoDiseño'], $_POST)) {
+                $mensaje = 'Información del diseño completada exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'completar_informacion';
+            }
+        } elseif ($accion === 'completar' && $tipo === 'competencias') {
+            if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetencia'], $_POST)) {
+                $mensaje = 'Información de la competencia completada exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'completar_informacion';
+            }
+        } elseif ($accion === 'completar' && $tipo === 'raps') {
+            if ($metodos->actualizarRap($_POST['codigoDiseñoCompetenciaRap'], $_POST)) {
+                $mensaje = 'Información del RAP completada exitosamente';
+                $tipoMensaje = 'success';
+                $accion = 'completar_informacion';
+            }
         }
     }
 
@@ -148,6 +166,35 @@ try {
                 }
             }
         }
+    } elseif ($accion === 'completar') {
+        if ($tipo === 'disenos') {
+            $diseño_actual = $metodos->obtenerDiseñoPorCodigo($_GET['codigo'] ?? '');
+        } elseif ($tipo === 'competencias') {
+            $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($_GET['codigo'] ?? '');
+            
+            // Cargar también información del diseño para mostrar contexto
+            if ($competencia_actual) {
+                $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+                if (count($partes) >= 3) {
+                    $codigoDiseño = $partes[0] . '-' . $partes[1];
+                    $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
+                }
+            }
+        } elseif ($tipo === 'raps') {
+            $rap_actual = $metodos->obtenerRapPorCodigo($_GET['codigo'] ?? '');
+            
+            // Cargar también información de la competencia y el diseño para mostrar contexto
+            if ($rap_actual) {
+                $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+                if (count($partes) >= 4) {
+                    $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
+                    $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoCompetencia);
+                    
+                    $codigoDiseño = $partes[0] . '-' . $partes[1];
+                    $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
+                }
+            }
+        }
     }
 
 } catch (Exception $e) {
@@ -199,6 +246,10 @@ try {
                     <span class="current">Crear Nuevo <?php echo ucfirst($tipo); ?></span>
                 <?php elseif ($accion === 'editar'): ?>
                     <span class="current">Editar <?php echo ucfirst($tipo); ?></span>
+                <?php elseif ($accion === 'completar'): ?>
+                    <a href="?accion=completar_informacion">Completar Información</a>
+                    <span class="separator">/</span>
+                    <span class="current">Completar <?php echo ucfirst($tipo); ?></span>
                 <?php elseif ($accion === 'completar_informacion'): ?>
                     <span class="current">Completar Información Faltante</span>
                 <?php endif; ?>
@@ -226,6 +277,9 @@ try {
                     break;
                 case 'completar_informacion':
                     include 'vistas/completar_informacion.php';
+                    break;
+                case 'completar':
+                    include 'vistas/completar_' . $tipo . '.php';
                     break;
                 default:
                     include 'vistas/listar_disenos.php';
