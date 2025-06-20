@@ -46,3 +46,11 @@ la tabla o los resultados que se muestran dan a entender que si o si les falta a
 hay filtros por secciónes para que asi el usaurio pueda de una por ejemplo filtrar todos los registros que les falta algo en los raps, competencias o diseños.
 ademas deben estar funsionales los 2 buscadores por de la tabla {diseños: "codigoDiseño", "nombrePrograma"}.
 los colores no deben quedar asi solo es para que puedas diferenciar tu manten los estilos de la app para que no quede rara
+
+
+en la primer face de importación de datos vamos a cargar estos campos:
+codigoCompetencia varchar(255) NOT NULL,
+nombreCompetencia varchar(255) NOT NULL,
+
+con información algo erronea por lo que en los formjularios deberia dejar editar esos campos, pero el codigoCompetencia no me esta dejando editarlo..
+la idea es que cuando se edite el campo de codigoCompetencia se valide antes de actualizar si ese codigo ya existe ya que recuerda que se hace una concatenación para el codigoDiseñoCompetencia si ya existe pues debe acvertir al usuario, sino pues debe dejar actualizarlo de igual manera "codigoDiseñoCompetencia" debe actualizarce con el codigoCompetencia..

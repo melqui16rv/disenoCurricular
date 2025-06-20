@@ -188,6 +188,70 @@ class MetodosDisenos extends Conexion {
         }
     }
 
+    public function actualizarCompetenciaConCodigo($codigoDiseñoCompetenciaOriginal, $nuevoCodigoCompetencia, $datos) {
+        try {
+            $this->conexion->beginTransaction();
+            
+            // Obtener el código del diseño desde el código completo original
+            $partesOriginales = explode('-', $codigoDiseñoCompetenciaOriginal);
+            $codigoDiseño = $partesOriginales[0] . '-' . $partesOriginales[1];
+            $nuevoCodDiseñoCompetencia = $codigoDiseño . '-' . $nuevoCodigoCompetencia;
+            
+            // Función auxiliar para convertir valores vacíos a números
+            $convertirANumero = function($valor) {
+                return (empty($valor) || $valor === '') ? 0 : (float)$valor;
+            };
+            
+            // Convertir campo numérico
+            $horasDesarrolloCompetencia = $convertirANumero($datos['horasDesarrolloCompetencia'] ?? '');
+            
+            // 1. Actualizar RAPs para cambiar las referencias al código de competencia
+            // Los RAPs tienen formato: codigoDiseño-codigoCompetencia-numeroRap
+            // Necesitamos cambiar solo la parte del código de competencia
+            $sqlUpdateRaps = "UPDATE raps SET 
+                codigoDiseñoCompetenciaRap = REPLACE(codigoDiseñoCompetenciaRap, ?, ?)
+                WHERE codigoDiseñoCompetenciaRap LIKE ?";
+            $stmtRaps = $this->conexion->prepare($sqlUpdateRaps);
+            $patronBusqueda = $codigoDiseñoCompetenciaOriginal . '-%';
+            $stmtRaps->execute([$codigoDiseñoCompetenciaOriginal, $nuevoCodDiseñoCompetencia, $patronBusqueda]);
+            
+            // 2. Actualizar la competencia con todos los datos incluyendo el nuevo código
+            $sqlUpdateCompetencia = "UPDATE competencias SET 
+                codigoDiseñoCompetencia = ?, 
+                codigoCompetencia = ?,
+                nombreCompetencia = ?, 
+                normaUnidadCompetencia = ?, 
+                horasDesarrolloCompetencia = ?, 
+                requisitosAcademicosInstructor = ?, 
+                experienciaLaboralInstructor = ? 
+                WHERE codigoDiseñoCompetencia = ?";
+            
+            $stmtCompetencia = $this->conexion->prepare($sqlUpdateCompetencia);
+            $resultado = $stmtCompetencia->execute([
+                $nuevoCodDiseñoCompetencia,
+                $nuevoCodigoCompetencia,
+                $datos['nombreCompetencia'], 
+                $datos['normaUnidadCompetencia'],
+                $horasDesarrolloCompetencia, 
+                $datos['requisitosAcademicosInstructor'],
+                $datos['experienciaLaboralInstructor'], 
+                $codigoDiseñoCompetenciaOriginal
+            ]);
+            
+            if ($resultado) {
+                $this->conexion->commit();
+                return true;
+            } else {
+                $this->conexion->rollback();
+                return false;
+            }
+            
+        } catch (PDOException $e) {
+            $this->conexion->rollback();
+            throw new Exception("Error al actualizar competencia con código: " . $e->getMessage());
+        }
+    }
+
     public function eliminarCompetencia($codigoDiseñoCompetencia) {
         try {
             // Primero eliminar RAPs relacionados

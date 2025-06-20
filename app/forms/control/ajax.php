@@ -1,40 +1,95 @@
 <?php
 // Controlador AJAX para operaciones del sistema de diseños curriculares
 
-// Iniciar buffer de salida para capturar cualquier error antes del JSON
-ob_start();
-
-ini_set('display_errors', 0); // Desactivar errores en producción
-ini_set('display_startup_errors', 0);
+// Configuración de errores para debugging
 error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
 
-header('Content-Type: application/json');
+// Headers necesarios para AJAX
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Inicializar respuesta
+$response = ['success' => false, 'message' => '', 'data' => null, 'debug' => []];
 
 try {
-    // Incluir configuración primero
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/disenoCurricular/conf/config.php';
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDisenos.php';
+    // Determinar la ruta base del proyecto
+    $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+    $projectPath = '/disenoCurricular';
+    
+    // Rutas alternativas para inclusión
+    $configPaths = [
+        $documentRoot . $projectPath . '/conf/config.php',
+        __DIR__ . '/../../../conf/config.php',
+        dirname(__DIR__, 3) . '/conf/config.php'
+    ];
+    
+    $metodosPath = [
+        $documentRoot . '/math/forms/metodosDisenos.php',
+        __DIR__ . '/../../../math/forms/metodosDisenos.php',
+        dirname(__DIR__, 3) . '/math/forms/metodosDisenos.php'
+    ];
+    
+    // Intentar incluir archivos de configuración
+    $configIncluded = false;
+    foreach ($configPaths as $path) {
+        if (file_exists($path)) {
+            require_once $path;
+            $configIncluded = true;
+            $response['debug'][] = "Config cargada desde: $path";
+            break;
+        }
+    }
+    
+    if (!$configIncluded) {
+        throw new Exception("No se pudo cargar el archivo de configuración. Rutas intentadas: " . implode(', ', $configPaths));
+    }
+    
+    // Intentar incluir métodos
+    $metodosIncluded = false;
+    foreach ($metodosPath as $path) {
+        if (file_exists($path)) {
+            require_once $path;
+            $metodosIncluded = true;
+            $response['debug'][] = "Métodos cargados desde: $path";
+            break;
+        }
+    }
+    
+    if (!$metodosIncluded) {
+        throw new Exception("No se pudo cargar metodosDisenos.php. Rutas intentadas: " . implode(', ', $metodosPath));
+    }
+    
+    // Crear instancia de métodos
+    if (!class_exists('MetodosDisenos')) {
+        throw new Exception("La clase MetodosDisenos no está disponible");
+    }
+    
+    $metodos = new MetodosDisenos();
+    $response['debug'][] = "Instancia de MetodosDisenos creada exitosamente";
+    
 } catch (Exception $e) {
-    // Limpiar buffer y enviar error JSON
-    ob_clean();
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Error de configuración: ' . $e->getMessage(),
-        'error_type' => 'config_error'
-    ], JSON_UNESCAPED_UNICODE);
+    $response['success'] = false;
+    $response['message'] = 'Error de configuración: ' . $e->getMessage();
+    $response['error_type'] = 'config_error';
+    $response['debug'][] = "Error de configuración: " . $e->getMessage();
+    echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
-$metodos = new MetodosDisenos();
-$response = ['success' => false, 'message' => '', 'data' => null];
-
 try {
     $accion = $_GET['accion'] ?? $_POST['accion'] ?? '';
+    $response['debug'][] = "Acción solicitada: $accion";
     
     switch ($accion) {
         case 'validar_codigo_diseño':
             $codigoPrograma = $_GET['codigoPrograma'] ?? '';
             $versionPrograma = $_GET['versionPrograma'] ?? '';
+            
+            $response['debug'][] = "Validando diseño: $codigoPrograma - $versionPrograma";
             
             if ($codigoPrograma && $versionPrograma) {
                 $codigoDiseño = $codigoPrograma . '-' . $versionPrograma;
@@ -48,12 +103,16 @@ try {
                     $response['message'] = 'Código disponible';
                     $response['data'] = ['codigoDiseño' => $codigoDiseño];
                 }
+            } else {
+                $response['message'] = 'Parámetros incompletos: codigoPrograma y versionPrograma requeridos';
             }
             break;
             
         case 'validar_codigo_competencia':
             $codigoDiseño = $_GET['codigoDiseño'] ?? '';
             $codigoCompetencia = $_GET['codigoCompetencia'] ?? '';
+            
+            $response['debug'][] = "Validando competencia: $codigoDiseño - $codigoCompetencia";
             
             if ($codigoDiseño && $codigoCompetencia) {
                 $codigoDiseñoCompetencia = $codigoDiseño . '-' . $codigoCompetencia;
@@ -66,6 +125,54 @@ try {
                     $response['success'] = true;
                     $response['message'] = 'Código disponible';
                     $response['data'] = ['codigoDiseñoCompetencia' => $codigoDiseñoCompetencia];
+                }
+            } else {
+                $response['message'] = 'Parámetros incompletos: codigoDiseño y codigoCompetencia requeridos';
+            }
+            break;
+            
+        case 'validar_edicion_codigo_competencia':
+            $codigoDiseño = $_GET['codigoDiseño'] ?? '';
+            $codigoCompetencia = $_GET['codigoCompetencia'] ?? '';
+            $codigoCompetenciaOriginal = $_GET['codigoCompetenciaOriginal'] ?? '';
+            
+            $response['debug'][] = "Validando edición: diseño=$codigoDiseño, nuevo=$codigoCompetencia, original=$codigoCompetenciaOriginal";
+            
+            if (empty($codigoDiseño) || empty($codigoCompetencia)) {
+                $response['success'] = false;
+                $response['message'] = 'Parámetros incompletos: codigoDiseño y codigoCompetencia requeridos';
+                break;
+            }
+            
+            // Si el código no ha cambiado, es válido
+            if ($codigoCompetencia === $codigoCompetenciaOriginal) {
+                $response['success'] = true;
+                $response['message'] = 'Código sin cambios';
+                $response['data'] = ['codigoDiseñoCompetencia' => $codigoDiseño . '-' . $codigoCompetencia];
+                $response['debug'][] = "Código sin cambios - validación exitosa";
+            } else {
+                // Verificar que el nuevo código no exista
+                $codigoDiseñoCompetencia = $codigoDiseño . '-' . $codigoCompetencia;
+                $response['debug'][] = "Buscando competencia con código: $codigoDiseñoCompetencia";
+                
+                try {
+                    $competencia = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
+                    
+                    if ($competencia) {
+                        $response['success'] = false;
+                        $response['message'] = 'Ya existe una competencia con este código en el diseño actual';
+                        $response['data'] = ['existe' => true, 'competencia' => $competencia];
+                        $response['debug'][] = "Competencia encontrada - código duplicado";
+                    } else {
+                        $response['success'] = true;
+                        $response['message'] = 'Código disponible para actualización';
+                        $response['data'] = ['codigoDiseñoCompetencia' => $codigoDiseñoCompetencia];
+                        $response['debug'][] = "Código disponible - validación exitosa";
+                    }
+                } catch (Exception $e) {
+                    $response['success'] = false;
+                    $response['message'] = 'Error al consultar la base de datos: ' . $e->getMessage();
+                    $response['debug'][] = "Error BD: " . $e->getMessage();
                 }
             }
             break;

@@ -38,16 +38,42 @@ try {
                 $_GET['codigo'] = $_POST['codigoDiseño'];
             }
         } elseif ($accion === 'editar' && $tipo === 'competencias') {
-            if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetencia'], $_POST)) {
-                $mensaje = 'Competencia actualizada exitosamente';
+            // Verificar si el código de competencia ha cambiado
+            $codigoOriginal = $_POST['codigoDiseñoCompetencia'];
+            $nuevoCodigoCompetencia = $_POST['codigoCompetencia'];
+            
+            // Extraer el código de competencia original del código completo
+            $partesOriginales = explode('-', $codigoOriginal);
+            $codigoCompetenciaOriginal = $partesOriginales[2];
+            
+            $actualizado = false;
+            
+            if ($nuevoCodigoCompetencia !== $codigoCompetenciaOriginal) {
+                // El código ha cambiado, usar método de actualización con código
+                $actualizado = $metodos->actualizarCompetenciaConCodigo($codigoOriginal, $nuevoCodigoCompetencia, $_POST);
+                if ($actualizado) {
+                    $mensaje = 'Competencia actualizada exitosamente (código modificado)';
+                }
+            } else {
+                // El código no ha cambiado, usar método normal
+                $actualizado = $metodos->actualizarCompetencia($codigoOriginal, $_POST);
+                if ($actualizado) {
+                    $mensaje = 'Competencia actualizada exitosamente';
+                }
+            }
+            
+            if ($actualizado) {
                 $tipoMensaje = 'success';
                 $accion = 'ver_competencias';
                 
                 // Extraer código del diseño de la competencia para la redirección
-                $partes = explode('-', $_POST['codigoDiseñoCompetencia']);
+                $partes = explode('-', $codigoOriginal);
                 if (count($partes) >= 3) {
                     $_GET['codigo'] = $partes[0] . '-' . $partes[1];
                 }
+            } else {
+                $mensaje = 'Error al actualizar la competencia';
+                $tipoMensaje = 'danger';
             }
         } elseif ($accion === 'crear' && $tipo === 'raps') {
             if ($metodos->insertarRap($_POST['codigoDiseñoCompetencia'], $_POST)) {
@@ -77,10 +103,36 @@ try {
                 $accion = 'completar_informacion';
             }
         } elseif ($accion === 'completar' && $tipo === 'competencias') {
-            if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetencia'], $_POST)) {
-                $mensaje = 'Información de la competencia completada exitosamente';
+            // Verificar si el código de competencia ha cambiado
+            $codigoOriginal = $_POST['codigoDiseñoCompetencia'];
+            $nuevoCodigoCompetencia = $_POST['codigoCompetencia'];
+            
+            // Extraer el código de competencia original del código completo
+            $partesOriginales = explode('-', $codigoOriginal);
+            $codigoCompetenciaOriginal = $partesOriginales[2];
+            
+            $actualizado = false;
+            
+            if ($nuevoCodigoCompetencia !== $codigoCompetenciaOriginal) {
+                // El código ha cambiado, usar método de actualización con código
+                $actualizado = $metodos->actualizarCompetenciaConCodigo($codigoOriginal, $nuevoCodigoCompetencia, $_POST);
+                if ($actualizado) {
+                    $mensaje = 'Información de la competencia completada exitosamente (código modificado)';
+                }
+            } else {
+                // El código no ha cambiado, usar método normal
+                $actualizado = $metodos->actualizarCompetencia($codigoOriginal, $_POST);
+                if ($actualizado) {
+                    $mensaje = 'Información de la competencia completada exitosamente';
+                }
+            }
+            
+            if ($actualizado) {
                 $tipoMensaje = 'success';
                 $accion = 'completar_informacion';
+            } else {
+                $mensaje = 'Error al completar la información de la competencia';
+                $tipoMensaje = 'danger';
             }
         } elseif ($accion === 'completar' && $tipo === 'raps') {
             if ($metodos->actualizarRap($_POST['codigoDiseñoCompetenciaRap'], $_POST)) {
