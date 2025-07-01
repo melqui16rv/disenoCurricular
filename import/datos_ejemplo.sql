@@ -1,3 +1,89 @@
+--
+-- Estructura de tabla para la tabla `diseños`
+--
+CREATE TABLE `diseños` (
+  -- campos a cargar
+  `codigoDiseño` varchar(255) NOT NULL,
+  `codigoPrograma` varchar(255) NOT NULL,
+  `versionPrograma` varchar(255) NOT NULL,
+  `nombrePrograma` varchar(255) NOT NULL,
+  -- campos con valor por defecto "NULL"
+  `lineaTecnologica` varchar(255) DEFAULT NULL,
+  `redTecnologica` varchar(255) DEFAULT NULL,
+  `redConocimiento` varchar(255) DEFAULT NULL,
+  -- campos numericos con valor por defecto "0"
+  `horasDesarrolloLectiva` decimal(10,2) DEFAULT NULL,
+  `horasDesarrolloProductiva` decimal(10,2) DEFAULT NULL,
+  `mesesDesarrolloLectiva` decimal(10,2) DEFAULT NULL,
+  `mesesDesarrolloProductiva` decimal(10,2) DEFAULT NULL,
+  `horasDesarrolloDiseño` decimal(10,2) DEFAULT NULL,
+  `mesesDesarrolloDiseño` decimal(10,2) DEFAULT NULL,
+  -- campos con valor por defecto "NULL"
+  `nivelAcademicoIngreso` varchar(255) DEFAULT NULL,
+  -- campo numerico con valor por defecto "0"
+  `gradoNivelAcademico` int(11) DEFAULT NULL,
+  -- campos con valor por defecto "NULL"
+  `formacionTrabajoDesarrolloHumano` enum('Si','No') DEFAULT NULL,
+  `edadMinima` int(11) DEFAULT NULL,
+  `requisitosAdicionales` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Estructura de tabla para la tabla `competencias`
+--
+CREATE TABLE `competencias` (
+  -- campos a cargar
+  `codigoDiseñoCompetenciaReporte` varchar(255) NOT NULL,
+  `codigoCompetenciaReporte` varchar(255) NOT NULL,
+  `codigoCompetenciaPDF` varchar(255) DEFAULT NULL,
+  `nombreCompetencia` varchar(255) NOT NULL,
+  -- campos con valor por defecto "NULL"
+  `normaUnidadCompetencia` text DEFAULT NULL,
+  -- campo numerico con valor por defecto "0"
+  `horasDesarrolloCompetencia` decimal(10,2) DEFAULT NULL,
+  -- campos con valor por defecto "NULL"
+  `requisitosAcademicosInstructor` text DEFAULT NULL,
+  `experienciaLaboralInstructor` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- Estructura de tabla para la tabla `raps`
+--
+CREATE TABLE `raps` (
+  -- campos a cargar
+  `codigoDiseñoCompetenciaReporteRap` varchar(255) NOT NULL,
+  `codigoRapReporte` int(11) NOT NULL,
+  -- campo numerico con valor por defecto "0"
+  -- NOTA: codigoRapDiseno ya no se usa, se eliminó ya que el codigo queda con codigoRapReporte
+  -- campos con valor por defecto "NULL"
+  `nombreRap` text DEFAULT NULL,
+  -- campo numerico con valor por defecto "0"
+  `horasDesarrolloRap` decimal(10,2) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+--
+-- Indices de la tabla `competencias`
+--
+ALTER TABLE `competencias`
+  ADD PRIMARY KEY (`codigoDiseñoCompetenciaReporte`),
+  ADD KEY `idx_codigo_competencia` (`codigoCompetenciaReporte`);
+--
+-- Indices de la tabla `diseños`
+--
+ALTER TABLE `diseños`
+  ADD PRIMARY KEY (`codigoDiseño`);
+
+--
+-- Indices de la tabla `raps`
+--
+ALTER TABLE `raps`
+  ADD PRIMARY KEY (`codigoDiseñoCompetenciaReporteRap`),
+  ADD UNIQUE KEY `idx_auto_increment` (`codigoRapReporte`);
+--
+-- AUTO_INCREMENT de la tabla `raps`
+--
+ALTER TABLE `raps`
+  MODIFY `codigoRapReporte` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+COMMIT;
+
 -- Datos de ejemplo para el Sistema de Diseños Curriculares
 -- Ejecutar después de crear las tablas principales
 
@@ -49,14 +135,14 @@ INSERT INTO `diseños` (
     'Conocimientos básicos en matemáticas y lógica de programación.'
 );
 
--- Insertar competencias de ejemplo para el primer diseño (124101-1)
+-- Insertar competencias de ejemplo
 INSERT INTO `competencias` (
-    `codigoDiseñoCompetencia`, `codigoCompetencia`, `nombreCompetencia`,
+    `codigoDiseñoCompetenciaReporte`, `codigoCompetenciaReporte`, `codigoCompetenciaPDF`, `nombreCompetencia`,
     `normaUnidadCompetencia`, `horasDesarrolloCompetencia`,
     `requisitosAcademicosInstructor`, `experienciaLaboralInstructor`
 ) VALUES 
 (
-    '124101-1-220201501', '220201501',
+    '124101-1-220201501', '220201501', '220201501',
     'Comprender textos en inglés en forma escrita y auditiva',
     'Norma de competencia laboral para la comprensión de textos en inglés técnico',
     180.00,
@@ -64,7 +150,7 @@ INSERT INTO `competencias` (
     'Veinticuatro (24) meses de experiencia en docencia de inglés técnico'
 ),
 (
-    '124101-1-220501046', '220501046',
+    '124101-1-220501046', '220501046', '220501046',
     'Aplicar herramientas metodológicas para el desarrollo de proyectos',
     'Norma para la aplicación de metodologías de gestión de proyectos',
     120.00,
@@ -72,7 +158,7 @@ INSERT INTO `competencias` (
     'Dieciocho (18) meses de experiencia en gestión de proyectos de software'
 ),
 (
-    '124101-1-220201048', '220201048',
+    '124101-1-220201048', '220201048', '220201048',
     'Desarrollar el sistema que cumpla con los requisitos de la solución informática',
     'Norma para el desarrollo de sistemas de información',
     400.00,
@@ -80,137 +166,27 @@ INSERT INTO `competencias` (
     'Treinta y seis (36) meses de experiencia en desarrollo de software'
 );
 
--- Insertar RAPs de ejemplo para la primera competencia (124101-1-220201501)
+-- Insertar RAPs de ejemplo
 INSERT INTO `raps` (
-    `codigoDiseñoCompetenciaRap`, `codigoRap`, `nombreRap`, `horasDesarrolloRap`
+    `codigoDiseñoCompetenciaReporteRap`, `codigoRapReporte`, `nombreRap`, `horasDesarrolloRap`
 ) VALUES 
 (
-    '124101-1-220201501-RA1', 'RA1',
+    '124101-1-220201501-1', 1,
     'Encontrar información específica y predecible en escritos sencillos y cotidianos',
     45.00
 ),
 (
-    '124101-1-220201501-RA2', 'RA2', 
+    '124101-1-220201501-2', 2, 
     'Encontrar vocabulario y expresiones de inglés técnico en artículos de revistas, libros especializados, páginas web, etc.',
     45.00
 ),
 (
-    '124101-1-220201501-RA3', 'RA3',
+    '124101-1-220201501-3', 3,
     'Comprender frases y vocabulario habitual sobre temas de interés personal y temas técnicos',
     45.00
 ),
 (
-    '124101-1-220201501-RA4', 'RA4',
+    '124101-1-220201501-4', 4,
     'Comprender la idea principal en avisos y mensajes breves, claros y sencillos en inglés técnico',
     45.00
-);
-
--- Insertar RAPs para la segunda competencia (124101-1-220501046)
-INSERT INTO `raps` (
-    `codigoDiseñoCompetenciaRap`, `codigoRap`, `nombreRap`, `horasDesarrolloRap`
-) VALUES 
-(
-    '124101-1-220501046-RA1', 'RA1',
-    'Identificar las fases del proyecto aplicando los fundamentos de la gestión de proyectos',
-    40.00
-),
-(
-    '124101-1-220501046-RA2', 'RA2',
-    'Planificar actividades de acuerdo con los objetivos del proyecto y los recursos disponibles',
-    40.00
-),
-(
-    '124101-1-220501046-RA3', 'RA3',
-    'Realizar seguimiento y control del proyecto aplicando herramientas de gestión',
-    40.00
-);
-
--- Insertar RAPs para la tercera competencia (124101-1-220201048) 
-INSERT INTO `raps` (
-    `codigoDiseñoCompetenciaRap`, `codigoRap`, `nombreRap`, `horasDesarrolloRap`
-) VALUES 
-(
-    '124101-1-220201048-RA1', 'RA1',
-    'Interpretar el diseño de software, de acuerdo con las especificaciones del sistema de información',
-    80.00
-),
-(
-    '124101-1-220201048-RA2', 'RA2',
-    'Desarrollar la interfaz gráfica de usuario de acuerdo con el diseño establecido',
-    100.00
-),
-(
-    '124101-1-220201048-RA3', 'RA3',
-    'Construir la base de datos, de acuerdo con el diseño establecido para el sistema de información',
-    80.00
-),
-(
-    '124101-1-220201048-RA4', 'RA4',
-    'Codificar los módulos del software, de acuerdo con las especificaciones del diseño',
-    140.00
-);
-
--- Insertar competencia para el segundo diseño (228106-2)
-INSERT INTO `competencias` (
-    `codigoDiseñoCompetencia`, `codigoCompetencia`, `nombreCompetencia`,
-    `normaUnidadCompetencia`, `horasDesarrolloCompetencia`,
-    `requisitosAcademicosInstructor`, `experienciaLaboralInstructor`
-) VALUES 
-(
-    '228106-2-210101019', '210101019',
-    'Coordinar el talento humano asignado, de acuerdo con el plan estratégico de la organización',
-    'Norma de competencia para la coordinación del talento humano',
-    160.00,
-    'Profesional en Administración de Empresas, Gestión del Talento Humano o áreas afines',
-    'Veinticuatro (24) meses de experiencia en gestión del talento humano'
-);
-
--- Insertar RAPs para la competencia del segundo diseño
-INSERT INTO `raps` (
-    `codigoDiseñoCompetenciaRap`, `codigoRap`, `nombreRap`, `horasDesarrolloRap`
-) VALUES 
-(
-    '228106-2-210101019-RA1', 'RA1',
-    'Dirigir el talento humano según la estructura organizacional y las normas de convivencia',
-    80.00
-),
-(
-    '228106-2-210101019-RA2', 'RA2',
-    'Aplicar procesos de comunicación organizacional de acuerdo con las políticas de la organización',
-    80.00
-);
-
--- Insertar competencia para el tercer diseño (233104-1)
-INSERT INTO `competencias` (
-    `codigoDiseñoCompetencia`, `codigoCompetencia`, `nombreCompetencia`,
-    `normaUnidadCompetencia`, `horasDesarrolloCompetencia`,
-    `requisitosAcademicosInstructor`, `experienciaLaboralInstructor`
-) VALUES 
-(
-    '233104-1-220201077', '220201077',
-    'Desarrollar algoritmos que permitan resolver problemas sencillos de programación',
-    'Norma para el desarrollo de algoritmos de programación',
-    200.00,
-    'Tecnólogo en Desarrollo de Software, Técnico en Programación o Profesional en áreas afines',
-    'Dieciocho (18) meses de experiencia en programación y desarrollo de software'
-);
-
--- Insertar RAPs para la competencia del tercer diseño
-INSERT INTO `raps` (
-    `codigoDiseñoCompetenciaRap`, `codigoRap`, `nombreRap`, `horasDesarrolloRap`
-) VALUES 
-(
-    '233104-1-220201077-RA1', 'RA1',
-    'Interpretar el problema planteado según las especificaciones del cliente',
-    50.00
-),
-(
-    '233104-1-220201077-RA2', 'RA2',
-    'Diseñar algoritmos según la lógica de programación y las especificaciones del problema',
-    75.00
-),
-(
-    '233104-1-220201077-RA3', 'RA3',
-    'Codificar algoritmos de acuerdo con la lógica de programación y el lenguaje escogido',
-    75.00
 );
