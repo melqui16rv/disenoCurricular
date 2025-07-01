@@ -43,9 +43,10 @@ CREATE TABLE `diseños` (
 --
 CREATE TABLE `competencias` (
   ------cargar
-  `codigoDiseñoCompetencia` varchar(255) NOT NULL,
-  `codigoCompetencia` varchar(255) NOT NULL,
-  `nombreCompetencia` varchar(255) NOT NULL,
+  `codigoDiseñoCompetenciaDiseno` varchar(255) NOT NULL,
+  `codigoCompetenciaDiseno` varchar(255) NOT NULL,
+  `codigoCompetenciaPDF` varchar(255) DEFAULT NULL,
+  `nombreCompetenciaDiseno` varchar(255) NOT NULL,
   ------
   ------palabra "NULL"
   `normaUnidadCompetencia` text DEFAULT NULL,
@@ -63,7 +64,7 @@ CREATE TABLE `competencias` (
 --
 CREATE TABLE `raps` (
   ----cargar
-  `codigoDiseñoCompetenciaRap` varchar(255) NOT NULL,
+  `codigoDiseñoCompetenciaDisenoRap` varchar(255) NOT NULL,
   `codigoRapAutomatico` int(11) NOT NULL,
   ----
   ----numerico "0"
@@ -80,8 +81,8 @@ CREATE TABLE `raps` (
 -- Indices de la tabla `competencias`
 --
 ALTER TABLE `competencias`
-  ADD PRIMARY KEY (`codigoDiseñoCompetencia`),
-  ADD KEY `idx_codigo_competencia` (`codigoCompetencia`);
+  ADD PRIMARY KEY (`codigoDiseñoCompetenciaDiseno`),
+  ADD KEY `idx_codigo_competencia` (`codigoCompetenciaDiseno`);
 --
 -- Indices de la tabla `diseños`
 --
@@ -92,7 +93,7 @@ ALTER TABLE `diseños`
 -- Indices de la tabla `raps`
 --
 ALTER TABLE `raps`
-  ADD PRIMARY KEY (`codigoDiseñoCompetenciaRap`),
+  ADD PRIMARY KEY (`codigoDiseñoCompetenciaDisenoRap`),
   ADD UNIQUE KEY `idx_auto_increment` (`codigoRapAutomatico`);
 --
 -- AUTO_INCREMENT de la tabla `raps`
