@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Validación - Formulario Completar</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-control { padding: 8px; margin: 5px 0; width: 200px; border: 1px solid #ccc; }
+        .btn { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .desarrollo-opciones { display: flex; gap: 20px; margin: 20px 0; }
+        .opcion-desarrollo { border: 1px solid #ddd; padding: 15px; }
+        .campo-deshabilitado { background-color: #f8f9fa !important; opacity: 0.6 !important; }
+    </style>
+</head>
+<body>
+    <h1>Test: Formulario sin Validación HTML5</h1>
+    
+    <form id="formCompletarDiseño" novalidate>
+        <div class="desarrollo-opciones">
+            <div class="opcion-desarrollo">
+                <h4>Opción 1: Por Horas</h4>
+                <label>Horas Lectivas:</label><br>
+                <input type="text" id="horasDesarrolloLectiva" name="horasDesarrolloLectiva" 
+                       class="form-control desarrollo-input" placeholder="Ej: 1200"><br>
+                
+                <label>Horas Productivas:</label><br>
+                <input type="text" id="horasDesarrolloProductiva" name="horasDesarrolloProductiva" 
+                       class="form-control desarrollo-input" placeholder="Ej: 880"><br>
+            </div>
+            
+            <div style="text-align: center; align-self: center;">
+                <strong>O</strong>
+            </div>
+            
+            <div class="opcion-desarrollo">
+                <h4>Opción 2: Por Meses</h4>
+                <label>Meses Lectivos:</label><br>
+                <input type="text" id="mesesDesarrolloLectiva" name="mesesDesarrolloLectiva" 
+                       class="form-control desarrollo-input" placeholder="Ej: 18"><br>
+                
+                <label>Meses Productivos:</label><br>
+                <input type="text" id="mesesDesarrolloProductiva" name="mesesDesarrolloProductiva" 
+                       class="form-control desarrollo-input" placeholder="Ej: 6"><br>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn">Probar Envío</button>
+    </form>
+    
+    <div id="resultado" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
+
+    <script>
+    // Solución SIMPLE: Solo validar que se complete una opción, sin interferir con validación HTML5
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('formCompletarDiseño');
+        if (!form) return;
+        
+        // Deshabilitar validación HTML5 del formulario
+        form.noValidate = true;
+        
+        // Obtener elementos
+        const horasLectivaInput = document.getElementById('horasDesarrolloLectiva');
+        const horasProductivaInput = document.getElementById('horasDesarrolloProductiva');
+        const mesesLectivaInput = document.getElementById('mesesDesarrolloLectiva');
+        const mesesProductivaInput = document.getElementById('mesesDesarrolloProductiva');
+        
+        // Función simple para gestionar el estado visual
+        function gestionarCampos() {
+            if (!horasLectivaInput || !horasProductivaInput || !mesesLectivaInput || !mesesProductivaInput) {
+                return;
+            }
+            
+            const horasLectiva = horasLectivaInput.value.trim();
+            const horasProductiva = horasProductivaInput.value.trim();
+            const mesesLectiva = mesesLectivaInput.value.trim();
+            const mesesProductiva = mesesProductivaInput.value.trim();
+            
+            const usandoHoras = horasLectiva !== '' || horasProductiva !== '';
+            const usandoMeses = mesesLectiva !== '' || mesesProductiva !== '';
+            
+            // Gestionar estado visual
+            if (usandoHoras && !usandoMeses) {
+                // Si está usando horas, deshabilitar visualmente los meses
+                mesesLectivaInput.disabled = true;
+                mesesProductivaInput.disabled = true;
+                mesesLectivaInput.classList.add('campo-deshabilitado');
+                mesesProductivaInput.classList.add('campo-deshabilitado');
+            } else if (usandoMeses && !usandoHoras) {
+                // Si está usando meses, deshabilitar visualmente las horas
+                horasLectivaInput.disabled = true;
+                horasProductivaInput.disabled = true;
+                horasLectivaInput.classList.add('campo-deshabilitado');
+                horasProductivaInput.classList.add('campo-deshabilitado');
+            } else {
+                // Si no está usando ninguno o ambos están vacíos, habilitar todos
+                [horasLectivaInput, horasProductivaInput, mesesLectivaInput, mesesProductivaInput].forEach(campo => {
+                    if (campo) {
+                        campo.disabled = false;
+                        campo.classList.remove('campo-deshabilitado');
+                    }
+                });
+            }
+        }
+        
+        // Agregar listeners a los campos
+        [horasLectivaInput, horasProductivaInput, mesesLectivaInput, mesesProductivaInput].forEach(campo => {
+            if (campo) {
+                campo.addEventListener('input', gestionarCampos);
+                campo.addEventListener('change', gestionarCampos);
+            }
+        });
+        
+        // Ejecutar gestión inicial
+        gestionarCampos();
+        
+        // Manejar el envío del formulario con validación SIMPLE
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevenir envío real para testing
+            
+            // Habilitar todos los campos temporalmente para obtener sus valores
+            [horasLectivaInput, horasProductivaInput, mesesLectivaInput, mesesProductivaInput].forEach(campo => {
+                if (campo) campo.disabled = false;
+            });
+            
+            const horasLectiva = horasLectivaInput ? horasLectivaInput.value.trim() : '';
+            const horasProductiva = horasProductivaInput ? horasProductivaInput.value.trim() : '';
+            const mesesLectiva = mesesLectivaInput ? mesesLectivaInput.value.trim() : '';
+            const mesesProductiva = mesesProductivaInput ? mesesProductivaInput.value.trim() : '';
+            
+            // Verificar que se haya completado al menos una opción
+            const tieneHoras = horasLectiva !== '' && horasProductiva !== '';
+            const tieneMeses = mesesLectiva !== '' && mesesProductiva !== '';
+            
+            const resultado = document.getElementById('resultado');
+            
+            if (!tieneHoras && !tieneMeses) {
+                resultado.innerHTML = '<strong style="color: red;">❌ ERROR:</strong> Por favor, complete al menos una opción:<br>• Ambos campos de HORAS (Lectivas + Productivas)<br>• O ambos campos de MESES (Lectivos + Productivos)';
+                // Restaurar estado visual
+                setTimeout(gestionarCampos, 50);
+                return false;
+            }
+            
+            // Mostrar resultado exitoso
+            resultado.innerHTML = '<strong style="color: green;">✅ ÉXITO:</strong> Formulario válido sin errores de validación HTML5!<br>' +
+                'Valores que se enviarían:<br>' +
+                '• Horas Lectivas: ' + (horasLectiva || 'NULL') + '<br>' +
+                '• Horas Productivas: ' + (horasProductiva || 'NULL') + '<br>' +
+                '• Meses Lectivos: ' + (mesesLectiva || 'NULL') + '<br>' +
+                '• Meses Productivos: ' + (mesesProductiva || 'NULL');
+            
+            // Limpiar los campos de la opción que NO se está usando
+            if (tieneHoras && !tieneMeses) {
+                // Usando horas, limpiar meses
+                if (mesesLectivaInput) mesesLectivaInput.value = '';
+                if (mesesProductivaInput) mesesProductivaInput.value = '';
+                resultado.innerHTML += '<br><strong>Acción:</strong> Se limpiarían los campos de meses en el backend.';
+            } else if (tieneMeses && !tieneHoras) {
+                // Usando meses, limpiar horas
+                if (horasLectivaInput) horasLectivaInput.value = '';
+                if (horasProductivaInput) horasProductivaInput.value = '';
+                resultado.innerHTML += '<br><strong>Acción:</strong> Se limpiarían los campos de horas en el backend.';
+            }
+            
+            setTimeout(gestionarCampos, 50);
+            return false;
+        });
+    });
+    </script>
+</body>
+</html>

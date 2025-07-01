@@ -100,18 +100,10 @@
 
     <div class="form-row">
         <div class="form-group">
-            <label for="codigoCompetencia"><i class="fas fa-hashtag"></i> Código de la Competencia *</label>
-            <input type="text" id="codigoCompetencia" name="codigoCompetencia" class="form-control" required 
+            <label><i class="fas fa-hashtag"></i> Código de la Competencia</label>
+            <input type="text" class="form-control" readonly 
                    value="<?php echo htmlspecialchars($competencia_actual['codigoCompetencia'] ?? ''); ?>"
-                   placeholder="Ejemplo: 220201501" maxlength="50">
-            <small class="text-muted" id="codigoPreview">
-                Código completo: <?php 
-                $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
-                $codigoDiseño = $partes[0] . '-' . $partes[1];
-                echo $codigoDiseño . '-' . htmlspecialchars($competencia_actual['codigoCompetencia'] ?? '');
-                ?>
-            </small>
-            <div id="codigoValidacion" class="mt-1"></div>
+                   style="background: #e9ecef;">
         </div>
         <div class="form-group">
             <label for="horasDesarrolloCompetencia"><i class="fas fa-clock"></i> Horas de Desarrollo *</label>
@@ -191,94 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Verificar si el código ha cambiado y está validado
-        const codigoInput = document.getElementById('codigoCompetencia');
-        const codigoValidacion = document.getElementById('codigoValidacion');
-        
-        if (codigoInput.dataset.validado !== 'true') {
-            e.preventDefault();
-            alert('Por favor, espera a que se valide el código de competencia.');
-            return;
-        }
-        
-        if (codigoValidacion.classList.contains('text-danger')) {
-            e.preventDefault();
-            alert('El código de competencia no es válido. Por favor, corrige los errores.');
-            return;
-        }
-        
         if (!confirm('¿Estás seguro de actualizar esta competencia?')) {
             e.preventDefault();
         }
     });
-
-    // Validación en tiempo real del código de competencia
-    const codigoInput = document.getElementById('codigoCompetencia');
-    const codigoPreview = document.getElementById('codigoPreview');
-    const codigoValidacion = document.getElementById('codigoValidacion');
-    const codigoOriginal = codigoInput.value; // Código original para comparar
-    let validationTimeout;
-    
-    // Obtener el código del diseño desde el contexto PHP
-    const codigoDiseño = '<?php 
-        $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
-        echo $partes[0] . '-' . $partes[1];
-    ?>';
-    
-    codigoInput.addEventListener('input', function() {
-        const nuevoCodigo = this.value.trim();
-        
-        // Actualizar preview inmediatamente
-        codigoPreview.textContent = `Código completo: ${codigoDiseño}-${nuevoCodigo}`;
-        
-        // Limpiar timeout anterior
-        clearTimeout(validationTimeout);
-        
-        // Limpiar validación anterior
-        codigoValidacion.innerHTML = '';
-        this.dataset.validado = 'false';
-        
-        if (nuevoCodigo === '') {
-            codigoValidacion.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-triangle"></i> El código de competencia es requerido</small>';
-            return;
-        }
-        
-        // Mostrar indicador de validación
-        codigoValidacion.innerHTML = '<small class="text-info"><i class="fas fa-spinner fa-spin"></i> Validando código...</small>';
-        
-        // Validar después de 500ms de inactividad
-        validationTimeout = setTimeout(() => {
-            validarCodigoCompetencia(nuevoCodigo, codigoOriginal);
-        }, 500);
-    });
-    
-    function validarCodigoCompetencia(nuevoCodigo, codigoOriginal) {
-        fetch(`control/ajax.php?accion=validar_edicion_codigo_competencia&codigoDiseño=${encodeURIComponent(codigoDiseño)}&codigoCompetencia=${encodeURIComponent(nuevoCodigo)}&codigoCompetenciaOriginal=${encodeURIComponent(codigoOriginal)}`)
-            .then(response => response.json())
-            .then(data => {
-                const codigoInput = document.getElementById('codigoCompetencia');
-                const codigoValidacion = document.getElementById('codigoValidacion');
-                
-                if (data.success) {
-                    codigoValidacion.innerHTML = `<small class="text-success"><i class="fas fa-check-circle"></i> ${data.message}</small>`;
-                    codigoInput.dataset.validado = 'true';
-                } else {
-                    codigoValidacion.innerHTML = `<small class="text-danger"><i class="fas fa-exclamation-triangle"></i> ${data.message}</small>`;
-                    codigoInput.dataset.validado = 'false';
-                }
-            })
-            .catch(error => {
-                console.error('Error en validación:', error);
-                const codigoValidacion = document.getElementById('codigoValidacion');
-                codigoValidacion.innerHTML = '<small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Error al validar código</small>';
-                document.getElementById('codigoCompetencia').dataset.validado = 'false';
-            });
-    }
-    
-    // Validar código inicial si existe
-    if (codigoInput.value.trim() !== '') {
-        codigoInput.dataset.validado = 'true'; // El código actual es válido por defecto
-    }
 });
 
 // Función para mostrar/ocultar información del diseño

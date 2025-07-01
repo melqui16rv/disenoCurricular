@@ -1,6 +1,11 @@
 // Scripts para el Sistema de Diseños Curriculares
 document.addEventListener('DOMContentLoaded', function() {
     
+    // Verificar si hay una configuración global para saltar validación
+    if (window.SKIP_GLOBAL_VALIDATION) {
+        return;
+    }
+    
     // Confirmaciones de eliminación más elaboradas
     const botonesEliminar = document.querySelectorAll('a[href*="eliminar"]');
     botonesEliminar.forEach(boton => {
@@ -27,8 +32,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const formularios = document.querySelectorAll('form');
     formularios.forEach(form => {
         form.addEventListener('submit', function(e) {
+            // No validar formularios con novalidate, data-skip-validation, o form específicos
+            if (this.hasAttribute('novalidate') || 
+                this.noValidate || 
+                this.getAttribute('data-skip-validation') === 'true' ||
+                this.id === 'formCompletarDiseño' ||
+                this.classList.contains('form-completar') ||
+                this.hasAttribute('data-no-validation')) {
+                return;
+            }
+            
             // Validación para campos requeridos vacíos
-            const camposRequeridos = this.querySelectorAll('[required]');
+            const camposRequeridos = this.querySelectorAll('[required]:not([disabled])');
             let camposVacios = [];
             
             camposRequeridos.forEach(campo => {
@@ -43,15 +58,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Validación específica para números
-            const camposNumero = this.querySelectorAll('input[type="number"]');
+            // Validación específica para números (solo para campos habilitados y requeridos)
+            const camposNumero = this.querySelectorAll('input[type="number"]:not([disabled]):not(.desarrollo-input)');
             camposNumero.forEach(campo => {
-                const valor = parseFloat(campo.value);
-                if (isNaN(valor) || valor < 0) {
-                    e.preventDefault();
-                    alert(`El campo "${campo.previousElementSibling?.textContent || campo.getAttribute('name')}" debe ser un número válido mayor o igual a cero.`);
-                    campo.focus();
-                    return;
+                // Solo validar si el campo tiene valor o es requerido
+                if (campo.value !== '' && (campo.hasAttribute('required') || campo.value.trim() !== '')) {
+                    const valor = parseFloat(campo.value);
+                    if (isNaN(valor) || valor < 0) {
+                        e.preventDefault();
+                        alert(`El campo "${campo.previousElementSibling?.textContent || campo.getAttribute('name')}" debe ser un número válido mayor o igual a cero.`);
+                        campo.focus();
+                        return;
+                    }
                 }
             });
         });

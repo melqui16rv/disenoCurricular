@@ -416,6 +416,24 @@ function cargarComparacion() {
     const codigoCompetenciaReal = partes[2]; // Extraer código de competencia
     const disenoActual = partes[0] + '-' + partes[1]; // Extraer código de diseño actual
     
+    // Debug: mostrar los valores extraídos
+    console.log('Debug - Código RAP completo:', codigoRapCompleto);
+    console.log('Debug - Partes:', partes);
+    console.log('Debug - Código competencia extraído:', codigoCompetenciaReal);
+    console.log('Debug - Diseño actual extraído:', disenoActual);
+    
+    // Validar que tenemos los datos necesarios
+    if (!codigoCompetenciaReal || partes.length < 3) {
+        document.getElementById('comparacionContent').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Error:</strong> No se pudo extraer el código de competencia del RAP.
+                <br><small>Código RAP: ${codigoRapCompleto}</small>
+            </div>
+        `;
+        return;
+    }
+    
     // Mostrar indicador de carga
     document.getElementById('comparacionContent').innerHTML = `
         <div class="text-center">
@@ -433,16 +451,55 @@ function cargarComparacion() {
         },
         body: `accion=obtener_comparacion_raps&codigoCompetencia=${codigoCompetenciaReal}&disenoActual=${disenoActual}`
     })
-    .then(response => response.json())
-    .then(data => {
-        mostrarComparacion(data);
+    .then(response => {
+        // Verificar si la respuesta es válida
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.text(); // Obtener como texto primero
+    })
+    .then(responseText => {
+        // Intentar parsear como JSON
+        try {
+            const data = JSON.parse(responseText);
+            
+            // Verificar que los datos sean válidos
+            if (typeof data !== 'object' || data === null) {
+                throw new Error('Los datos recibidos no son válidos');
+            }
+            
+            mostrarComparacion(data);
+        } catch (parseError) {
+            console.error('Error al parsear JSON:', parseError);
+            console.error('Respuesta recibida:', responseText.substring(0, 500));
+            throw new Error('El servidor no devolvió datos en formato válido.');
+        }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Error en cargarComparacion:', error);
+        
+        // Mostrar error específico basado en el tipo
+        let errorMessage = '';
+        if (error.name === 'SyntaxError') {
+            errorMessage = 'Error de formato en la respuesta del servidor. Posible error de configuración.';
+        } else if (error.message.includes('HTTP')) {
+            errorMessage = `Error del servidor: ${error.message}`;
+        } else if (error.message.includes('JSON')) {
+            errorMessage = 'Error: El servidor no devolvió datos en formato válido.';
+        } else {
+            errorMessage = `Error de conexión: ${error.message}`;
+        }
+        
         document.getElementById('comparacionContent').innerHTML = `
-            <div class="alert alert-warning">
+            <div class="alert alert-danger">
                 <i class="fas fa-exclamation-triangle"></i>
-                Error al cargar la comparación. Intenta nuevamente.
+                <strong>Error al cargar la comparación:</strong><br>
+                ${errorMessage}
+                <br><br>
+                <button class="btn btn-sm btn-outline-primary" onclick="cargarComparacion()">
+                    <i class="fas fa-redo"></i> Reintentar
+                </button>
             </div>
         `;
     });

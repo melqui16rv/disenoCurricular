@@ -1,14 +1,14 @@
 <?php
 // Navegación específica para el sistema de diseños curriculares
 ?>
-<nav style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px); padding: 1.2rem 0; margin-bottom: 1rem; border-radius: 12px; box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06); border: 1px solid rgba(0, 0, 0, 0.03);">
+<nav style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 1rem 0; margin-bottom: 1rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);">
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <img src="<?php echo BASE_URL; ?>assets/img/sena-logo.png" alt="SENA" style="height: 40px;" onerror="this.style.display='none'">
                 <div>
-                    <h3 style="margin: 0; color: #2c5530; font-size: 1.3rem; font-weight: 500;">Sistema de Diseños Curriculares</h3>
-                    <p style="margin: 0; color: #5a7c5a; font-size: 0.9rem; font-weight: 400;">SENA - Servicio Nacional de Aprendizaje</p>
+                    <h3 style="margin: 0; color: #2c3e50; font-size: 1.2rem;">Sistema de Diseños Curriculares</h3>
+                    <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">SENA - Servicio Nacional de Aprendizaje</p>
                 </div>
             </div>
             
@@ -33,7 +33,7 @@
                     </span>
                 <?php endif; ?>
                 
-                <div style="font-size: 0.9rem; color: #5a7c5a; font-weight: 400;">
+                <div style="font-size: 0.9rem; color: #6c757d;">
                     <i class="fas fa-calendar-alt"></i> 
                     <?php echo date('d/m/Y H:i'); ?>
                 </div>
@@ -44,27 +44,22 @@
 
 <style>
 .nav-link {
-    padding: 10px 18px;
-    color: #2c5530;
+    padding: 8px 16px;
+    color: #2c3e50;
     text-decoration: none;
-    border-radius: 8px;
+    border-radius: 6px;
     transition: all 0.3s ease;
-    font-weight: 400;
-    border: 1px solid transparent;
+    font-weight: 500;
 }
 
 .nav-link:hover {
-    background: rgba(232, 245, 232, 0.5);
-    color: #2c5530;
-    border-color: rgba(232, 245, 232, 0.8);
-    transform: translateY(-1px);
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
 }
 
 .nav-link.active {
-    background: linear-gradient(45deg, #e8f5e8, #f0f8f0);
-    color: #2c5530;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
 }
 
 .container {

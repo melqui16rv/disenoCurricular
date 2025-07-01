@@ -22,8 +22,9 @@ function sendJsonResponse($response) {
 }
 
 try {
-    // Determinar la ruta base correcta - desde app/forms/control necesitamos ir 4 niveles arriba
-    $basePath = dirname(dirname(dirname(dirname(__FILE__)))); // 4 niveles arriba desde app/forms/control/ajax.php
+    // Determinar la ruta base correcta
+    $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+    $basePath = dirname(dirname(dirname(__FILE__))); // 3 niveles arriba desde control/ajax.php
     
     // Incluir archivos necesarios con rutas absolutas
     $configPath = $basePath . '/conf/config.php';
@@ -50,17 +51,15 @@ try {
         'message' => 'Error de configuración: ' . $e->getMessage(),
         'error_type' => 'config_error',
         'debug_info' => [
-            'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'undefined',
+            'document_root' => $_SERVER['DOCUMENT_ROOT'],
             'script_path' => __FILE__,
-            'base_path' => $basePath ?? 'undefined',
-            'config_path' => $configPath ?? 'undefined',
-            'metodos_path' => $metodosPath ?? 'undefined',
-            'conexion_path' => $conexionPath ?? 'undefined'
+            'base_path' => $basePath ?? 'undefined'
         ]
     ]);
 }
 
 $metodos = new MetodosDisenos();
+$response = ['success' => false, 'message' => '', 'data' => null];
 
 try {
     $accion = $_GET['accion'] ?? $_POST['accion'] ?? '';
@@ -83,22 +82,13 @@ try {
                 $diseño = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
                 
                 if ($diseño) {
-                    sendJsonResponse([
-                        'success' => false,
-                        'message' => 'Ya existe un diseño con este código y versión'
-                    ]);
+                    $response['success'] = false;
+                    $response['message'] = 'Ya existe un diseño con este código y versión';
                 } else {
-                    sendJsonResponse([
-                        'success' => true,
-                        'message' => 'Código disponible',
-                        'data' => ['codigoDiseño' => $codigoDiseño]
-                    ]);
+                    $response['success'] = true;
+                    $response['message'] = 'Código disponible';
+                    $response['data'] = ['codigoDiseño' => $codigoDiseño];
                 }
-            } else {
-                sendJsonResponse([
-                    'success' => false,
-                    'message' => 'Parámetros requeridos: codigoPrograma y versionPrograma'
-                ]);
             }
             break;
             
@@ -111,22 +101,13 @@ try {
                 $competencia = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
                 
                 if ($competencia) {
-                    sendJsonResponse([
-                        'success' => false,
-                        'message' => 'Ya existe una competencia con este código'
-                    ]);
+                    $response['success'] = false;
+                    $response['message'] = 'Ya existe una competencia con este código';
                 } else {
-                    sendJsonResponse([
-                        'success' => true,
-                        'message' => 'Código disponible',
-                        'data' => ['codigoDiseñoCompetencia' => $codigoDiseñoCompetencia]
-                    ]);
+                    $response['success'] = true;
+                    $response['message'] = 'Código disponible';
+                    $response['data'] = ['codigoDiseñoCompetencia' => $codigoDiseñoCompetencia];
                 }
-            } else {
-                sendJsonResponse([
-                    'success' => false,
-                    'message' => 'Parámetros requeridos: codigoDiseño y codigoCompetencia'
-                ]);
             }
             break;
             
@@ -139,93 +120,47 @@ try {
                 $rap = $metodos->obtenerRapPorCodigo($codigoDiseñoCompetenciaRap);
                 
                 if ($rap) {
-                    sendJsonResponse([
-                        'success' => false,
-                        'message' => 'Ya existe un RAP con este código'
-                    ]);
+                    $response['success'] = false;
+                    $response['message'] = 'Ya existe un RAP con este código';
                 } else {
-                    sendJsonResponse([
-                        'success' => true,
-                        'message' => 'Código disponible',
-                        'data' => ['codigoDiseñoCompetenciaRap' => $codigoDiseñoCompetenciaRap]
-                    ]);
+                    $response['success'] = true;
+                    $response['message'] = 'Código disponible';
+                    $response['data'] = ['codigoDiseñoCompetenciaRap' => $codigoDiseñoCompetenciaRap];
                 }
-            } else {
-                sendJsonResponse([
-                    'success' => false,
-                    'message' => 'Parámetros requeridos: codigoDiseñoCompetencia y codigoRap'
-                ]);
             }
             break;
             
         case 'obtener_estadisticas':
-            try {
-                $diseños = $metodos->obtenerTodosLosDiseños();
-                $totalDiseños = count($diseños);
-                $totalHoras = array_sum(array_column($diseños, 'horasDesarrolloDiseño'));
-                $totalMeses = array_sum(array_column($diseños, 'mesesDesarrolloDiseño'));
-                
-                sendJsonResponse([
-                    'success' => true,
-                    'data' => [
-                        'totalDiseños' => $totalDiseños,
-                        'totalHoras' => $totalHoras,
-                        'totalMeses' => $totalMeses,
-                        'promedioHoras' => $totalDiseños > 0 ? $totalHoras / $totalDiseños : 0,
-                        'promedioMeses' => $totalDiseños > 0 ? $totalMeses / $totalDiseños : 0
-                    ]
-                ]);
-            } catch (Exception $e) {
-                sendJsonResponse([
-                    'success' => false,
-                    'message' => 'Error al obtener estadísticas: ' . $e->getMessage()
-                ]);
-            }
+            $diseños = $metodos->obtenerTodosLosDiseños();
+            $totalDiseños = count($diseños);
+            $totalHoras = array_sum(array_column($diseños, 'horasDesarrolloDiseño'));
+            $totalMeses = array_sum(array_column($diseños, 'mesesDesarrolloDiseño'));
+            
+            $response['success'] = true;
+            $response['data'] = [
+                'totalDiseños' => $totalDiseños,
+                'totalHoras' => $totalHoras,
+                'totalMeses' => $totalMeses,
+                'promedioHoras' => $totalDiseños > 0 ? $totalHoras / $totalDiseños : 0,
+                'promedioMeses' => $totalDiseños > 0 ? $totalMeses / $totalDiseños : 0
+            ];
             break;
             
         case 'obtener_competencias_diseño':
             $codigoDiseño = $_GET['codigoDiseño'] ?? '';
             if ($codigoDiseño) {
-                try {
-                    $competencias = $metodos->obtenerCompetenciasPorDiseño($codigoDiseño);
-                    sendJsonResponse([
-                        'success' => true,
-                        'data' => $competencias
-                    ]);
-                } catch (Exception $e) {
-                    sendJsonResponse([
-                        'success' => false,
-                        'message' => 'Error al obtener competencias: ' . $e->getMessage()
-                    ]);
-                }
-            } else {
-                sendJsonResponse([
-                    'success' => false,
-                    'message' => 'Parámetro requerido: codigoDiseño'
-                ]);
+                $competencias = $metodos->obtenerCompetenciasPorDiseño($codigoDiseño);
+                $response['success'] = true;
+                $response['data'] = $competencias;
             }
             break;
             
         case 'obtener_raps_competencia':
             $codigoDiseñoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
             if ($codigoDiseñoCompetencia) {
-                try {
-                    $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetencia);
-                    sendJsonResponse([
-                        'success' => true,
-                        'data' => $raps
-                    ]);
-                } catch (Exception $e) {
-                    sendJsonResponse([
-                        'success' => false,
-                        'message' => 'Error al obtener RAPs: ' . $e->getMessage()
-                    ]);
-                }
-            } else {
-                sendJsonResponse([
-                    'success' => false,
-                    'message' => 'Parámetro requerido: codigoDiseñoCompetencia'
-                ]);
+                $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetencia);
+                $response['success'] = true;
+                $response['data'] = $raps;
             }
             break;
 
@@ -233,24 +168,11 @@ try {
             $codigoCompetencia = $_POST['codigoCompetencia'] ?? $_GET['codigoCompetencia'] ?? '';
             $disenoActual = $_POST['disenoActual'] ?? $_GET['disenoActual'] ?? '';
             
-            // Log para debugging
-            error_log("AJAX Debug - obtener_comparacion_raps:");
-            error_log("  codigoCompetencia: '$codigoCompetencia'");
-            error_log("  disenoActual: '$disenoActual'");
-            error_log("  POST: " . print_r($_POST, true));
-            error_log("  GET: " . print_r($_GET, true));
-            
             if (empty($codigoCompetencia)) {
                 sendJsonResponse([
                     'success' => false,
                     'message' => 'Código de competencia requerido',
-                    'error_type' => 'missing_parameter',
-                    'debug_received' => [
-                        'codigoCompetencia' => $codigoCompetencia,
-                        'disenoActual' => $disenoActual,
-                        'post_data' => $_POST,
-                        'get_data' => $_GET
-                    ]
+                    'error_type' => 'missing_parameter'
                 ]);
             }
             
@@ -372,10 +294,6 @@ try {
     ]);
 }
 
-// Esta línea nunca debería ejecutarse debido a los sendJsonResponse() en cada caso
-sendJsonResponse([
-    'success' => false,
-    'message' => 'Error inesperado: no se procesó ninguna acción',
-    'error_type' => 'unexpected_error'
-]);
+// Si llegamos aquí, enviamos la respuesta normal
+sendJsonResponse($response);
 ?>

@@ -10,7 +10,15 @@ if (isset($_SERVER['HTTP_HOST'])) {
     define('BASE_URL', '/disenoCurricular/');
 }
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Solo mostrar errores en desarrollo local, no en AJAX
+if (!isset($_GET['accion']) && !isset($_POST['accion'])) {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    // Para AJAX mantener errores ocultos
+    ini_set('display_errors', 0);
+    ini_set('display_startup_errors', 0);
+    ini_set('log_errors', 1);
+}
 ?>

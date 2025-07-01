@@ -1,10 +1,11 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Configurar para no mostrar errores en producción
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+ini_set('log_errors', 1);
 
 class Conexion {
-    private $host = 'localhost';
+    private $host = 'appscide.com';
     private $dbname = 'appscide_disenos_curriculares';  
     private $user = 'appscide_Administrador';    
     private $password = 'E8oUxamqQTwtM8MrKf#LrqtxJ3p'; 
@@ -21,7 +22,9 @@ class Conexion {
             // Establecer la collation
             $this->conexion->exec("SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci'");
         } catch (PDOException $e) {
-            echo 'Error de conexión: ' . $e->getMessage();
+            // Log del error en lugar de mostrarlo
+            error_log('Error de conexión a la base de datos: ' . $e->getMessage());
+            throw new Exception('Error de conexión a la base de datos');
         }
     }
 

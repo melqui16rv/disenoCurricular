@@ -74,6 +74,13 @@ class MetodosDisenos extends Conexion {
 
     public function actualizarDiseño($codigoDiseño, $datos) {
         try {
+            // Detectar si es modo completar (solo actualizar campos específicos)
+            $modoCompletar = isset($datos['completar_modo']) && $datos['completar_modo'] == '1';
+            
+            if ($modoCompletar) {
+                return $this->actualizarDiseñoCompletar($codigoDiseño, $datos);
+            }
+            
             // Función auxiliar para convertir valores vacíos a números
             $convertirANumero = function($valor) {
                 return (empty($valor) || $valor === '') ? 0 : (float)$valor;
@@ -108,6 +115,102 @@ class MetodosDisenos extends Conexion {
             ]);
         } catch (PDOException $e) {
             throw new Exception("Error al actualizar diseño: " . $e->getMessage());
+        }
+    }
+
+    public function actualizarDiseñoCompletar($codigoDiseño, $datos) {
+        try {
+            // Función auxiliar para convertir valores
+            $convertirANumero = function($valor) {
+                // Si está vacío, es null, o es string vacío, retornar null
+                if ($valor === null || $valor === '' || (is_string($valor) && trim($valor) === '')) {
+                    return null;
+                }
+                // Si es un número válido, convertirlo a float
+                $numero = floatval($valor);
+                return $numero > 0 ? $numero : null;
+            };
+            
+            // Construir dinámicamente la consulta SQL para actualizar solo los campos enviados
+            $camposActualizar = [];
+            $valores = [];
+            
+            // Campos de texto
+            $camposTexto = ['lineaTecnologica', 'redTecnologica', 'redConocimiento', 
+                           'nivelAcademicoIngreso', 'formacionTrabajoDesarrolloHumano', 'requisitosAdicionales'];
+            
+            foreach ($camposTexto as $campo) {
+                if (isset($datos[$campo])) {
+                    $valor = trim($datos[$campo]);
+                    $camposActualizar[] = "$campo = ?";
+                    $valores[] = $valor !== '' ? $valor : null;
+                }
+            }
+            
+            // Campos numéricos
+            $camposNumericos = ['gradoNivelAcademico', 'edadMinima'];
+            
+            foreach ($camposNumericos as $campo) {
+                if (isset($datos[$campo])) {
+                    $valor = $convertirANumero($datos[$campo]);
+                    $camposActualizar[] = "$campo = ?";
+                    $valores[] = $valor;
+                }
+            }
+            
+            // Manejar campos de desarrollo (horas o meses)
+            $horasLectiva = $convertirANumero($datos['horasDesarrolloLectiva'] ?? '');
+            $horasProductiva = $convertirANumero($datos['horasDesarrolloProductiva'] ?? '');
+            $mesesLectiva = $convertirANumero($datos['mesesDesarrolloLectiva'] ?? '');
+            $mesesProductiva = $convertirANumero($datos['mesesDesarrolloProductiva'] ?? '');
+            
+            // Verificar qué opción se está usando
+            $usandoHoras = ($horasLectiva !== null && $horasProductiva !== null);
+            $usandoMeses = ($mesesLectiva !== null && $mesesProductiva !== null);
+            
+            if ($usandoHoras) {
+                // Usuario eligió horas, actualizar horas y limpiar meses
+                $camposActualizar[] = "horasDesarrolloLectiva = ?";
+                $valores[] = $horasLectiva;
+                $camposActualizar[] = "horasDesarrolloProductiva = ?";
+                $valores[] = $horasProductiva;
+                $camposActualizar[] = "horasDesarrolloDiseño = ?";
+                $valores[] = $horasLectiva + $horasProductiva;
+                
+                // Limpiar campos de meses (poner NULL)
+                $camposActualizar[] = "mesesDesarrolloLectiva = NULL";
+                $camposActualizar[] = "mesesDesarrolloProductiva = NULL";
+                $camposActualizar[] = "mesesDesarrolloDiseño = NULL";
+                
+            } elseif ($usandoMeses) {
+                // Usuario eligió meses, actualizar meses y limpiar horas
+                $camposActualizar[] = "mesesDesarrolloLectiva = ?";
+                $valores[] = $mesesLectiva;
+                $camposActualizar[] = "mesesDesarrolloProductiva = ?";
+                $valores[] = $mesesProductiva;
+                $camposActualizar[] = "mesesDesarrolloDiseño = ?";
+                $valores[] = $mesesLectiva + $mesesProductiva;
+                
+                // Limpiar campos de horas (poner NULL)
+                $camposActualizar[] = "horasDesarrolloLectiva = NULL";
+                $camposActualizar[] = "horasDesarrolloProductiva = NULL";
+                $camposActualizar[] = "horasDesarrolloDiseño = NULL";
+            }
+            
+            // Si no hay campos para actualizar, retornar true
+            if (empty($camposActualizar)) {
+                return true;
+            }
+            
+            // Construir y ejecutar la consulta
+            $sql = "UPDATE diseños SET " . implode(', ', $camposActualizar) . " WHERE codigoDiseño = ?";
+            $valores[] = $codigoDiseño;
+            
+            $stmt = $this->conexion->prepare($sql);
+            return $stmt->execute($valores);
+            
+        } catch (PDOException $e) {
+            throw new Exception("Error al completar diseño: " . $e->getMessage());
         }
     }
 
@@ -185,70 +288,6 @@ class MetodosDisenos extends Conexion {
             ]);
         } catch (PDOException $e) {
             throw new Exception("Error al actualizar competencia: " . $e->getMessage());
-        }
-    }
-
-    public function actualizarCompetenciaConCodigo($codigoDiseñoCompetenciaOriginal, $nuevoCodigoCompetencia, $datos) {
-        try {
-            $this->conexion->beginTransaction();
-            
-            // Obtener el código del diseño desde el código completo original
-            $partesOriginales = explode('-', $codigoDiseñoCompetenciaOriginal);
-            $codigoDiseño = $partesOriginales[0] . '-' . $partesOriginales[1];
-            $nuevoCodDiseñoCompetencia = $codigoDiseño . '-' . $nuevoCodigoCompetencia;
-            
-            // Función auxiliar para convertir valores vacíos a números
-            $convertirANumero = function($valor) {
-                return (empty($valor) || $valor === '') ? 0 : (float)$valor;
-            };
-            
-            // Convertir campo numérico
-            $horasDesarrolloCompetencia = $convertirANumero($datos['horasDesarrolloCompetencia'] ?? '');
-            
-            // 1. Actualizar RAPs para cambiar las referencias al código de competencia
-            // Los RAPs tienen formato: codigoDiseño-codigoCompetencia-numeroRap
-            // Necesitamos cambiar solo la parte del código de competencia
-            $sqlUpdateRaps = "UPDATE raps SET 
-                codigoDiseñoCompetenciaRap = REPLACE(codigoDiseñoCompetenciaRap, ?, ?)
-                WHERE codigoDiseñoCompetenciaRap LIKE ?";
-            $stmtRaps = $this->conexion->prepare($sqlUpdateRaps);
-            $patronBusqueda = $codigoDiseñoCompetenciaOriginal . '-%';
-            $stmtRaps->execute([$codigoDiseñoCompetenciaOriginal, $nuevoCodDiseñoCompetencia, $patronBusqueda]);
-            
-            // 2. Actualizar la competencia con todos los datos incluyendo el nuevo código
-            $sqlUpdateCompetencia = "UPDATE competencias SET 
-                codigoDiseñoCompetencia = ?, 
-                codigoCompetencia = ?,
-                nombreCompetencia = ?, 
-                normaUnidadCompetencia = ?, 
-                horasDesarrolloCompetencia = ?, 
-                requisitosAcademicosInstructor = ?, 
-                experienciaLaboralInstructor = ? 
-                WHERE codigoDiseñoCompetencia = ?";
-            
-            $stmtCompetencia = $this->conexion->prepare($sqlUpdateCompetencia);
-            $resultado = $stmtCompetencia->execute([
-                $nuevoCodDiseñoCompetencia,
-                $nuevoCodigoCompetencia,
-                $datos['nombreCompetencia'], 
-                $datos['normaUnidadCompetencia'],
-                $horasDesarrolloCompetencia, 
-                $datos['requisitosAcademicosInstructor'],
-                $datos['experienciaLaboralInstructor'], 
-                $codigoDiseñoCompetenciaOriginal
-            ]);
-            
-            if ($resultado) {
-                $this->conexion->commit();
-                return true;
-            } else {
-                $this->conexion->rollback();
-                return false;
-            }
-            
-        } catch (PDOException $e) {
-            $this->conexion->rollback();
-            throw new Exception("Error al actualizar competencia con código: " . $e->getMessage());
         }
     }
 
