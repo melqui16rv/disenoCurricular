@@ -34,18 +34,18 @@ class MetodosDisenos extends Conexion {
         try {
             // Generar codigoDiseño concatenando codigoPrograma y versionPrograma
             $codigoDiseño = $datos['codigoPrograma'] . '-' . $datos['versionPrograma'];
-            
+
             // Función auxiliar para convertir valores vacíos a números
             $convertirANumero = function($valor) {
                 return (empty($valor) || $valor === '') ? 0 : (float)$valor;
             };
-            
+
             // Convertir campos numéricos
             $horasLectiva = $convertirANumero($datos['horasDesarrolloLectiva'] ?? '');
             $horasProductiva = $convertirANumero($datos['horasDesarrolloProductiva'] ?? '');
             $mesesLectiva = $convertirANumero($datos['mesesDesarrolloLectiva'] ?? '');
             $mesesProductiva = $convertirANumero($datos['mesesDesarrolloProductiva'] ?? '');
-            
+
             // Calcular campos derivados
             $horasDesarrolloDiseño = $horasLectiva + $horasProductiva;
             $mesesDesarrolloDiseño = $mesesLectiva + $mesesProductiva;
@@ -76,22 +76,22 @@ class MetodosDisenos extends Conexion {
         try {
             // Detectar si es modo completar (solo actualizar campos específicos)
             $modoCompletar = isset($datos['completar_modo']) && $datos['completar_modo'] == '1';
-            
+
             if ($modoCompletar) {
                 return $this->actualizarDiseñoCompletar($codigoDiseño, $datos);
             }
-            
+
             // Función auxiliar para convertir valores vacíos a números
             $convertirANumero = function($valor) {
                 return (empty($valor) || $valor === '') ? 0 : (float)$valor;
             };
-            
+
             // Convertir campos numéricos
             $horasLectiva = $convertirANumero($datos['horasDesarrolloLectiva'] ?? '');
             $horasProductiva = $convertirANumero($datos['horasDesarrolloProductiva'] ?? '');
             $mesesLectiva = $convertirANumero($datos['mesesDesarrolloLectiva'] ?? '');
             $mesesProductiva = $convertirANumero($datos['mesesDesarrolloProductiva'] ?? '');
-            
+
             // Calcular campos derivados
             $horasDesarrolloDiseño = $horasLectiva + $horasProductiva;
             $mesesDesarrolloDiseño = $mesesLectiva + $mesesProductiva;
@@ -130,15 +130,15 @@ class MetodosDisenos extends Conexion {
                 $numero = floatval($valor);
                 return $numero > 0 ? $numero : null;
             };
-            
+
             // Construir dinámicamente la consulta SQL para actualizar solo los campos enviados
             $camposActualizar = [];
             $valores = [];
-            
+
             // Campos de texto
             $camposTexto = ['lineaTecnologica', 'redTecnologica', 'redConocimiento', 
                            'nivelAcademicoIngreso', 'formacionTrabajoDesarrolloHumano', 'requisitosAdicionales'];
-            
+
             foreach ($camposTexto as $campo) {
                 if (isset($datos[$campo])) {
                     $valor = trim($datos[$campo]);
@@ -146,10 +146,10 @@ class MetodosDisenos extends Conexion {
                     $valores[] = $valor !== '' ? $valor : null;
                 }
             }
-            
+
             // Campos numéricos
             $camposNumericos = ['gradoNivelAcademico', 'edadMinima'];
-            
+
             foreach ($camposNumericos as $campo) {
                 if (isset($datos[$campo])) {
                     $valor = $convertirANumero($datos[$campo]);
@@ -157,17 +157,17 @@ class MetodosDisenos extends Conexion {
                     $valores[] = $valor;
                 }
             }
-            
+
             // Manejar campos de desarrollo (horas o meses)
             $horasLectiva = $convertirANumero($datos['horasDesarrolloLectiva'] ?? '');
             $horasProductiva = $convertirANumero($datos['horasDesarrolloProductiva'] ?? '');
             $mesesLectiva = $convertirANumero($datos['mesesDesarrolloLectiva'] ?? '');
             $mesesProductiva = $convertirANumero($datos['mesesDesarrolloProductiva'] ?? '');
-            
+
             // Verificar qué opción se está usando
             $usandoHoras = ($horasLectiva !== null && $horasProductiva !== null);
             $usandoMeses = ($mesesLectiva !== null && $mesesProductiva !== null);
-            
+
             if ($usandoHoras) {
                 // Usuario eligió horas, actualizar horas y limpiar meses
                 $camposActualizar[] = "horasDesarrolloLectiva = ?";
@@ -176,12 +176,12 @@ class MetodosDisenos extends Conexion {
                 $valores[] = $horasProductiva;
                 $camposActualizar[] = "horasDesarrolloDiseño = ?";
                 $valores[] = $horasLectiva + $horasProductiva;
-                
+
                 // Limpiar campos de meses (poner NULL)
                 $camposActualizar[] = "mesesDesarrolloLectiva = NULL";
                 $camposActualizar[] = "mesesDesarrolloProductiva = NULL";
                 $camposActualizar[] = "mesesDesarrolloDiseño = NULL";
-                
+
             } elseif ($usandoMeses) {
                 // Usuario eligió meses, actualizar meses y limpiar horas
                 $camposActualizar[] = "mesesDesarrolloLectiva = ?";
@@ -190,25 +190,25 @@ class MetodosDisenos extends Conexion {
                 $valores[] = $mesesProductiva;
                 $camposActualizar[] = "mesesDesarrolloDiseño = ?";
                 $valores[] = $mesesLectiva + $mesesProductiva;
-                
+
                 // Limpiar campos de horas (poner NULL)
                 $camposActualizar[] = "horasDesarrolloLectiva = NULL";
                 $camposActualizar[] = "horasDesarrolloProductiva = NULL";
                 $camposActualizar[] = "horasDesarrolloDiseño = NULL";
             }
-            
+
             // Si no hay campos para actualizar, retornar true
             if (empty($camposActualizar)) {
                 return true;
             }
-            
+
             // Construir y ejecutar la consulta
             $sql = "UPDATE diseños SET " . implode(', ', $camposActualizar) . " WHERE codigoDiseño = ?";
             $valores[] = $codigoDiseño;
-            
+
             $stmt = $this->conexion->prepare($sql);
             return $stmt->execute($valores);
-            
+
         } catch (PDOException $e) {
             throw new Exception("Error al completar diseño: " . $e->getMessage());
         }
@@ -231,7 +231,7 @@ class MetodosDisenos extends Conexion {
     // MÉTODOS PARA COMPETENCIAS
     public function obtenerCompetenciasPorDiseño($codigoDiseño) {
         try {
-            $stmt = $this->conexion->prepare("SELECT * FROM competencias WHERE codigoDiseñoCompetencia LIKE ? ORDER BY codigoDiseñoCompetencia");
+            $stmt = $this->conexion->prepare("SELECT * FROM competencias WHERE codigoDiseñoCompetenciaReporte LIKE ? ORDER BY codigoDiseñoCompetenciaReporte");
             $stmt->execute([$codigoDiseño . '-%']);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -245,19 +245,19 @@ class MetodosDisenos extends Conexion {
             $convertirANumero = function($valor) {
                 return (empty($valor) || $valor === '') ? 0 : (float)$valor;
             };
-            
+
             // Convertir campo numérico
             $horasDesarrolloCompetencia = $convertirANumero($datos['horasDesarrolloCompetencia'] ?? '');
-            
-            $codigoDiseñoCompetencia = $codigoDiseño . '-' . $datos['codigoCompetencia'];
-            
-            $sql = "INSERT INTO competencias (codigoDiseñoCompetencia, codigoCompetencia, nombreCompetencia, 
+
+            $codigoDiseñoCompetenciaReporte = $codigoDiseño . '-' . $datos['codigoCompetenciaReporte'];
+
+            $sql = "INSERT INTO competencias (codigoDiseñoCompetenciaReporte, codigoCompetenciaReporte, codigoCompetenciaPDF, nombreCompetencia, 
                     normaUnidadCompetencia, horasDesarrolloCompetencia, requisitosAcademicosInstructor, 
-                    experienciaLaboralInstructor) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    experienciaLaboralInstructor) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $this->conexion->prepare($sql);
             return $stmt->execute([
-                $codigoDiseñoCompetencia, $datos['codigoCompetencia'], $datos['nombreCompetencia'],
+                $codigoDiseñoCompetenciaReporte, $datos['codigoCompetenciaReporte'], $datos['codigoCompetenciaPDF'] ?? null, $datos['nombreCompetencia'],
                 $datos['normaUnidadCompetencia'], $horasDesarrolloCompetencia,
                 $datos['requisitosAcademicosInstructor'], $datos['experienciaLaboralInstructor']
             ]);
@@ -266,38 +266,38 @@ class MetodosDisenos extends Conexion {
         }
     }
 
-    public function actualizarCompetencia($codigoDiseñoCompetencia, $datos) {
+    public function actualizarCompetencia($codigoDiseñoCompetenciaReporte, $datos) {
         try {
             // Función auxiliar para convertir valores vacíos a números
             $convertirANumero = function($valor) {
                 return (empty($valor) || $valor === '') ? 0 : (float)$valor;
             };
-            
+
             // Convertir campo numérico
             $horasDesarrolloCompetencia = $convertirANumero($datos['horasDesarrolloCompetencia'] ?? '');
-            
-            $sql = "UPDATE competencias SET nombreCompetencia = ?, normaUnidadCompetencia = ?, 
+
+            $sql = "UPDATE competencias SET codigoCompetenciaReporte = ?, codigoCompetenciaPDF = ?, nombreCompetencia = ?, normaUnidadCompetencia = ?, 
                     horasDesarrolloCompetencia = ?, requisitosAcademicosInstructor = ?, 
-                    experienciaLaboralInstructor = ? WHERE codigoDiseñoCompetencia = ?";
+                    experienciaLaboralInstructor = ? WHERE codigoDiseñoCompetenciaReporte = ?";
 
             $stmt = $this->conexion->prepare($sql);
             return $stmt->execute([
-                $datos['nombreCompetencia'], $datos['normaUnidadCompetencia'],
+                $datos['codigoCompetenciaReporte'], $datos['codigoCompetenciaPDF'] ?? null, $datos['nombreCompetencia'], $datos['normaUnidadCompetencia'],
                 $horasDesarrolloCompetencia, $datos['requisitosAcademicosInstructor'],
-                $datos['experienciaLaboralInstructor'], $codigoDiseñoCompetencia
+                $datos['experienciaLaboralInstructor'], $codigoDiseñoCompetenciaReporte
             ]);
         } catch (PDOException $e) {
             throw new Exception("Error al actualizar competencia: " . $e->getMessage());
         }
     }
 
-    public function eliminarCompetencia($codigoDiseñoCompetencia) {
+    public function eliminarCompetencia($codigoDiseñoCompetenciaReporte) {
         try {
             // Primero eliminar RAPs relacionados
-            $this->eliminarRapsPorCompetencia($codigoDiseñoCompetencia);
+            $this->eliminarRapsPorCompetencia($codigoDiseñoCompetenciaReporte);
             // Luego eliminar la competencia
-            $stmt = $this->conexion->prepare("DELETE FROM competencias WHERE codigoDiseñoCompetencia = ?");
-            return $stmt->execute([$codigoDiseñoCompetencia]);
+            $stmt = $this->conexion->prepare("DELETE FROM competencias WHERE codigoDiseñoCompetenciaReporte = ?");
+            return $stmt->execute([$codigoDiseñoCompetenciaReporte]);
         } catch (PDOException $e) {
             throw new Exception("Error al eliminar competencia: " . $e->getMessage());
         }
@@ -305,7 +305,7 @@ class MetodosDisenos extends Conexion {
 
     public function eliminarCompetenciasPorDiseño($codigoDiseño) {
         try {
-            $stmt = $this->conexion->prepare("DELETE FROM competencias WHERE codigoDiseñoCompetencia LIKE ?");
+            $stmt = $this->conexion->prepare("DELETE FROM competencias WHERE codigoDiseñoCompetenciaReporte LIKE ?");
             return $stmt->execute([$codigoDiseño . '-%']);
         } catch (PDOException $e) {
             throw new Exception("Error al eliminar competencias del diseño: " . $e->getMessage());
@@ -313,93 +313,81 @@ class MetodosDisenos extends Conexion {
     }
 
     // MÉTODOS PARA RAPS
-    public function obtenerRapsPorCompetencia($codigoDiseñoCompetencia) {
+    public function obtenerRapsPorCompetencia($codigoDiseñoCompetenciaReporte) {
         try {
-            $stmt = $this->conexion->prepare("SELECT * FROM raps WHERE codigoDiseñoCompetenciaRap LIKE ? ORDER BY codigoDiseñoCompetenciaRap");
-            $stmt->execute([$codigoDiseñoCompetencia . '-%']);
+            $stmt = $this->conexion->prepare("SELECT * FROM raps WHERE codigoDiseñoCompetenciaReporteRap LIKE ? ORDER BY codigoDiseñoCompetenciaReporteRap");
+            $stmt->execute([$codigoDiseñoCompetenciaReporte . '-%']);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new Exception("Error al obtener RAPs: " . $e->getMessage());
         }
     }
 
-    public function insertarRap($codigoDiseñoCompetencia, $datos) {
+    public function insertarRap($codigoDiseñoCompetenciaReporte, $datos) {
         try {
             // Función auxiliar para convertir valores vacíos a números
             $convertirANumero = function($valor) {
                 return (empty($valor) || $valor === '') ? 0 : (float)$valor;
             };
-            
+
             // Convertir campo numérico
             $horasDesarrolloRap = $convertirANumero($datos['horasDesarrolloRap'] ?? '');
-            
-            // Primero insertamos para obtener el codigoRapAutomatico
-            $sql = "INSERT INTO raps (codigoRapDiseño, nombreRap, horasDesarrolloRap) 
-                    VALUES (?, ?, ?)";
+
+            // Generar el código completo del RAP
+            $codigoDiseñoCompetenciaReporteRap = $codigoDiseñoCompetenciaReporte . '-' . $datos['codigoRapReporte'];
+
+            $sql = "INSERT INTO raps (codigoDiseñoCompetenciaReporteRap, codigoRapReporte, nombreRap, horasDesarrolloRap) 
+                    VALUES (?, ?, ?, ?)";
 
             $stmt = $this->conexion->prepare($sql);
-            $result = $stmt->execute([
-                $datos['codigoRapDiseño'], 
+            return $stmt->execute([
+                $codigoDiseñoCompetenciaReporteRap,
+                $datos['codigoRapReporte'], 
                 $datos['nombreRap'], 
                 $horasDesarrolloRap
             ]);
-            
-            if ($result) {
-                // Obtener el ID auto-generado
-                $codigoRapAutomatico = $this->conexion->lastInsertId();
-                
-                // Generar el código completo
-                $codigoDiseñoCompetenciaRap = $codigoDiseñoCompetencia . '-' . $codigoRapAutomatico;
-                
-                // Actualizar el registro con el código completo
-                $sqlUpdate = "UPDATE raps SET codigoDiseñoCompetenciaRap = ? WHERE codigoRapAutomatico = ?";
-                $stmtUpdate = $this->conexion->prepare($sqlUpdate);
-                return $stmtUpdate->execute([$codigoDiseñoCompetenciaRap, $codigoRapAutomatico]);
-            }
-            
-            return false;
         } catch (PDOException $e) {
             throw new Exception("Error al insertar RAP: " . $e->getMessage());
         }
     }
 
-    public function actualizarRap($codigoDiseñoCompetenciaRap, $datos) {
+    public function actualizarRap($codigoDiseñoCompetenciaReporteRap, $datos) {
         try {
             // Función auxiliar para convertir valores vacíos a números
             $convertirANumero = function($valor) {
                 return (empty($valor) || $valor === '') ? 0 : (float)$valor;
             };
-            
+
             // Convertir campo numérico
             $horasDesarrolloRap = $convertirANumero($datos['horasDesarrolloRap'] ?? '');
-            
-            $sql = "UPDATE raps SET codigoRapDiseño = ?, nombreRap = ?, horasDesarrolloRap = ? 
-                    WHERE codigoDiseñoCompetenciaRap = ?";
+
+            $sql = "UPDATE raps SET codigoRapReporte = ?, nombreRap = ?, horasDesarrolloRap = ? 
+                    WHERE codigoDiseñoCompetenciaReporteRap = ?";
             $stmt = $this->conexion->prepare($sql);
             return $stmt->execute([
-                $datos['codigoRapDiseño'], 
+                $datos['codigoRapReporte'], 
                 $datos['nombreRap'], 
                 $horasDesarrolloRap, 
-                $codigoDiseñoCompetenciaRap
+                $codigoDiseñoCompetenciaReporteRap
             ]);
         } catch (PDOException $e) {
             throw new Exception("Error al actualizar RAP: " . $e->getMessage());
         }
     }
 
-    public function eliminarRap($codigoDiseñoCompetenciaRap) {
+    public function eliminarRap($codigoDiseñoCompetenciaReporteRap) {
         try {
-            $stmt = $this->conexion->prepare("DELETE FROM raps WHERE codigoDiseñoCompetenciaRap = ?");
-            return $stmt->execute([$codigoDiseñoCompetenciaRap]);
+            $stmt = $this->conexion->prepare("DELETE FROM raps WHERE codigoDiseñoCompetenciaReporteRap = ?");
+            return $stmt->execute([$codigoDiseñoCompetenciaReporteRap]);
         } catch (PDOException $e) {
             throw new Exception("Error al eliminar RAP: " . $e->getMessage());
         }
     }
 
-    public function eliminarRapsPorCompetencia($codigoDiseñoCompetencia) {
+    public function eliminarRapsPorCompetencia($codigoDiseñoCompetenciaReporte) {
         try {
-            $stmt = $this->conexion->prepare("DELETE FROM raps WHERE codigoDiseñoCompetenciaRap LIKE ?");
-            return $stmt->execute([$codigoDiseñoCompetencia . '-%']);
+            $stmt = $this->conexion->prepare("DELETE FROM raps WHERE codigoDiseñoCompetenciaReporteRap LIKE ?");
+            return $stmt->execute([$codigoDiseñoCompetenciaReporte . '-%']);
         } catch (PDOException $e) {
             throw new Exception("Error al eliminar RAPs de la competencia: " . $e->getMessage());
         }
@@ -407,27 +395,27 @@ class MetodosDisenos extends Conexion {
 
     public function eliminarRapsPorDiseño($codigoDiseño) {
         try {
-            $stmt = $this->conexion->prepare("DELETE FROM raps WHERE codigoDiseñoCompetenciaRap LIKE ?");
+            $stmt = $this->conexion->prepare("DELETE FROM raps WHERE codigoDiseñoCompetenciaReporteRap LIKE ?");
             return $stmt->execute([$codigoDiseño . '-%']);
         } catch (PDOException $e) {
             throw new Exception("Error al eliminar RAPs del diseño: " . $e->getMessage());
         }
     }
 
-    public function obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia) {
+    public function obtenerCompetenciaPorCodigo($codigoDiseñoCompetenciaReporte) {
         try {
-            $stmt = $this->conexion->prepare("SELECT * FROM competencias WHERE codigoDiseñoCompetencia = ?");
-            $stmt->execute([$codigoDiseñoCompetencia]);
+            $stmt = $this->conexion->prepare("SELECT * FROM competencias WHERE codigoDiseñoCompetenciaReporte = ?");
+            $stmt->execute([$codigoDiseñoCompetenciaReporte]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new Exception("Error al obtener competencia: " . $e->getMessage());
         }
     }
 
-    public function obtenerRapPorCodigo($codigoDiseñoCompetenciaRap) {
+    public function obtenerRapPorCodigo($codigoDiseñoCompetenciaReporteRap) {
         try {
-            $stmt = $this->conexion->prepare("SELECT * FROM raps WHERE codigoDiseñoCompetenciaRap = ?");
-            $stmt->execute([$codigoDiseñoCompetenciaRap]);
+            $stmt = $this->conexion->prepare("SELECT * FROM raps WHERE codigoDiseñoCompetenciaReporteRap = ?");
+            $stmt->execute([$codigoDiseñoCompetenciaReporteRap]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new Exception("Error al obtener RAP: " . $e->getMessage());

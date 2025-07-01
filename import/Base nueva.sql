@@ -2,87 +2,67 @@
 -- Estructura de tabla para la tabla `diseños`
 --
 CREATE TABLE `diseños` (
-------cargar
+  -- campos a cargar
   `codigoDiseño` varchar(255) NOT NULL,
   `codigoPrograma` varchar(255) NOT NULL,
   `versionPrograma` varchar(255) NOT NULL,
   `nombrePrograma` varchar(255) NOT NULL,
-------
-------parabra "NULL"
+  -- campos con valor por defecto "NULL"
   `lineaTecnologica` varchar(255) DEFAULT NULL,
   `redTecnologica` varchar(255) DEFAULT NULL,
   `redConocimiento` varchar(255) DEFAULT NULL,
------
------numericos "0"
+  -- campos numericos con valor por defecto "0"
   `horasDesarrolloLectiva` decimal(10,2) DEFAULT NULL,
   `horasDesarrolloProductiva` decimal(10,2) DEFAULT NULL,
   `mesesDesarrolloLectiva` decimal(10,2) DEFAULT NULL,
   `mesesDesarrolloProductiva` decimal(10,2) DEFAULT NULL,
   `horasDesarrolloDiseño` decimal(10,2) DEFAULT NULL,
   `mesesDesarrolloDiseño` decimal(10,2) DEFAULT NULL,
------
------palabra "NULL"
+  -- campos con valor por defecto "NULL"
   `nivelAcademicoIngreso` varchar(255) DEFAULT NULL,
-----
-----numerico "0"
+  -- campo numerico con valor por defecto "0"
   `gradoNivelAcademico` int(11) DEFAULT NULL,
-----
-----palabra "NULL"
+  -- campos con valor por defecto "NULL"
   `formacionTrabajoDesarrolloHumano` enum('Si','No') DEFAULT NULL,
-----
-----palabra "NULL"
   `edadMinima` int(11) DEFAULT NULL,
-----
-----palabra "NULL"
   `requisitosAdicionales` text DEFAULT NULL
-----
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Estructura de tabla para la tabla `competencias`
 --
 CREATE TABLE `competencias` (
-  ------cargar
-  `codigoDiseñoCompetenciaDiseno` varchar(255) NOT NULL,
-  `codigoCompetenciaDiseno` varchar(255) NOT NULL,
+  -- campos a cargar
+  `codigoDiseñoCompetenciaReporte` varchar(255) NOT NULL,
+  `codigoCompetenciaReporte` varchar(255) NOT NULL,
   `codigoCompetenciaPDF` varchar(255) DEFAULT NULL,
-  `nombreCompetenciaDiseno` varchar(255) NOT NULL,
-  ------
-  ------palabra "NULL"
+  `nombreCompetencia` varchar(255) NOT NULL,
+  -- campos con valor por defecto "NULL"
   `normaUnidadCompetencia` text DEFAULT NULL,
-  ------
-  ------numerico "0"
+  -- campo numerico con valor por defecto "0"
   `horasDesarrolloCompetencia` decimal(10,2) DEFAULT NULL,
-  ------
-  ------palabra "NULL"
+  -- campos con valor por defecto "NULL"
   `requisitosAcademicosInstructor` text DEFAULT NULL,
   `experienciaLaboralInstructor` text DEFAULT NULL
-  ------
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 --
 -- Estructura de tabla para la tabla `raps`
 --
 CREATE TABLE `raps` (
-  ----cargar
-  `codigoDiseñoCompetenciaDisenoRap` varchar(255) NOT NULL,
-  `codigoRapAutomatico` int(11) NOT NULL,
-  ----
-  ----numerico "0"
-  `codigoRapDiseño` varchar(55) DEFAULT NULL,
-  ------
-  ------palabra "NULL"
+  -- campos a cargar
+  `codigoDiseñoCompetenciaReporteRap` varchar(255) NOT NULL,
+  `codigoRapReporte` varchar(255) NOT NULL,
+  -- campos con valor por defecto "NULL"
   `nombreRap` text DEFAULT NULL,
-  ------
-  ----numerico "0"
+  -- campo numerico con valor por defecto "0"
   `horasDesarrolloRap` decimal(10,2) DEFAULT NULL
-  ------
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 --
 -- Indices de la tabla `competencias`
 --
 ALTER TABLE `competencias`
-  ADD PRIMARY KEY (`codigoDiseñoCompetenciaDiseno`),
-  ADD KEY `idx_codigo_competencia` (`codigoCompetenciaDiseno`);
+  ADD PRIMARY KEY (`codigoDiseñoCompetenciaReporte`),
+  ADD KEY `idx_codigo_competencia` (`codigoCompetenciaReporte`);
 --
 -- Indices de la tabla `diseños`
 --
@@ -93,11 +73,6 @@ ALTER TABLE `diseños`
 -- Indices de la tabla `raps`
 --
 ALTER TABLE `raps`
-  ADD PRIMARY KEY (`codigoDiseñoCompetenciaDisenoRap`),
-  ADD UNIQUE KEY `idx_auto_increment` (`codigoRapAutomatico`);
---
--- AUTO_INCREMENT de la tabla `raps`
---
-ALTER TABLE `raps`
-  MODIFY `codigoRapAutomatico` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  ADD PRIMARY KEY (`codigoDiseñoCompetenciaReporteRap`),
+  ADD KEY `idx_codigo_rap` (`codigoRapReporte`);
 COMMIT;

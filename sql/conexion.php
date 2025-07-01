@@ -5,10 +5,10 @@ ini_set('display_startup_errors', 0);
 ini_set('log_errors', 1);
 
 class Conexion {
-    private $host = 'appscide.com';
-    private $dbname = 'appscide_disenos_curriculares';  
-    private $user = 'appscide_Administrador';    
-    private $password = 'E8oUxamqQTwtM8MrKf#LrqtxJ3p'; 
+    private $host = 'localhost';
+    private $dbname = 'disenos_curriculares';
+    private $user = 'root';
+    private $password = '';
     private $port = 3306;
     private $charset = 'utf8mb4';
     private $conexion;

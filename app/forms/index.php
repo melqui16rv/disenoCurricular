@@ -33,39 +33,39 @@ try {
                 $mensaje = 'Competencia creada exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_competencias';
-                
+
                 // Establecer código del diseño para la redirección
                 $_GET['codigo'] = $_POST['codigoDiseño'];
             }
         } elseif ($accion === 'editar' && $tipo === 'competencias') {
-            if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetencia'], $_POST)) {
+            if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetenciaReporte'], $_POST)) {
                 $mensaje = 'Competencia actualizada exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_competencias';
-                
+
                 // Extraer código del diseño de la competencia para la redirección
-                $partes = explode('-', $_POST['codigoDiseñoCompetencia']);
+                $partes = explode('-', $_POST['codigoDiseñoCompetenciaReporte']);
                 if (count($partes) >= 3) {
                     $_GET['codigo'] = $partes[0] . '-' . $partes[1];
                 }
             }
         } elseif ($accion === 'crear' && $tipo === 'raps') {
-            if ($metodos->insertarRap($_POST['codigoDiseñoCompetencia'], $_POST)) {
+            if ($metodos->insertarRap($_POST['codigoDiseñoCompetenciaReporte'], $_POST)) {
                 $mensaje = 'RAP creado exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_raps';
-                
+
                 // Establecer código de la competencia para la redirección
-                $_GET['codigo'] = $_POST['codigoDiseñoCompetencia'];
+                $_GET['codigo'] = $_POST['codigoDiseñoCompetenciaReporte'];
             }
         } elseif ($accion === 'editar' && $tipo === 'raps') {
-            if ($metodos->actualizarRap($_POST['codigoDiseñoCompetenciaRap'], $_POST)) {
+            if ($metodos->actualizarRap($_POST['codigoDiseñoCompetenciaReporteRap'], $_POST)) {
                 $mensaje = 'RAP actualizado exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_raps';
-                
+
                 // Extraer código de la competencia desde el código del RAP para la redirección
-                $partes = explode('-', $_POST['codigoDiseñoCompetenciaRap']);
+                $partes = explode('-', $_POST['codigoDiseñoCompetenciaReporteRap']);
                 if (count($partes) >= 4) {
                     $_GET['codigo'] = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
                 }
@@ -77,13 +77,13 @@ try {
                 $accion = 'completar_informacion';
             }
         } elseif ($accion === 'completar' && $tipo === 'competencias') {
-            if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetencia'], $_POST)) {
+            if ($metodos->actualizarCompetencia($_POST['codigoDiseñoCompetenciaReporte'], $_POST)) {
                 $mensaje = 'Información de la competencia completada exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'completar_informacion';
             }
         } elseif ($accion === 'completar' && $tipo === 'raps') {
-            if ($metodos->actualizarRap($_POST['codigoDiseñoCompetenciaRap'], $_POST)) {
+            if ($metodos->actualizarRap($_POST['codigoDiseñoCompetenciaReporteRap'], $_POST)) {
                 $mensaje = 'Información del RAP completada exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'completar_informacion';
@@ -104,7 +104,7 @@ try {
                 $mensaje = 'Competencia eliminada exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_competencias';
-                
+
                 // Extraer código del diseño de la competencia para la redirección
                 $partes = explode('-', $codigo);
                 if (count($partes) >= 3) {
@@ -116,7 +116,7 @@ try {
                 $mensaje = 'RAP eliminado exitosamente';
                 $tipoMensaje = 'success';
                 $accion = 'ver_raps';
-                
+
                 // Extraer código de la competencia desde el código del RAP para la redirección
                 $partes = explode('-', $codigo);
                 if (count($partes) >= 4) {
@@ -136,7 +136,7 @@ try {
 
     if ($accion === 'listar' || $accion === 'crear') {
         $diseños = $metodos->obtenerTodosLosDiseños();
-        
+
         // Para crear competencias, cargar información del diseño
         if ($accion === 'crear' && $tipo === 'competencias') {
             $codigoDiseño = $_GET['codigoDiseño'] ?? '';
@@ -144,15 +144,15 @@ try {
                 $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
             }
         }
-        
+
         // Para crear RAPs, cargar información de la competencia y el diseño
         if ($accion === 'crear' && $tipo === 'raps') {
-            $codigoDiseñoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
-            if ($codigoDiseñoCompetencia) {
-                $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
-                
+            $codigoDiseñoCompetenciaReporte = $_GET['codigoDiseñoCompetenciaReporte'] ?? '';
+            if ($codigoDiseñoCompetenciaReporte) {
+                $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetenciaReporte);
+
                 // Extraer código del diseño de la competencia
-                $partes = explode('-', $codigoDiseñoCompetencia);
+                $partes = explode('-', $codigoDiseñoCompetenciaReporte);
                 if (count($partes) >= 3) {
                     $codigoDiseño = $partes[0] . '-' . $partes[1];
                     $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
@@ -164,18 +164,18 @@ try {
         $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
         $competencias = $metodos->obtenerCompetenciasPorDiseño($codigoDiseño);
     } elseif ($accion === 'ver_raps') {
-        $codigoDiseñoCompetencia = $_GET['codigo'] ?? '';
-        $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
-        $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetencia);
+        $codigoDiseñoCompetenciaReporte = $_GET['codigo'] ?? '';
+        $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetenciaReporte);
+        $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetenciaReporte);
     } elseif ($accion === 'editar') {
         if ($tipo === 'disenos') {
             $diseño_actual = $metodos->obtenerDiseñoPorCodigo($_GET['codigo'] ?? '');
         } elseif ($tipo === 'competencias') {
             $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($_GET['codigo'] ?? '');
-            
+
             // Cargar también información del diseño para mostrar contexto
             if ($competencia_actual) {
-                $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+                $partes = explode('-', $competencia_actual['codigoDiseñoCompetenciaReporte']);
                 if (count($partes) >= 3) {
                     $codigoDiseño = $partes[0] . '-' . $partes[1];
                     $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
@@ -183,14 +183,14 @@ try {
             }
         } elseif ($tipo === 'raps') {
             $rap_actual = $metodos->obtenerRapPorCodigo($_GET['codigo'] ?? '');
-            
+
             // Cargar también información de la competencia y el diseño para mostrar contexto
             if ($rap_actual) {
-                $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+                $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaReporteRap']);
                 if (count($partes) >= 4) {
                     $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
                     $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoCompetencia);
-                    
+
                     $codigoDiseño = $partes[0] . '-' . $partes[1];
                     $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
                 }
@@ -201,10 +201,10 @@ try {
             $diseño_actual = $metodos->obtenerDiseñoPorCodigo($_GET['codigo'] ?? '');
         } elseif ($tipo === 'competencias') {
             $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($_GET['codigo'] ?? '');
-            
+
             // Cargar también información del diseño para mostrar contexto
             if ($competencia_actual) {
-                $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+                $partes = explode('-', $competencia_actual['codigoDiseñoCompetenciaReporte']);
                 if (count($partes) >= 3) {
                     $codigoDiseño = $partes[0] . '-' . $partes[1];
                     $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
@@ -212,14 +212,14 @@ try {
             }
         } elseif ($tipo === 'raps') {
             $rap_actual = $metodos->obtenerRapPorCodigo($_GET['codigo'] ?? '');
-            
+
             // Cargar también información de la competencia y el diseño para mostrar contexto
             if ($rap_actual) {
-                $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+                $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaReporteRap']);
                 if (count($partes) >= 4) {
                     $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
                     $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoCompetencia);
-                    
+
                     $codigoDiseño = $partes[0] . '-' . $partes[1];
                     $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
                 }
@@ -246,7 +246,7 @@ try {
     <div class="container">
         <!-- Navegación -->
         <?php include 'vistas/nav.php'; ?>
-        
+
         <!-- Header -->
         <div class="header">
             <h1><i class="fas fa-graduation-cap"></i> Sistema de Diseños Curriculares</h1>

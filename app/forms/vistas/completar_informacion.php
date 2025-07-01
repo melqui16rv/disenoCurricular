@@ -9,52 +9,52 @@ $filtro_busqueda = $_GET['busqueda'] ?? '';
 function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '') {
     $sql = "SELECT * FROM diseños WHERE 1=1";
     $params = [];
-    
+
     if (!empty($filtro_busqueda)) {
         $sql .= " AND (codigoDiseño LIKE ? OR nombrePrograma LIKE ?)";
         $params[] = "%$filtro_busqueda%";
         $params[] = "%$filtro_busqueda%";
     }
-    
+
     $diseños = $metodos->ejecutarConsulta($sql, $params);
     $diseñosConFaltantes = [];
-    
+
     foreach ($diseños as $diseño) {
         $camposFaltantes = [];
-        
+
         // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
-        
+
         // 1. Campos de tecnología y conocimiento
         if (empty($diseño['lineaTecnologica'])) $camposFaltantes[] = 'Línea Tecnológica';
         if (empty($diseño['redTecnologica'])) $camposFaltantes[] = 'Red Tecnológica';
         if (empty($diseño['redConocimiento'])) $camposFaltantes[] = 'Red de Conocimiento';
-        
+
         // 2. Validación de horas y meses (solo si NINGUNO de los dos sistemas está completo)
         $horasLectiva = (float)($diseño['horasDesarrolloLectiva'] ?? 0);
         $horasProductiva = (float)($diseño['horasDesarrolloProductiva'] ?? 0);
         $mesesLectiva = (float)($diseño['mesesDesarrolloLectiva'] ?? 0);
         $mesesProductiva = (float)($diseño['mesesDesarrolloProductiva'] ?? 0);
-        
+
         $tieneHorasCompletas = ($horasLectiva > 0 && $horasProductiva > 0);
         $tieneMesesCompletos = ($mesesLectiva > 0 && $mesesProductiva > 0);
-        
+
         if (!$tieneHorasCompletas && !$tieneMesesCompletos) {
             $camposFaltantes[] = 'Debe completar HORAS (Lectivas + Productivas) O MESES (Lectivos + Productivos)';
         }
-        
+
         // 3. Campos académicos y requisitos
         if (empty($diseño['nivelAcademicoIngreso'])) $camposFaltantes[] = 'Nivel Académico de Ingreso';
         if (empty($diseño['gradoNivelAcademico']) || $diseño['gradoNivelAcademico'] == 0) $camposFaltantes[] = 'Grado del Nivel Académico';
         if (empty($diseño['formacionTrabajoDesarrolloHumano'])) $camposFaltantes[] = 'Formación en Trabajo y Desarrollo Humano';
         if (empty($diseño['edadMinima']) || $diseño['edadMinima'] == 0) $camposFaltantes[] = 'Edad Mínima';
         if (empty($diseño['requisitosAdicionales'])) $camposFaltantes[] = 'Requisitos Adicionales';
-        
+
         if (!empty($camposFaltantes)) {
             $diseño['camposFaltantes'] = $camposFaltantes;
             $diseñosConFaltantes[] = $diseño;
         }
     }
-    
+
     return $diseñosConFaltantes;
 }
 
@@ -62,47 +62,47 @@ function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '') {
 function obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda = '') {
     $sql = "SELECT c.*, d.nombrePrograma 
             FROM competencias c 
-            LEFT JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2) = d.codigoDiseño 
+            LEFT JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2) = d.codigoDiseño 
             WHERE 1=1";
     $params = [];
-    
+
     if (!empty($filtro_busqueda)) {
-        $sql .= " AND (c.codigoDiseñoCompetencia LIKE ? OR c.nombreCompetencia LIKE ? OR d.nombrePrograma LIKE ?)";
+        $sql .= " AND (c.codigoDiseñoCompetenciaReporte LIKE ? OR c.nombreCompetencia LIKE ? OR d.nombrePrograma LIKE ?)";
         $params[] = "%$filtro_busqueda%";
         $params[] = "%$filtro_busqueda%";
         $params[] = "%$filtro_busqueda%";
     }
-    
+
     $competencias = $metodos->ejecutarConsulta($sql, $params);
     $competenciasConFaltantes = [];
-    
+
     foreach ($competencias as $competencia) {
         $camposFaltantes = [];
-        
+
         // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
-        
+
         // 1. Nombre de la competencia
         if (empty($competencia['nombreCompetencia'])) $camposFaltantes[] = 'Nombre de la Competencia';
-        
+
         // 2. Norma unidad competencia
         if (empty($competencia['normaUnidadCompetencia'])) $camposFaltantes[] = 'Norma Unidad Competencia';
-        
+
         // 3. Horas de desarrollo (debe ser > 0)
         $horas = (float)($competencia['horasDesarrolloCompetencia'] ?? 0);
         if ($horas <= 0) $camposFaltantes[] = 'Horas de Desarrollo (debe ser > 0)';
-        
+
         // 4. Requisitos académicos del instructor
         if (empty($competencia['requisitosAcademicosInstructor'])) $camposFaltantes[] = 'Requisitos Académicos del Instructor';
-        
+
         // 5. Experiencia laboral del instructor
         if (empty($competencia['experienciaLaboralInstructor'])) $camposFaltantes[] = 'Experiencia Laboral del Instructor';
-        
+
         if (!empty($camposFaltantes)) {
             $competencia['camposFaltantes'] = $camposFaltantes;
             $competenciasConFaltantes[] = $competencia;
         }
     }
-    
+
     return $competenciasConFaltantes;
 }
 
@@ -110,43 +110,43 @@ function obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda = '') 
 function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '') {
     $sql = "SELECT r.*, c.nombreCompetencia, d.nombrePrograma 
             FROM raps r 
-            LEFT JOIN competencias c ON SUBSTRING_INDEX(r.codigoDiseñoCompetenciaRap, '-', 3) = c.codigoDiseñoCompetencia 
-            LEFT JOIN diseños d ON SUBSTRING_INDEX(r.codigoDiseñoCompetenciaRap, '-', 2) = d.codigoDiseño 
+            LEFT JOIN competencias c ON SUBSTRING_INDEX(r.codigoDiseñoCompetenciaReporteRap, '-', 3) = c.codigoDiseñoCompetenciaReporte 
+            LEFT JOIN diseños d ON SUBSTRING_INDEX(r.codigoDiseñoCompetenciaReporteRap, '-', 2) = d.codigoDiseño 
             WHERE 1=1";
     $params = [];
-    
+
     if (!empty($filtro_busqueda)) {
-        $sql .= " AND (r.codigoDiseñoCompetenciaRap LIKE ? OR r.nombreRap LIKE ? OR c.nombreCompetencia LIKE ? OR d.nombrePrograma LIKE ?)";
+        $sql .= " AND (r.codigoDiseñoCompetenciaReporteRap LIKE ? OR r.nombreRap LIKE ? OR c.nombreCompetencia LIKE ? OR d.nombrePrograma LIKE ?)";
         $params[] = "%$filtro_busqueda%";
         $params[] = "%$filtro_busqueda%";
         $params[] = "%$filtro_busqueda%";
         $params[] = "%$filtro_busqueda%";
     }
-    
+
     $raps = $metodos->ejecutarConsulta($sql, $params);
     $rapsConFaltantes = [];
-    
+
     foreach ($raps as $rap) {
         $camposFaltantes = [];
-        
+
         // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
-        
-        // 1. Código RAP diseño
-        if (empty($rap['codigoRapDiseño'])) $camposFaltantes[] = 'Código RAP Diseño';
-        
+
+        // 1. Código RAP reporte (nuevo campo en lugar de codigoRapDiseño)
+        if (empty($rap['codigoRapReporte'])) $camposFaltantes[] = 'Código RAP Reporte';
+
         // 2. Nombre del RAP
         if (empty($rap['nombreRap'])) $camposFaltantes[] = 'Nombre del RAP';
-        
+
         // 3. Horas de desarrollo (debe ser > 0)
         $horas = (float)($rap['horasDesarrolloRap'] ?? 0);
         if ($horas <= 0) $camposFaltantes[] = 'Horas de Desarrollo (debe ser > 0)';
-        
+
         if (!empty($camposFaltantes)) {
             $rap['camposFaltantes'] = $camposFaltantes;
             $rapsConFaltantes[] = $rap;
         }
     }
-    
+
     return $rapsConFaltantes;
 }
 
@@ -188,7 +188,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                 <p>Total Registros con Información Faltante</p>
             </div>
         </div>
-        
+
         <div class="stat-card disenos">
             <div class="stat-icon">
                 <i class="fas fa-graduation-cap"></i>
@@ -198,7 +198,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                 <p>Diseños con Campos Faltantes</p>
             </div>
         </div>
-        
+
         <div class="stat-card competencias">
             <div class="stat-icon">
                 <i class="fas fa-tasks"></i>
@@ -208,7 +208,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                 <p>Competencias con Campos Faltantes</p>
             </div>
         </div>
-        
+
         <div class="stat-card raps">
             <div class="stat-icon">
                 <i class="fas fa-list-ul"></i>
@@ -224,7 +224,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
     <div class="filters-section">
         <form method="GET" class="filters-form">
             <input type="hidden" name="accion" value="completar_informacion">
-            
+
             <div class="filter-group">
                 <label for="seccion">Sección:</label>
                 <select name="seccion" id="seccion" onchange="this.form.submit()">
@@ -234,16 +234,16 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                     <option value="raps" <?php echo $filtro_seccion === 'raps' ? 'selected' : ''; ?>>Solo RAPs</option>
                 </select>
             </div>
-            
+
             <div class="filter-group">
                 <label for="busqueda">Buscar:</label>
                 <input type="text" name="busqueda" id="busqueda" value="<?php echo htmlspecialchars($filtro_busqueda); ?>" placeholder="Código, nombre del programa...">
             </div>
-            
+
             <button type="submit" class="btn-filter">
                 <i class="fas fa-search"></i> Filtrar
             </button>
-            
+
             <a href="?accion=completar_informacion" class="btn-reset">
                 <i class="fas fa-times"></i> Limpiar
             </a>
@@ -259,7 +259,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                 <p>No se encontraron registros con información faltante.</p>
             </div>
         <?php else: ?>
-            
+
             <!-- Diseños con campos faltantes -->
             <?php if (!empty($diseñosConFaltantes) && ($filtro_seccion === 'todas' || $filtro_seccion === 'disenos')): ?>
                 <div class="section-results">
@@ -319,7 +319,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                             <tbody>
                                 <?php foreach ($competenciasConFaltantes as $competencia): ?>
                                     <tr>
-                                        <td class="codigo"><?php echo htmlspecialchars($competencia['codigoDiseñoCompetencia']); ?></td>
+                                        <td class="codigo"><?php echo htmlspecialchars($competencia['codigoDiseñoCompetenciaReporte']); ?></td>
                                         <td class="competencia"><?php echo htmlspecialchars($competencia['nombreCompetencia'] ?? 'Sin nombre'); ?></td>
                                         <td class="programa"><?php echo htmlspecialchars($competencia['nombrePrograma'] ?? 'Sin programa'); ?></td>
                                         <td class="campos-faltantes">
@@ -330,7 +330,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                                             </div>
                                         </td>
                                         <td class="actions">
-                                            <a href="?accion=completar&tipo=competencias&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetencia']); ?>" class="btn-edit">
+                                            <a href="?accion=completar&tipo=competencias&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetenciaReporte']); ?>" class="btn-edit">
                                                 <i class="fas fa-edit"></i> Completar
                                             </a>
                                         </td>
@@ -361,7 +361,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                             <tbody>
                                 <?php foreach ($rapsConFaltantes as $rap): ?>
                                     <tr>
-                                        <td class="codigo"><?php echo htmlspecialchars($rap['codigoDiseñoCompetenciaRap']); ?></td>
+                                        <td class="codigo"><?php echo htmlspecialchars($rap['codigoDiseñoCompetenciaReporteRap']); ?></td>
                                         <td class="rap"><?php echo htmlspecialchars($rap['nombreRap'] ?? 'Sin nombre'); ?></td>
                                         <td class="competencia"><?php echo htmlspecialchars($rap['nombreCompetencia'] ?? 'Sin competencia'); ?></td>
                                         <td class="programa"><?php echo htmlspecialchars($rap['nombrePrograma'] ?? 'Sin programa'); ?></td>
@@ -373,7 +373,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                                             </div>
                                         </td>
                                         <td class="actions">
-                                            <a href="?accion=completar&tipo=raps&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaRap']); ?>" class="btn-edit">
+                                            <a href="?accion=completar&tipo=raps&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaReporteRap']); ?>" class="btn-edit">
                                                 <i class="fas fa-edit"></i> Completar
                                             </a>
                                         </td>
@@ -384,7 +384,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                     </div>
                 </div>
             <?php endif; ?>
-            
+
         <?php endif; ?>
     </div>
 </div>
@@ -642,21 +642,21 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
     .statistics-panel {
         grid-template-columns: 1fr;
     }
-    
+
     .filters-form {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .filter-group select,
     .filter-group input {
         min-width: auto;
     }
-    
+
     .results-table {
         font-size: 0.8rem;
     }
-    
+
     .results-table th,
     .results-table td {
         padding: 0.5rem;
