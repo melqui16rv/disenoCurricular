@@ -1,24 +1,23 @@
 <?php
-$_SERVER['DOCUMENT_ROOT'] = '/home/appscide/public_html/disenoCurricular';
+// Para MAMP, el document root suele ser diferente
+// No forzar DOCUMENT_ROOT, usar el que proporciona el servidor
+// $_SERVER['DOCUMENT_ROOT'] = '/Users/melquiromero/Documents/phpStorm/disenoCurricular';
 
-if (isset($_SERVER['HTTP_HOST'])) {
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'];
-    $path = str_replace('/app/forms/index.php', '', $_SERVER['SCRIPT_NAME']);
-    define('BASE_URL', $protocol . '://' . $host . $path . '/');
+// Detectar automáticamente BASE_URL basado en el entorno
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+// Para MAMP/XAMPP con puerto específico
+if (strpos($host, ':') !== false) {
+    // Ya incluye el puerto (ej: localhost:8889)
+    define('BASE_URL', $protocol . $host . '/');
 } else {
-    define('BASE_URL', '/disenoCurricular/');
+    // Sin puerto específico
+    define('BASE_URL', $protocol . $host . '/');
 }
 
-// Solo mostrar errores en desarrollo local, no en AJAX
-if (!isset($_GET['accion']) && !isset($_POST['accion'])) {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-} else {
-    // Para AJAX mantener errores ocultos
-    ini_set('display_errors', 0);
-    ini_set('display_startup_errors', 0);
-    ini_set('log_errors', 1);
-}
+// Mostrar errores generados por alguna acción
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 ?>

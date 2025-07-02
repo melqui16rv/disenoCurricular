@@ -21,7 +21,7 @@
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
         <strong>Completando información para:</strong> <?php echo htmlspecialchars($competencia_actual['nombreCompetencia'] ?? 'Competencia'); ?>
-        <br><strong>Código:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia']); ?>
+        <br><strong>Código:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetenciaReporte']); ?>
         (No se puede modificar el código)
         <button type="button" class="btn btn-sm btn-outline-primary btn-toggle ms-2" onclick="toggleDiseñoInfo()" id="btnToggleDiseño">
             <i class="fas fa-eye"></i> Ver detalles del diseño
@@ -37,7 +37,7 @@
             </h5>
             <?php 
             // Extraer código del diseño de la competencia
-            $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+            $partes = explode('-', $competencia_actual['codigoDiseñoCompetenciaReporte']);
             $codigoDiseño = $partes[0] . '-' . $partes[1];
             
             if (isset($diseño_actual) && $diseño_actual): 
@@ -102,7 +102,7 @@
     </div>
 
     <form method="POST" id="formCompletarCompetencia">
-        <input type="hidden" name="codigoDiseñoCompetencia" value="<?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia'] ?? ''); ?>">
+        <input type="hidden" name="codigoDiseñoCompetenciaReporte" value="<?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetenciaReporte'] ?? ''); ?>">
         <input type="hidden" name="completar_modo" value="1">
         
         <!-- Información básica de la competencia -->

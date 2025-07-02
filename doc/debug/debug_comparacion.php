@@ -80,9 +80,9 @@ if (count($disenosConMismaCompetencia) > 0) {
 echo "<h2>5. Test Consulta RAPs por Competencia-Diseño</h2>";
 if (count($disenosConMismaCompetencia) > 0) {
     $primerDiseno = $disenosConMismaCompetencia[0];
-    echo "Consultando RAPs para: " . $primerDiseno['codigoDiseñoCompetencia'] . "<br>";
+    echo "Consultando RAPs para: " . $primerDiseno['codigoDiseñoCompetenciaReporte'] . "<br>";
     
-    $raps = $comparacion->obtenerRapsPorCompetenciaDiseno($primerDiseno['codigoDiseñoCompetencia']);
+    $raps = $comparacion->obtenerRapsPorCompetenciaDiseno($primerDiseno['codigoDiseñoCompetenciaReporte']);
     echo "RAPs encontrados: " . count($raps) . "<br>";
     
     if (count($raps) > 0) {
@@ -121,10 +121,10 @@ try {
                 d.codigoDiseño,
                 d.nombrePrograma,
                 d.versionPrograma,
-                c.codigoDiseñoCompetencia,
-                SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2) as extracted_code
+                c.codigoDiseñoCompetenciaReporte,
+                SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2) as extracted_code
             FROM competencias c
-            INNER JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2) = d.codigoDiseño
+            INNER JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2) = d.codigoDiseño
             WHERE c.codigoCompetencia = '220201501'
             AND d.codigoDiseño != '124101-1'";
     
@@ -141,7 +141,7 @@ try {
             echo "<td>" . $row['codigoDiseño'] . "</td>";
             echo "<td>" . $row['nombrePrograma'] . "</td>";
             echo "<td>" . $row['versionPrograma'] . "</td>";
-            echo "<td>" . $row['codigoDiseñoCompetencia'] . "</td>";
+            echo "<td>" . $row['codigoDiseñoCompetenciaReporte'] . "</td>";
             echo "<td>" . $row['extracted_code'] . "</td>";
             echo "</tr>";
         }

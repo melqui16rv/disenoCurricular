@@ -14,11 +14,11 @@
 <?php else: ?>
 
 <form method="POST" id="formEditarRap">
-    <input type="hidden" name="codigoDiseñoCompetenciaRap" value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>">
+    <input type="hidden" name="codigoDiseñoCompetenciaReporteRap" value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaReporteRap'] ?? ''); ?>">
     
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        <strong>Código del RAP:</strong> <?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>
+        <strong>Código del RAP:</strong> <?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaReporteRap'] ?? ''); ?>
         (No se puede modificar el código)
         <div class="d-flex gap-2 mt-2">
             <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" onclick="toggleDiseñoInfo()" id="btnToggleDiseño">
@@ -39,7 +39,7 @@
             </h5>
             <?php 
             // Extraer código de la competencia del RAP
-            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaReporteRap']);
             $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
             
             if (isset($diseño_actual) && $diseño_actual): 
@@ -112,21 +112,21 @@
             </h5>
             <?php 
             // Extraer código de la competencia del RAP
-            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaReporteRap']);
             $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
             
             if (isset($competencia_actual) && $competencia_actual): 
             ?>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-hashtag"></i> Código Completo:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia']); ?></p>
+                        <p><strong><i class="fas fa-hashtag"></i> Código Completo:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetenciaReporte']); ?></p>
                         <p><strong><i class="fas fa-tag"></i> Código de Competencia:</strong> <?php echo htmlspecialchars($competencia_actual['codigoCompetencia']); ?></p>
                         <p><strong><i class="fas fa-clock"></i> Horas Asignadas:</strong> <span class="text-primary fw-bold"><?php echo number_format($competencia_actual['horasDesarrolloCompetencia'] ?? 0, 0); ?>h</span></p>
                     </div>
                     <div class="col-md-6">
                         <?php 
                         // Extraer información del diseño de la competencia
-                        $partesDiseño = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+                        $partesDiseño = explode('-', $competencia_actual['codigoDiseñoCompetenciaReporte']);
                         $codigoDiseño = $partesDiseño[0] . '-' . $partesDiseño[1];
                         ?>
                         <p><strong><i class="fas fa-file-alt"></i> Pertenece al Diseño:</strong> <?php echo htmlspecialchars($codigoDiseño); ?></p>
@@ -205,7 +205,7 @@
         <div class="form-group">
             <label><i class="fas fa-hashtag"></i> Código Técnico del RAP</label>
             <input type="text" class="form-control" readonly 
-                   value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>"
+                   value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaReporteRap'] ?? ''); ?>"
                    style="background: #e9ecef; font-family: monospace;">
             <small class="text-muted">Este código técnico no se puede modificar</small>
         </div>
@@ -218,9 +218,9 @@
 
     <div class="form-row">
         <div class="form-group">
-            <label for="codigoRapDiseño"><i class="fas fa-tag"></i> Código del RAP (Diseño) *</label>
-            <input type="text" id="codigoRapDiseño" name="codigoRapDiseño" class="form-control" required 
-                   value="<?php echo htmlspecialchars($rap_actual['codigoRapDiseño'] ?? ''); ?>"
+            <label for="codigoRapReporte"><i class="fas fa-tag"></i> Código del RAP (Diseño) *</label>
+            <input type="text" id="codigoRapReporte" name="codigoRapReporte" class="form-control" required 
+                   value="<?php echo htmlspecialchars($rap_actual['codigoRapReporte'] ?? ''); ?>"
                    placeholder="Ejemplo: RA1" maxlength="20">
             <small class="text-muted">
                 <i class="fas fa-info-circle"></i> Este es el código que aparece en el diseño curricular
@@ -249,7 +249,7 @@
     <div class="flex-between" style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #e9ecef;">
         <?php 
         // Extraer el código de la competencia del RAP
-        $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+        $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaReporteRap']);
         $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
         ?>
         <a href="?accion=ver_raps&codigo=<?php echo urlencode($codigoCompetencia); ?>" class="btn btn-secondary">
@@ -266,10 +266,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validación de formulario
     document.getElementById('formEditarRap').addEventListener('submit', function(e) {
         const nombreRap = document.getElementById('nombreRap').value.trim();
-        const codigoRapDiseño = document.getElementById('codigoRapDiseño').value.trim();
+        const codigoRapReporte = document.getElementById('codigoRapReporte').value.trim();
         const horas = parseFloat(document.getElementById('horasDesarrolloRap').value) || 0;
         
-        if (!nombreRap || !codigoRapDiseño) {
+        if (!nombreRap || !codigoRapReporte) {
             e.preventDefault();
             alert('Por favor, completa el resultado de aprendizaje y el código del RAP.');
             return;
@@ -372,7 +372,7 @@ function toggleComparacion() {
 
 // Función para cargar datos de comparación via AJAX
 function cargarComparacion() {
-    const codigoRapCompleto = '<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>';
+    const codigoRapCompleto = '<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaReporteRap'] ?? ''); ?>';
     const partes = codigoRapCompleto.split('-');
     const codigoCompetenciaReal = partes[2]; // Extraer código de competencia
     const disenoActual = partes[0] + '-' + partes[1]; // Extraer código de diseño actual

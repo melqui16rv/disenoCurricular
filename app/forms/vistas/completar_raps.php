@@ -21,7 +21,7 @@
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
         <strong>Completando información para:</strong> <?php echo htmlspecialchars($rap_actual['nombreRap'] ?? 'RAP'); ?>
-        <br><strong>Código:</strong> <?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap']); ?>
+        <br><strong>Código:</strong> <?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaReporteRap']); ?>
         (No se puede modificar el código)
         <div class="d-flex gap-2 mt-2">
             <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" onclick="toggleDiseñoInfo()" id="btnToggleDiseño">
@@ -42,7 +42,7 @@
             </h5>
             <?php 
             // Extraer código de la competencia del RAP
-            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaReporteRap']);
             $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
             
             if (isset($diseño_actual) && $diseño_actual): 
@@ -115,21 +115,21 @@
             </h5>
             <?php 
             // Extraer código de la competencia del RAP
-            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaRap']);
+            $partes = explode('-', $rap_actual['codigoDiseñoCompetenciaReporteRap']);
             $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
             
             if (isset($competencia_actual) && $competencia_actual): 
             ?>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-hashtag"></i> Código Completo:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia']); ?></p>
+                        <p><strong><i class="fas fa-hashtag"></i> Código Completo:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetenciaReporte']); ?></p>
                         <p><strong><i class="fas fa-tag"></i> Código de Competencia:</strong> <?php echo htmlspecialchars($competencia_actual['codigoCompetencia']); ?></p>
                         <p><strong><i class="fas fa-clock"></i> Horas Asignadas:</strong> <span class="text-primary fw-bold"><?php echo number_format($competencia_actual['horasDesarrolloCompetencia'] ?? 0, 0); ?>h</span></p>
                     </div>
                     <div class="col-md-6">
                         <?php 
                         // Extraer información del diseño de la competencia
-                        $partesDiseño = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+                        $partesDiseño = explode('-', $competencia_actual['codigoDiseñoCompetenciaReporte']);
                         $codigoDiseño = $partesDiseño[0] . '-' . $partesDiseño[1];
                         ?>
                         <p><strong><i class="fas fa-file-alt"></i> Pertenece al Diseño:</strong> <?php echo htmlspecialchars($codigoDiseño); ?></p>
@@ -193,7 +193,7 @@
     </div>
 
     <form method="POST" id="formCompletarRap">
-        <input type="hidden" name="codigoDiseñoCompetenciaRap" value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>">
+        <input type="hidden" name="codigoDiseñoCompetenciaReporteRap" value="<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaReporteRap'] ?? ''); ?>">
         <input type="hidden" name="completar_modo" value="1">
         
         <!-- Información básica del RAP -->
@@ -411,7 +411,7 @@ function toggleComparacion() {
 
 // Función para cargar datos de comparación via AJAX
 function cargarComparacion() {
-    const codigoRapCompleto = '<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaRap'] ?? ''); ?>';
+    const codigoRapCompleto = '<?php echo htmlspecialchars($rap_actual['codigoDiseñoCompetenciaReporteRap'] ?? ''); ?>';
     const partes = codigoRapCompleto.split('-');
     const codigoCompetenciaReal = partes[2]; // Extraer código de competencia
     const disenoActual = partes[0] + '-' + partes[1]; // Extraer código de diseño actual

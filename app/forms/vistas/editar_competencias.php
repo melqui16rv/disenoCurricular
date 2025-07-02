@@ -14,11 +14,11 @@
 <?php else: ?>
 
 <form method="POST" id="formEditarCompetencia">
-    <input type="hidden" name="codigoDiseñoCompetencia" value="<?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia'] ?? ''); ?>">
+    <input type="hidden" name="codigoDiseñoCompetenciaReporte" value="<?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetenciaReporte'] ?? ''); ?>">
     
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        <strong>Código de la Competencia:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia'] ?? ''); ?>
+        <strong>Código de la Competencia:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetenciaReporte'] ?? ''); ?>
         (No se puede modificar el código)
         <button type="button" class="btn btn-sm btn-outline-primary btn-toggle ms-2" onclick="toggleDiseñoInfo()" id="btnToggleDiseño">
             <i class="fas fa-eye"></i> Ver detalles del diseño
@@ -34,7 +34,7 @@
             </h5>
             <?php 
             // Extraer código del diseño de la competencia
-            $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+            $partes = explode('-', $competencia_actual['codigoDiseñoCompetenciaReporte']);
             $codigoDiseño = $partes[0] . '-' . $partes[1];
             
             if (isset($diseño_actual) && $diseño_actual): 
@@ -102,7 +102,7 @@
         <div class="form-group">
             <label><i class="fas fa-hashtag"></i> Código de la Competencia</label>
             <input type="text" class="form-control" readonly 
-                   value="<?php echo htmlspecialchars($competencia_actual['codigoCompetencia'] ?? ''); ?>"
+                   value="<?php echo htmlspecialchars($competencia_actual['codigoCompetenciaReporte'] ?? ''); ?>"
                    style="background: #e9ecef;">
         </div>
         <div class="form-group">
@@ -152,7 +152,7 @@
     <div class="flex-between" style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #e9ecef;">
         <?php 
         // Extraer el código del diseño de la competencia
-        $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+        $partes = explode('-', $competencia_actual['codigoDiseñoCompetenciaReporte']);
         $codigoDiseño = $partes[0] . '-' . $partes[1];
         ?>
         <a href="?accion=ver_competencias&codigo=<?php echo urlencode($codigoDiseño); ?>" class="btn btn-secondary">

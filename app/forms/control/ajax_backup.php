@@ -97,8 +97,8 @@ try {
             $codigoCompetencia = $_GET['codigoCompetencia'] ?? '';
             
             if ($codigoDiseño && $codigoCompetencia) {
-                $codigoDiseñoCompetencia = $codigoDiseño . '-' . $codigoCompetencia;
-                $competencia = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
+                $codigoDiseñoCompetenciaReporte = $codigoDiseño . '-' . $codigoCompetencia;
+                $competencia = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetenciaReporte);
                 
                 if ($competencia) {
                     $response['success'] = false;
@@ -106,18 +106,18 @@ try {
                 } else {
                     $response['success'] = true;
                     $response['message'] = 'Código disponible';
-                    $response['data'] = ['codigoDiseñoCompetencia' => $codigoDiseñoCompetencia];
+                    $response['data'] = ['codigoDiseñoCompetenciaReporte' => $codigoDiseñoCompetenciaReporte];
                 }
             }
             break;
             
         case 'validar_codigo_rap':
-            $codigoDiseñoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
+            $codigoDiseñoCompetenciaReporte = $_GET['codigoDiseñoCompetenciaReporte'] ?? '';
             $codigoRap = $_GET['codigoRap'] ?? '';
             
-            if ($codigoDiseñoCompetencia && $codigoRap) {
-                $codigoDiseñoCompetenciaRap = $codigoDiseñoCompetencia . '-' . $codigoRap;
-                $rap = $metodos->obtenerRapPorCodigo($codigoDiseñoCompetenciaRap);
+            if ($codigoDiseñoCompetenciaReporte && $codigoRap) {
+                $codigoDiseñoCompetenciaReporteRap = $codigoDiseñoCompetenciaReporte . '-' . $codigoRap;
+                $rap = $metodos->obtenerRapPorCodigo($codigoDiseñoCompetenciaReporteRap);
                 
                 if ($rap) {
                     $response['success'] = false;
@@ -125,7 +125,7 @@ try {
                 } else {
                     $response['success'] = true;
                     $response['message'] = 'Código disponible';
-                    $response['data'] = ['codigoDiseñoCompetenciaRap' => $codigoDiseñoCompetenciaRap];
+                    $response['data'] = ['codigoDiseñoCompetenciaReporteRap' => $codigoDiseñoCompetenciaReporteRap];
                 }
             }
             break;
@@ -156,9 +156,9 @@ try {
             break;
             
         case 'obtener_raps_competencia':
-            $codigoDiseñoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
-            if ($codigoDiseñoCompetencia) {
-                $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetencia);
+            $codigoDiseñoCompetenciaReporte = $_GET['codigoDiseñoCompetenciaReporte'] ?? '';
+            if ($codigoDiseñoCompetenciaReporte) {
+                $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetenciaReporte);
                 $response['success'] = true;
                 $response['data'] = $raps;
             }
@@ -191,12 +191,12 @@ try {
                             d.nombrePrograma,
                             d.versionPrograma,
                             d.codigoPrograma,
-                            c.codigoDiseñoCompetencia,
+                            c.codigoDiseñoCompetenciaReporte,
                             c.nombreCompetencia,
                             c.horasDesarrolloCompetencia
                         FROM competencias c
                         INNER JOIN diseños d ON (
-                            d.codigoDiseño = SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2)
+                            d.codigoDiseño = SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2)
                         )
                         WHERE c.codigoCompetencia = ?";
                 
@@ -220,17 +220,17 @@ try {
                 foreach ($disenosConMismaCompetencia as $diseno) {
                     // Buscar RAPs que coincidan con el patrón del diseño-competencia
                     $sqlRaps = "SELECT 
-                                    codigoDiseñoCompetenciaRap,
+                                    codigoDiseñoCompetenciaReporteRap,
                                     codigoRapAutomatico,
                                     codigoRapDiseño,
                                     nombreRap,
                                     horasDesarrolloRap
                                 FROM raps 
-                                WHERE codigoDiseñoCompetenciaRap LIKE ?
+                                WHERE codigoDiseñoCompetenciaReporteRap LIKE ?
                                 ORDER BY codigoRapAutomatico";
                     
                     $stmtRaps = $conexion->prepare($sqlRaps);
-                    $patronCompetencia = $diseno['codigoDiseñoCompetencia'] . '-%';
+                    $patronCompetencia = $diseno['codigoDiseñoCompetenciaReporte'] . '-%';
                     $stmtRaps->execute([$patronCompetencia]);
                     
                     $raps = $stmtRaps->fetchAll(PDO::FETCH_ASSOC);

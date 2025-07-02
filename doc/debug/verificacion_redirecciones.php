@@ -17,10 +17,10 @@ if (count($partes) >= 3) {
 }
 
 // Simular POST data para editar RAP  
-$_POST['codigoDiseñoCompetenciaRap'] = '521240-1-220201501-1';
+$_POST['codigoDiseñoCompetenciaReporteRap'] = '521240-1-220201501-1';
 
 // Simular la extracción del código de competencia desde RAP
-$partes = explode('-', $_POST['codigoDiseñoCompetenciaRap']);
+$partes = explode('-', $_POST['codigoDiseñoCompetenciaReporteRap']);
 if (count($partes) >= 4) {
     $codigoCompetencia = $partes[0] . '-' . $partes[1] . '-' . $partes[2];
     echo "✅ Código de competencia extraído correctamente: {$codigoCompetencia}\n";

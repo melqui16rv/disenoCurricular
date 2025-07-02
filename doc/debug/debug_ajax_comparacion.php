@@ -32,13 +32,13 @@ try {
                 d.nombrePrograma,
                 d.versionPrograma,
                 d.codigoPrograma,
-                c.codigoDiseñoCompetencia,
+                c.codigoDiseñoCompetenciaReporte,
                 c.nombreCompetencia,
                 c.horasDesarrolloCompetencia
             FROM competencias c
             INNER JOIN diseños d ON (
                 CONCAT(d.codigoPrograma, '-', d.versionPrograma) = d.codigoDiseño 
-                AND d.codigoDiseño = SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2)
+                AND d.codigoDiseño = SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2)
             )
             WHERE c.codigoCompetencia = :codigoCompetencia";
     
@@ -75,7 +75,7 @@ try {
             echo "<td>" . htmlspecialchars($diseno['codigoDiseño']) . "</td>";
             echo "<td>" . htmlspecialchars($diseno['nombrePrograma']) . "</td>";
             echo "<td>" . htmlspecialchars($diseno['versionPrograma']) . "</td>";
-            echo "<td>" . htmlspecialchars($diseno['codigoDiseñoCompetencia']) . "</td>";
+            echo "<td>" . htmlspecialchars($diseno['codigoDiseñoCompetenciaReporte']) . "</td>";
             echo "</tr>";
         }
         echo "</table>";
@@ -89,17 +89,17 @@ try {
             echo "<h4>Diseño: " . htmlspecialchars($diseno['nombrePrograma']) . " (v" . htmlspecialchars($diseno['versionPrograma']) . ")</h4>";
             
             $sqlRaps = "SELECT 
-                            codigoDiseñoCompetenciaRap,
+                            codigoDiseñoCompetenciaReporteRap,
                             codigoRapAutomatico,
                             codigoRapDiseño,
                             nombreRap,
                             horasDesarrolloRap
                         FROM raps 
-                        WHERE codigoDiseñoCompetenciaRap LIKE :patronCompetencia
+                        WHERE codigoDiseñoCompetenciaReporteRap LIKE :patronCompetencia
                         ORDER BY codigoRapAutomatico";
             
             $stmtRaps = $conexion->prepare($sqlRaps);
-            $patronCompetencia = $diseno['codigoDiseñoCompetencia'] . '-%';
+            $patronCompetencia = $diseno['codigoDiseñoCompetenciaReporte'] . '-%';
             $stmtRaps->bindParam(':patronCompetencia', $patronCompetencia, PDO::PARAM_STR);
             $stmtRaps->execute();
             
@@ -116,7 +116,7 @@ try {
                 
                 foreach ($raps as $rap) {
                     echo "<tr>";
-                    echo "<td><code>" . htmlspecialchars($rap['codigoDiseñoCompetenciaRap']) . "</code></td>";
+                    echo "<td><code>" . htmlspecialchars($rap['codigoDiseñoCompetenciaReporteRap']) . "</code></td>";
                     echo "<td>" . htmlspecialchars($rap['codigoRapDiseño']) . "</td>";
                     echo "<td>" . htmlspecialchars(substr($rap['nombreRap'], 0, 80)) . "...</td>";
                     echo "<td>" . htmlspecialchars($rap['horasDesarrolloRap']) . "h</td>";

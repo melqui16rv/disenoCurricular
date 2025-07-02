@@ -186,25 +186,25 @@ foreach ($competenciasPrueba as $competencia) {
 // Simular datos de RAPs
 $rapsPrueba = [
     [
-        'codigoDiseñoCompetenciaRap' => '100001-1-001-1',
+        'codigoDiseñoCompetenciaReporteRap' => '100001-1-001-1',
         'codigoRapDiseño' => '',
         'nombreRap' => 'Analizar requerimientos de software según especificaciones del cliente',
         'horasDesarrolloRap' => 80.00
     ],
     [
-        'codigoDiseñoCompetenciaRap' => '100001-1-001-2',
+        'codigoDiseñoCompetenciaReporteRap' => '100001-1-001-2',
         'codigoRapDiseño' => 'RA2',
         'nombreRap' => '',
         'horasDesarrolloRap' => 120.00
     ],
     [
-        'codigoDiseñoCompetenciaRap' => '100001-1-001-3',
+        'codigoDiseñoCompetenciaReporteRap' => '100001-1-001-3',
         'codigoRapDiseño' => 'RA3',
         'nombreRap' => 'Implementar funcionalidades del software según diseño técnico',
         'horasDesarrolloRap' => 0.00
     ],
     [
-        'codigoDiseñoCompetenciaRap' => '100005-1-001-1',
+        'codigoDiseñoCompetenciaReporteRap' => '100005-1-001-1',
         'codigoRapDiseño' => 'RA1',
         'nombreRap' => 'Identificar procesos administrativos de la organización según estructura empresarial',
         'horasDesarrolloRap' => 80.00
@@ -231,7 +231,7 @@ function validarRap($rap) {
 echo "=== VERIFICANDO RAPS ===\n";
 foreach ($rapsPrueba as $rap) {
     $camposFaltantes = validarRap($rap);
-    $codigo = $rap['codigoDiseñoCompetenciaRap'];
+    $codigo = $rap['codigoDiseñoCompetenciaReporteRap'];
     $nombre = $rap['nombreRap'] ?: 'Sin nombre';
     
     if (!empty($camposFaltantes)) {

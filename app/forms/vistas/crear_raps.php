@@ -97,19 +97,19 @@
                 Información de la Competencia
             </h5>
             <?php 
-            $codigoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
+            $codigoCompetencia = $_GET['codigoDiseñoCompetenciaReporte'] ?? '';
             if ($codigoCompetencia && isset($competencia_actual) && $competencia_actual): 
             ?>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-hashtag"></i> Código Completo:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetencia']); ?></p>
+                        <p><strong><i class="fas fa-hashtag"></i> Código Completo:</strong> <?php echo htmlspecialchars($competencia_actual['codigoDiseñoCompetenciaReporte']); ?></p>
                         <p><strong><i class="fas fa-tag"></i> Código de Competencia:</strong> <?php echo htmlspecialchars($competencia_actual['codigoCompetencia']); ?></p>
                         <p><strong><i class="fas fa-clock"></i> Horas Asignadas:</strong> <span class="text-primary fw-bold"><?php echo number_format($competencia_actual['horasDesarrolloCompetencia'] ?? 0, 0); ?>h</span></p>
                     </div>
                     <div class="col-md-6">
                         <?php 
                         // Extraer información del diseño de la competencia
-                        $partes = explode('-', $competencia_actual['codigoDiseñoCompetencia']);
+                        $partes = explode('-', $competencia_actual['codigoDiseñoCompetenciaReporte']);
                         $codigoDiseño = $partes[0] . '-' . $partes[1];
                         ?>
                         <p><strong><i class="fas fa-file-alt"></i> Pertenece al Diseño:</strong> <?php echo htmlspecialchars($codigoDiseño); ?></p>
@@ -178,7 +178,7 @@
         <i class="fas fa-lightbulb"></i> 
         <strong>Código Automático:</strong> El sistema generará automáticamente un código técnico único.
         <br><strong>Ejemplo:</strong> Si este es el primer RAP de la competencia, el código será: 
-        <code><?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>-1</code>
+        <code><?php echo htmlspecialchars($_GET['codigoDiseñoCompetenciaReporte'] ?? ''); ?>-1</code>
     </div>
 
     <!-- Sección de Comparación de RAPs -->
@@ -220,7 +220,7 @@
     </div>
 
     <div class="flex-between" style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #e9ecef;">
-        <a href="?accion=ver_raps&codigo=<?php echo urlencode($_GET['codigoDiseñoCompetencia'] ?? ''); ?>" class="btn btn-secondary">
+        <a href="?accion=ver_raps&codigo=<?php echo urlencode($_GET['codigoDiseñoCompetenciaReporte'] ?? ''); ?>" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Cancelar
         </a>
         <button type="submit" class="btn btn-success">
@@ -356,7 +356,7 @@ function toggleComparacion() {
 
 // Función para cargar datos de comparación via AJAX
 function cargarComparacion() {
-    const codigoCompetencia = '<?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>';
+    const codigoCompetencia = '<?php echo htmlspecialchars($_GET['codigoDiseñoCompetenciaReporte'] ?? ''); ?>';
     const partes = codigoCompetencia.split('-');
     const codigoCompetenciaReal = partes[2]; // Extraer código de competencia
     const disenoActual = partes[0] + '-' + partes[1]; // Extraer código de diseño actual

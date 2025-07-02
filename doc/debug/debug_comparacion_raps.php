@@ -47,9 +47,9 @@ try {
                 d.codigoDiseño,
                 d.nombrePrograma,
                 d.versionPrograma,
-                c.codigoDiseñoCompetencia
+                c.codigoDiseñoCompetenciaReporte
             FROM competencias c
-            INNER JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2) = d.codigoDiseño
+            INNER JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2) = d.codigoDiseño
             WHERE c.codigoCompetencia = :codigoCompetencia
             ORDER BY d.nombrePrograma, d.versionPrograma";
     
@@ -70,16 +70,16 @@ try {
         echo "<h3>RAPs para diseño: " . $diseno['nombrePrograma'] . "</h3>";
         
         $sqlRaps = "SELECT 
-                        codigoDiseñoCompetenciaRap,
+                        codigoDiseñoCompetenciaReporteRap,
                         codigoRapDiseño,
                         nombreRap,
                         horasDesarrolloRap
                     FROM raps 
-                    WHERE codigoDiseñoCompetenciaRap LIKE :codigoDisenoCompetencia
+                    WHERE codigoDiseñoCompetenciaReporteRap LIKE :codigoDisenoCompetencia
                     ORDER BY codigoRapAutomatico";
         
         $stmtRaps = $conexion->prepare($sqlRaps);
-        $patron = $diseno['codigoDiseñoCompetencia'] . '-%';
+        $patron = $diseno['codigoDiseñoCompetenciaReporte'] . '-%';
         $stmtRaps->bindParam(':codigoDisenoCompetencia', $patron, PDO::PARAM_STR);
         $stmtRaps->execute();
         
@@ -98,16 +98,16 @@ try {
     
     foreach ($disenosConMismaCompetencia as $diseno) {
         $sqlRaps = "SELECT 
-                        codigoDiseñoCompetenciaRap,
+                        codigoDiseñoCompetenciaReporteRap,
                         codigoRapDiseño,
                         nombreRap,
                         horasDesarrolloRap
                     FROM raps 
-                    WHERE codigoDiseñoCompetenciaRap LIKE :codigoDisenoCompetencia
+                    WHERE codigoDiseñoCompetenciaReporteRap LIKE :codigoDisenoCompetencia
                     ORDER BY codigoRapAutomatico";
         
         $stmtRaps = $conexion->prepare($sqlRaps);
-        $patron = $diseno['codigoDiseñoCompetencia'] . '-%';
+        $patron = $diseno['codigoDiseñoCompetenciaReporte'] . '-%';
         $stmtRaps->bindParam(':codigoDisenoCompetencia', $patron, PDO::PARAM_STR);
         $stmtRaps->execute();
         

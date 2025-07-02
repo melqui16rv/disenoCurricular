@@ -49,11 +49,11 @@
                     <tr>
                         <td>
                             <span style="font-family: monospace; font-weight: bold; color: #2c3e50;">
-                                <?php echo htmlspecialchars($competencia['codigoCompetencia']); ?>
+                                <?php echo htmlspecialchars($competencia['codigoCompetenciaReporte']); ?>
                             </span>
                             <br>
                             <small class="text-muted" style="font-family: monospace;">
-                                <?php echo htmlspecialchars($competencia['codigoDiseñoCompetencia']); ?>
+                                <?php echo htmlspecialchars($competencia['codigoDiseñoCompetenciaReporte']); ?>
                             </small>
                         </td>
                         <td>
@@ -93,15 +93,15 @@
                         </td>
                         <td>
                             <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <a href="?accion=ver_raps&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetencia']); ?>" 
+                                <a href="?accion=ver_raps&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetenciaReporte']); ?>" 
                                    class="btn btn-primary btn-sm" title="Ver RAPs">
                                     <i class="fas fa-list-ul"></i> RAPs
                                 </a>
-                                <a href="?accion=editar&tipo=competencias&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetencia']); ?>" 
+                                <a href="?accion=editar&tipo=competencias&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetenciaReporte']); ?>" 
                                    class="btn btn-warning btn-sm" title="Editar">
                                     <i class="fas fa-edit"></i> Editar
                                 </a>
-                                <a href="?accion=eliminar&tipo=competencias&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetencia']); ?>" 
+                                <a href="?accion=eliminar&tipo=competencias&codigo=<?php echo urlencode($competencia['codigoDiseñoCompetenciaReporte']); ?>" 
                                    class="btn btn-danger btn-sm" 
                                    onclick="return confirm('¿Estás seguro de eliminar esta competencia? Se eliminarán también todos sus RAPs asociados.')"
                                    title="Eliminar">

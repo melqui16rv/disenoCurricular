@@ -8,7 +8,7 @@
             </p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="?accion=crear&tipo=raps&codigoDiseñoCompetencia=<?php echo urlencode($_GET['codigo'] ?? ''); ?>" class="btn btn-primary">
+            <a href="?accion=crear&tipo=raps&codigoDiseñoCompetenciaReporte=<?php echo urlencode($_GET['codigo'] ?? ''); ?>" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Nuevo RAP
             </a>
             <?php 
@@ -33,7 +33,7 @@
         <i class="fas fa-clipboard-check" style="font-size: 4rem; color: #bdc3c7; margin-bottom: 1rem;"></i>
         <h3 style="color: #7f8c8d;">No hay RAPs registrados</h3>
         <p style="color: #95a5a6;">Esta competencia aún no tiene Resultados de Aprendizaje asociados</p>
-        <a href="?accion=crear&tipo=raps&codigoDiseñoCompetencia=<?php echo urlencode($_GET['codigo'] ?? ''); ?>" class="btn btn-primary mt-3">
+        <a href="?accion=crear&tipo=raps&codigoDiseñoCompetenciaReporte=<?php echo urlencode($_GET['codigo'] ?? ''); ?>" class="btn btn-primary mt-3">
             <i class="fas fa-plus"></i> Crear Primer RAP
         </a>
     </div>
@@ -53,11 +53,11 @@
                     <tr>
                         <td>
                             <span style="font-family: monospace; font-weight: bold; color: #2c3e50; font-size: 1.1rem;">
-                                <?php echo htmlspecialchars($rap['codigoRapDiseño'] ?? 'Sin código'); ?>
+                                <?php echo htmlspecialchars($rap['codigoRapReporte'] ?? 'Sin código'); ?>
                             </span>
                             <br>
                             <small class="text-muted" style="font-family: monospace; font-size: 0.8rem;">
-                                Técnico: <?php echo htmlspecialchars($rap['codigoDiseñoCompetenciaRap']); ?>
+                                Técnico: <?php echo htmlspecialchars($rap['codigoDiseñoCompetenciaReporteRap']); ?>
                             </small>
                         </td>
                         <td>
@@ -72,11 +72,11 @@
                         </td>
                         <td>
                             <div style="display: flex; flex-direction: column; gap: 5px;">
-                                <a href="?accion=editar&tipo=raps&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaRap']); ?>" 
+                                <a href="?accion=editar&tipo=raps&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaReporteRap']); ?>" 
                                    class="btn btn-warning btn-sm" title="Editar">
                                     <i class="fas fa-edit"></i> Editar
                                 </a>
-                                <a href="?accion=eliminar&tipo=raps&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaRap']); ?>" 
+                                <a href="?accion=eliminar&tipo=raps&codigo=<?php echo urlencode($rap['codigoDiseñoCompetenciaReporteRap']); ?>" 
                                    class="btn btn-danger btn-sm" 
                                    onclick="return confirm('¿Estás seguro de eliminar este RAP?')"
                                    title="Eliminar">

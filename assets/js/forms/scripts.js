@@ -329,10 +329,10 @@ document.addEventListener('DOMContentLoaded', function() {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
                 const codigoRap = this.value.trim();
-                const codigoDiseñoCompetencia = document.querySelector('input[name="codigoDiseñoCompetencia"]')?.value;
+                const codigoDiseñoCompetenciaReporte = document.querySelector('input[name="codigoDiseñoCompetenciaReporte"]')?.value;
                 
-                if (codigoRap && codigoDiseñoCompetencia) {
-                    fetch(`control/ajax.php?accion=validar_codigo_rap&codigoDiseñoCompetencia=${encodeURIComponent(codigoDiseñoCompetencia)}&codigoRap=${encodeURIComponent(codigoRap)}`)
+                if (codigoRap && codigoDiseñoCompetenciaReporte) {
+                    fetch(`control/ajax.php?accion=validar_codigo_rap&codigoDiseñoCompetenciaReporte=${encodeURIComponent(codigoDiseñoCompetenciaReporte)}&codigoRap=${encodeURIComponent(codigoRap)}`)
                         .then(response => response.json())
                         .then(data => {
                             mostrarValidacion(this, data.success, data.message);
