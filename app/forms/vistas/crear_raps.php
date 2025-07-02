@@ -4,11 +4,11 @@
 </div>
 
 <form method="POST" id="formRap">
-    <input type="hidden" name="codigoDiseñoCompetencia" value="<?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>">
+    <input type="hidden" name="codigoDiseñoCompetenciaReporte" value="<?php echo htmlspecialchars($_GET['codigoDiseñoCompetenciaReporte'] ?? ''); ?>">
     
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        <strong>Competencia:</strong> <?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>
+        <strong>Competencia:</strong> <?php echo htmlspecialchars($_GET['codigoDiseñoCompetenciaReporte'] ?? ''); ?>
         <div class="d-flex gap-2 mt-2">
             <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" onclick="toggleDiseñoInfo()" id="btnToggleDiseño">
                 <i class="fas fa-eye"></i> Ver diseño curricular
@@ -27,7 +27,7 @@
                 Información del Diseño Curricular
             </h5>
             <?php 
-            $codigoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
+            $codigoCompetencia = $_GET['codigoDiseñoCompetenciaReporte'] ?? '';
             if ($codigoCompetencia && isset($diseño_actual) && $diseño_actual): 
             ?>
                 <div class="row">
@@ -159,11 +159,11 @@
 
     <div class="form-row">
         <div class="form-group">
-            <label for="codigoRapDiseño"><i class="fas fa-hashtag"></i> Código del RAP (Diseño) *</label>
-            <input type="text" id="codigoRapDiseño" name="codigoRapDiseño" class="form-control" required 
+            <label for="codigoRapReporte"><i class="fas fa-hashtag"></i> Código del RAP *</label>
+            <input type="text" id="codigoRapReporte" name="codigoRapReporte" class="form-control" required 
                    placeholder="Ejemplo: RA1" maxlength="20">
             <small class="text-muted">
-                <i class="fas fa-info-circle"></i> Este es el código que aparecerá en el diseño curricular. 
+                <i class="fas fa-info-circle"></i> Código del Resultado de Aprendizaje. 
                 El código técnico completo se generará automáticamente.
             </small>
         </div>
@@ -233,11 +233,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Validación de formulario
     document.getElementById('formRap').addEventListener('submit', function(e) {
-        const codigoRapDiseño = document.getElementById('codigoRapDiseño').value.trim();
+        const codigoRapReporte = document.getElementById('codigoRapReporte').value.trim();
         const nombreRap = document.getElementById('nombreRap').value.trim();
         const horas = parseFloat(document.getElementById('horasDesarrolloRap').value) || 0;
         
-        if (!codigoRapDiseño || !nombreRap) {
+        if (!codigoRapReporte || !nombreRap) {
             e.preventDefault();
             alert('Por favor, completa el código del RAP y resultado de aprendizaje.');
             return;
@@ -261,17 +261,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Mostrar vista previa del código completo
-    document.getElementById('codigoRapDiseño').addEventListener('input', function() {
-        const codigoCompetencia = '<?php echo htmlspecialchars($_GET['codigoDiseñoCompetencia'] ?? ''); ?>';
+    document.getElementById('codigoRapReporte').addEventListener('input', function() {
+        const codigoCompetencia = '<?php echo htmlspecialchars($_GET['codigoDiseñoCompetenciaReporte'] ?? ''); ?>';
         const codigoRap = this.value.trim();
         
         // Actualizar el texto de ayuda
         const helpText = this.nextElementSibling;
         if (helpText) {
             if (codigoRap) {
-                helpText.innerHTML = '<i class="fas fa-info-circle"></i> Código para diseño: <strong>' + codigoRap + '</strong><br>El código técnico completo se generará automáticamente al guardar.';
+                helpText.innerHTML = '<i class="fas fa-info-circle"></i> Código del RAP: <strong>' + codigoRap + '</strong><br>El código técnico completo se generará automáticamente al guardar.';
             } else {
-                helpText.innerHTML = '<i class="fas fa-info-circle"></i> Este es el código que aparecerá en el diseño curricular. El código técnico completo se generará automáticamente.';
+                helpText.innerHTML = '<i class="fas fa-info-circle"></i> Código del Resultado de Aprendizaje. El código técnico completo se generará automáticamente.';
             }
         }
     });

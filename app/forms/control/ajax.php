@@ -107,8 +107,8 @@ try {
             $codigoCompetencia = $_GET['codigoCompetencia'] ?? '';
             
             if ($codigoDiseño && $codigoCompetencia) {
-                $codigoDiseñoCompetencia = $codigoDiseño . '-' . $codigoCompetencia;
-                $competencia = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetencia);
+                $codigoDiseñoCompetenciaReporte = $codigoDiseño . '-' . $codigoCompetencia;
+                $competencia = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetenciaReporte);
                 
                 if ($competencia) {
                     sendJsonResponse([
@@ -119,7 +119,7 @@ try {
                     sendJsonResponse([
                         'success' => true,
                         'message' => 'Código disponible',
-                        'data' => ['codigoDiseñoCompetencia' => $codigoDiseñoCompetencia]
+                        'data' => ['codigoDiseñoCompetenciaReporte' => $codigoDiseñoCompetenciaReporte]
                     ]);
                 }
             } else {
@@ -131,12 +131,12 @@ try {
             break;
             
         case 'validar_codigo_rap':
-            $codigoDiseñoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
+            $codigoDiseñoCompetenciaReporte = $_GET['codigoDiseñoCompetenciaReporte'] ?? '';
             $codigoRap = $_GET['codigoRap'] ?? '';
             
-            if ($codigoDiseñoCompetencia && $codigoRap) {
-                $codigoDiseñoCompetenciaRap = $codigoDiseñoCompetencia . '-' . $codigoRap;
-                $rap = $metodos->obtenerRapPorCodigo($codigoDiseñoCompetenciaRap);
+            if ($codigoDiseñoCompetenciaReporte && $codigoRap) {
+                $codigoDiseñoCompetenciaReporteRap = $codigoDiseñoCompetenciaReporte . '-' . $codigoRap;
+                $rap = $metodos->obtenerRapPorCodigo($codigoDiseñoCompetenciaReporteRap);
                 
                 if ($rap) {
                     sendJsonResponse([
@@ -147,13 +147,13 @@ try {
                     sendJsonResponse([
                         'success' => true,
                         'message' => 'Código disponible',
-                        'data' => ['codigoDiseñoCompetenciaRap' => $codigoDiseñoCompetenciaRap]
+                        'data' => ['codigoDiseñoCompetenciaReporteRap' => $codigoDiseñoCompetenciaReporteRap]
                     ]);
                 }
             } else {
                 sendJsonResponse([
                     'success' => false,
-                    'message' => 'Parámetros requeridos: codigoDiseñoCompetencia y codigoRap'
+                    'message' => 'Parámetros requeridos: codigoDiseñoCompetenciaReporte y codigoRap'
                 ]);
             }
             break;
@@ -207,10 +207,10 @@ try {
             break;
             
         case 'obtener_raps_competencia':
-            $codigoDiseñoCompetencia = $_GET['codigoDiseñoCompetencia'] ?? '';
-            if ($codigoDiseñoCompetencia) {
+            $codigoDiseñoCompetenciaReporte = $_GET['codigoDiseñoCompetenciaReporte'] ?? '';
+            if ($codigoDiseñoCompetenciaReporte) {
                 try {
-                    $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetencia);
+                    $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetenciaReporte);
                     sendJsonResponse([
                         'success' => true,
                         'data' => $raps
@@ -224,7 +224,7 @@ try {
             } else {
                 sendJsonResponse([
                     'success' => false,
-                    'message' => 'Parámetro requerido: codigoDiseñoCompetencia'
+                    'message' => 'Parámetro requerido: codigoDiseñoCompetenciaReporte'
                 ]);
             }
             break;
@@ -269,14 +269,14 @@ try {
                             d.nombrePrograma,
                             d.versionPrograma,
                             d.codigoPrograma,
-                            c.codigoDiseñoCompetencia,
+                            c.codigoDiseñoCompetenciaReporte,
                             c.nombreCompetencia,
                             c.horasDesarrolloCompetencia
                         FROM competencias c
                         INNER JOIN diseños d ON (
-                            d.codigoDiseño = SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2)
+                            d.codigoDiseño = SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2)
                         )
-                        WHERE c.codigoCompetencia = ?";
+                        WHERE c.codigoCompetenciaReporte = ?";
                 
                 $params = [$codigoCompetencia];
                 
@@ -298,17 +298,16 @@ try {
                 foreach ($disenosConMismaCompetencia as $diseno) {
                     // Buscar RAPs que coincidan con el patrón del diseño-competencia
                     $sqlRaps = "SELECT 
-                                    codigoDiseñoCompetenciaRap,
-                                    codigoRapAutomatico,
-                                    codigoRapDiseño,
+                                    codigoDiseñoCompetenciaReporteRap,
+                                    codigoRapReporte,
                                     nombreRap,
                                     horasDesarrolloRap
                                 FROM raps 
-                                WHERE codigoDiseñoCompetenciaRap LIKE ?
-                                ORDER BY codigoRapAutomatico";
+                                WHERE codigoDiseñoCompetenciaReporteRap LIKE ?
+                                ORDER BY codigoRapReporte";
                     
                     $stmtRaps = $conexion->prepare($sqlRaps);
-                    $patronCompetencia = $diseno['codigoDiseñoCompetencia'] . '-%';
+                    $patronCompetencia = $diseno['codigoDiseñoCompetenciaReporte'] . '-%';
                     $stmtRaps->execute([$patronCompetencia]);
                     
                     $raps = $stmtRaps->fetchAll(PDO::FETCH_ASSOC);

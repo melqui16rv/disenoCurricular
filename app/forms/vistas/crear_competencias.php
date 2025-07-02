@@ -86,13 +86,22 @@
 
     <div class="form-row">
         <div class="form-group">
-            <label for="codigoCompetencia"><i class="fas fa-hashtag"></i> Código de la Competencia *</label>
-            <input type="text" id="codigoCompetencia" name="codigoCompetencia" class="form-control" required 
+            <label for="codigoCompetenciaReporte"><i class="fas fa-hashtag"></i> Código de la Competencia *</label>
+            <input type="text" id="codigoCompetenciaReporte" name="codigoCompetenciaReporte" class="form-control" required 
                    placeholder="Ejemplo: 220201501" maxlength="50">
             <small class="text-muted">
                 El código final será: <?php echo htmlspecialchars($_GET['codigoDiseño'] ?? ''); ?>-[Código competencia]
             </small>
         </div>
+        <div class="form-group">
+            <label for="codigoCompetenciaPDF"><i class="fas fa-file-pdf"></i> Código Competencia PDF</label>
+            <input type="text" id="codigoCompetenciaPDF" name="codigoCompetenciaPDF" class="form-control" 
+                   placeholder="Código opcional para referencia PDF" maxlength="255">
+            <small class="text-muted">Campo opcional para código de referencia en documentos PDF</small>
+        </div>
+    </div>
+
+    <div class="form-row">
         <div class="form-group">
             <label for="horasDesarrolloCompetencia"><i class="fas fa-clock"></i> Horas de Desarrollo *</label>
             <input type="number" id="horasDesarrolloCompetencia" name="horasDesarrolloCompetencia" class="form-control" required 

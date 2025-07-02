@@ -16,10 +16,10 @@ class comparacion extends Conexion{
                         d.codigoDiseño,
                         d.nombrePrograma,
                         d.versionPrograma,
-                        c.codigoDiseñoCompetencia
+                        c.codigoDiseñoCompetenciaReporte
                     FROM competencias c
-                    INNER JOIN disenos d ON SUBSTRING_INDEX(c.codigoDiseñoCompetencia, '-', 2) = d.codigoDiseño
-                    WHERE c.codigoCompetencia = :codigoCompetencia";
+                    INNER JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2) = d.codigoDiseño
+                    WHERE c.codigoCompetenciaReporte = :codigoCompetencia";
             
             // Excluir el diseño actual si se proporciona
             if ($disenoActual) {
@@ -45,20 +45,20 @@ class comparacion extends Conexion{
     }
 
     // Obtener RAPs de una competencia específica en un diseño específico
-    public function obtenerRapsPorCompetenciaDiseno($codigoDisenoCompetencia) {
+    public function obtenerRapsPorCompetenciaDiseno($codigoDisenoCompetenciaReporte) {
         try {
             $sql = "SELECT 
-                        codigoDiseñoCompetenciaRap,
-                        codigoRapDiseño,
+                        codigoDiseñoCompetenciaReporteRap,
+                        codigoRapReporte,
                         nombreRap,
                         horasDesarrolloRap
                     FROM raps 
-                    WHERE codigoDiseñoCompetenciaRap LIKE :codigoDisenoCompetencia
-                    ORDER BY codigoDiseñoCompetenciaRap";
+                    WHERE codigoDiseñoCompetenciaReporteRap LIKE :codigoDisenoCompetenciaReporte
+                    ORDER BY codigoDiseñoCompetenciaReporteRap";
             
             $stmt = $this->conexion->prepare($sql);
-            $patron = $codigoDisenoCompetencia . '-%';
-            $stmt->bindParam(':codigoDisenoCompetencia', $patron);
+            $patron = $codigoDisenoCompetenciaReporte . '-%';
+            $stmt->bindParam(':codigoDisenoCompetenciaReporte', $patron);
             $stmt->execute();
             
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -76,7 +76,7 @@ class comparacion extends Conexion{
             $comparacion = [];
             
             foreach ($disenosConMismaCompetencia as $diseno) {
-                $raps = $this->obtenerRapsPorCompetenciaDiseno($diseno['codigoDiseñoCompetencia']);
+                $raps = $this->obtenerRapsPorCompetenciaDiseno($diseno['codigoDiseñoCompetenciaReporte']);
                 
                 if (!empty($raps)) {
                     $comparacion[] = [
