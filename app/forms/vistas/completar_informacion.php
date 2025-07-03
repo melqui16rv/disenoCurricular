@@ -1,12 +1,14 @@
 <?php
 // Vista para completar información faltante en diseños, competencias y RAPs
 
-// Obtener filtros
+// Obtener filtros y paginación
 $filtro_seccion = $_GET['seccion'] ?? 'todas';
 $filtro_busqueda = $_GET['busqueda'] ?? '';
+$pagina_actual = max(1, (int)($_GET['pagina'] ?? 1));
+$registros_por_pagina = 10;
 
 // Función para detectar campos faltantes en diseños
-function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '') {
+function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina = 1, $registros_por_pagina = 10) {
     $sql = "SELECT * FROM diseños WHERE 1=1";
     $params = [];
 
@@ -16,6 +18,7 @@ function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '') {
         $params[] = "%$filtro_busqueda%";
     }
 
+    // Obtener todos los registros para filtrar campos faltantes
     $diseños = $metodos->ejecutarConsulta($sql, $params);
     $diseñosConFaltantes = [];
 
@@ -55,11 +58,24 @@ function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '') {
         }
     }
 
-    return $diseñosConFaltantes;
+    // Aplicar paginación después del filtrado
+    $total_registros = count($diseñosConFaltantes);
+    $total_paginas = ceil($total_registros / $registros_por_pagina);
+    $offset = ($pagina - 1) * $registros_por_pagina;
+    
+    $diseñosPaginados = array_slice($diseñosConFaltantes, $offset, $registros_por_pagina);
+
+    return [
+        'datos' => $diseñosPaginados,
+        'total_registros' => $total_registros,
+        'total_paginas' => $total_paginas,
+        'pagina_actual' => $pagina,
+        'registros_por_pagina' => $registros_por_pagina
+    ];
 }
 
 // Función para detectar campos faltantes en competencias
-function obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda = '') {
+function obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina = 1, $registros_por_pagina = 10) {
     $sql = "SELECT c.*, d.nombrePrograma 
             FROM competencias c 
             LEFT JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2) = d.codigoDiseño 
@@ -103,11 +119,24 @@ function obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda = '') 
         }
     }
 
-    return $competenciasConFaltantes;
+    // Aplicar paginación después del filtrado
+    $total_registros = count($competenciasConFaltantes);
+    $total_paginas = ceil($total_registros / $registros_por_pagina);
+    $offset = ($pagina - 1) * $registros_por_pagina;
+    
+    $competenciasPaginadas = array_slice($competenciasConFaltantes, $offset, $registros_por_pagina);
+
+    return [
+        'datos' => $competenciasPaginadas,
+        'total_registros' => $total_registros,
+        'total_paginas' => $total_paginas,
+        'pagina_actual' => $pagina,
+        'registros_por_pagina' => $registros_por_pagina
+    ];
 }
 
 // Función para detectar campos faltantes en RAPs
-function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '') {
+function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina = 1, $registros_por_pagina = 10) {
     $sql = "SELECT r.*, c.nombreCompetencia, d.nombrePrograma 
             FROM raps r 
             LEFT JOIN competencias c ON SUBSTRING_INDEX(r.codigoDiseñoCompetenciaReporteRap, '-', 3) = c.codigoDiseñoCompetenciaReporte 
@@ -147,28 +176,116 @@ function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '') {
         }
     }
 
-    return $rapsConFaltantes;
+    // Aplicar paginación después del filtrado
+    $total_registros = count($rapsConFaltantes);
+    $total_paginas = ceil($total_registros / $registros_por_pagina);
+    $offset = ($pagina - 1) * $registros_por_pagina;
+    
+    $rapsPaginados = array_slice($rapsConFaltantes, $offset, $registros_por_pagina);
+
+    return [
+        'datos' => $rapsPaginados,
+        'total_registros' => $total_registros,
+        'total_paginas' => $total_paginas,
+        'pagina_actual' => $pagina,
+        'registros_por_pagina' => $registros_por_pagina
+    ];
 }
 
-// Obtener datos según filtros
-$diseñosConFaltantes = [];
-$competenciasConFaltantes = [];
-$rapsConFaltantes = [];
+// Función para generar controles de paginación
+function generarPaginacion($resultado, $filtro_seccion, $filtro_busqueda, $seccion_id = '') {
+    if ($resultado['total_paginas'] <= 1) {
+        return '';
+    }
+    
+    $pagina_actual = $resultado['pagina_actual'];
+    $total_paginas = $resultado['total_paginas'];
+    $total_registros = $resultado['total_registros'];
+    $registros_por_pagina = $resultado['registros_por_pagina'];
+    
+    $inicio_registro = (($pagina_actual - 1) * $registros_por_pagina) + 1;
+    $fin_registro = min($pagina_actual * $registros_por_pagina, $total_registros);
+    
+    $html = '<div class="pagination-container">';
+    
+    // Información de registros
+    $html .= '<div class="pagination-info">';
+    $html .= "Mostrando {$inicio_registro}-{$fin_registro} de {$total_registros} registros";
+    $html .= '</div>';
+    
+    // Controles de paginación
+    $html .= '<div class="pagination-controls">';
+    
+    // Botón Anterior
+    if ($pagina_actual > 1) {
+        $prev = $pagina_actual - 1;
+        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina={$prev}' class='page-btn prev-btn'>";
+        $html .= '<i class="fas fa-chevron-left"></i> Anterior</a>';
+    }
+    
+    // Números de página
+    $inicio = max(1, $pagina_actual - 2);
+    $fin = min($total_paginas, $pagina_actual + 2);
+    
+    if ($inicio > 1) {
+        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina=1' class='page-btn'>1</a>";
+        if ($inicio > 2) {
+            $html .= '<span class="page-ellipsis">...</span>';
+        }
+    }
+    
+    for ($i = $inicio; $i <= $fin; $i++) {
+        $active = ($i == $pagina_actual) ? 'active' : '';
+        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina={$i}' class='page-btn {$active}'>{$i}</a>";
+    }
+    
+    if ($fin < $total_paginas) {
+        if ($fin < $total_paginas - 1) {
+            $html .= '<span class="page-ellipsis">...</span>';
+        }
+        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina={$total_paginas}' class='page-btn'>{$total_paginas}</a>";
+    }
+    
+    // Botón Siguiente
+    if ($pagina_actual < $total_paginas) {
+        $next = $pagina_actual + 1;
+        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina={$next}' class='page-btn next-btn'>";
+        $html .= 'Siguiente <i class="fas fa-chevron-right"></i></a>';
+    }
+    
+    $html .= '</div>';
+    $html .= '</div>';
+    
+    return $html;
+}
+
+// Obtener datos según filtros con paginación
+$resultadoDiseños = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_actual];
+$resultadoCompetencias = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_actual];
+$resultadoRaps = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_actual];
 
 if ($filtro_seccion === 'todas' || $filtro_seccion === 'disenos') {
-    $diseñosConFaltantes = obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda);
+    $resultadoDiseños = obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda, $pagina_actual, $registros_por_pagina);
 }
 
 if ($filtro_seccion === 'todas' || $filtro_seccion === 'competencias') {
-    $competenciasConFaltantes = obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda);
+    $resultadoCompetencias = obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda, $pagina_actual, $registros_por_pagina);
 }
 
 if ($filtro_seccion === 'todas' || $filtro_seccion === 'raps') {
-    $rapsConFaltantes = obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda);
+    $resultadoRaps = obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda, $pagina_actual, $registros_por_pagina);
 }
 
-// Calcular estadísticas
-$totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasConFaltantes) + count($rapsConFaltantes);
+// Extraer datos para compatibilidad
+$diseñosConFaltantes = $resultadoDiseños['datos'];
+$competenciasConFaltantes = $resultadoCompetencias['datos'];
+$rapsConFaltantes = $resultadoRaps['datos'];
+
+// Calcular estadísticas (totales sin paginación)
+$totalDiseñosFaltantes = $resultadoDiseños['total_registros'];
+$totalCompetenciasFaltantes = $resultadoCompetencias['total_registros'];
+$totalRapsFaltantes = $resultadoRaps['total_registros'];
+$totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes + $totalRapsFaltantes;
 ?>
 
 <div class="completar-informacion-container">
@@ -194,7 +311,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                 <i class="fas fa-graduation-cap"></i>
             </div>
             <div class="stat-content">
-                <h3><?php echo count($diseñosConFaltantes); ?></h3>
+                <h3><?php echo $totalDiseñosFaltantes; ?></h3>
                 <p>Diseños con Campos Faltantes</p>
             </div>
         </div>
@@ -204,7 +321,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                 <i class="fas fa-tasks"></i>
             </div>
             <div class="stat-content">
-                <h3><?php echo count($competenciasConFaltantes); ?></h3>
+                <h3><?php echo $totalCompetenciasFaltantes; ?></h3>
                 <p>Competencias con Campos Faltantes</p>
             </div>
         </div>
@@ -214,7 +331,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                 <i class="fas fa-list-ul"></i>
             </div>
             <div class="stat-content">
-                <h3><?php echo count($rapsConFaltantes); ?></h3>
+                <h3><?php echo $totalRapsFaltantes; ?></h3>
                 <p>RAPs con Campos Faltantes</p>
             </div>
         </div>
@@ -222,8 +339,9 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
 
     <!-- Filtros y búsqueda -->
     <div class="filters-section">
-        <form method="GET" class="filters-form">
+        <form method="GET" class="filters-form" id="filtrosForm">
             <input type="hidden" name="accion" value="completar_informacion">
+            <input type="hidden" name="pagina" value="1"> <!-- Reset a página 1 al filtrar -->
 
             <div class="filter-group">
                 <label for="seccion">Sección:</label>
@@ -263,7 +381,7 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
             <!-- Diseños con campos faltantes -->
             <?php if (!empty($diseñosConFaltantes) && ($filtro_seccion === 'todas' || $filtro_seccion === 'disenos')): ?>
                 <div class="section-results">
-                    <h3><i class="fas fa-graduation-cap"></i> Diseños con Campos Faltantes (<?php echo count($diseñosConFaltantes); ?>)</h3>
+                    <h3><i class="fas fa-graduation-cap"></i> Diseños con Campos Faltantes (<?php echo $totalDiseñosFaltantes; ?>)</h3>
                     <div class="results-table">
                         <table>
                             <thead>
@@ -298,6 +416,27 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Controles de paginación para diseños -->
+                    <?php echo generarPaginacion($resultadoDiseños, $filtro_seccion, $filtro_busqueda, 'disenos'); ?>
+                </div>
+            <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </td>
+                                        <td class="actions">
+                                            <a href="?accion=completar&tipo=disenos&codigo=<?php echo urlencode($diseño['codigoDiseño']); ?>" class="btn-edit">
+                                                <i class="fas fa-edit"></i> Completar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Controles de paginación para diseños -->
+                    <?php echo generarPaginacion($resultadoDiseños, $filtro_seccion, $filtro_busqueda, 'disenos'); ?>
                 </div>
             <?php endif; ?>
 
@@ -339,6 +478,9 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Controles de paginación para competencias -->
+                    <?php echo generarPaginacion($resultadoCompetencias, $filtro_seccion, $filtro_busqueda, 'competencias'); ?>
                 </div>
             <?php endif; ?>
 
@@ -382,6 +524,9 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Controles de paginación para RAPs -->
+                    <?php echo generarPaginacion($resultadoRaps, $filtro_seccion, $filtro_busqueda, 'raps'); ?>
                 </div>
             <?php endif; ?>
 
@@ -637,6 +782,60 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
+/* Paginación */
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.pagination-info {
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    background: #3498db;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.page-btn:hover {
+    background: #2980b9;
+}
+
+.page-btn.prev-btn {
+    margin-right: auto;
+}
+
+.page-btn.next-btn {
+    margin-left: auto;
+}
+
+.page-btn.active {
+    background: #2ecc71;
+}
+
+.page-ellipsis {
+    align-self: center;
+    color: #7f8c8d;
+    font-size: 1.2rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .statistics-panel {
@@ -660,6 +859,11 @@ $totalRegistrosFaltantes = count($diseñosConFaltantes) + count($competenciasCon
     .results-table th,
     .results-table td {
         padding: 0.5rem;
+    }
+
+    .pagination-controls {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 }
 </style>

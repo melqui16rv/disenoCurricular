@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Estados Independientes</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .status { font-weight: bold; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { margin: 5px; padding: 10px; }
+        .state-display { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Prueba de Estados Independientes por Sección</h1>
+    
+    <div class="test-section">
+        <h2>Estado Actual de localStorage</h2>
+        <div id="current-state" class="state-display"></div>
+        <button onclick="displayCurrentState()">Mostrar Estado Actual</button>
+        <button onclick="clearAllStates()">Limpiar Todo</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Prueba de Estados por Sección</h2>
+        
+        <h3>Sección Diseños</h3>
+        <button onclick="testSectionState('disenos', 'currentPage', 3)">Diseños - Página 3</button>
+        <button onclick="testSectionState('disenos', 'recordsPerPage', 25)">Diseños - 25 por página</button>
+        
+        <h3>Sección Competencias</h3>
+        <button onclick="testSectionState('competencias', 'currentPage', 5)">Competencias - Página 5</button>
+        <button onclick="testSectionState('competencias', 'recordsPerPage', 50)">Competencias - 50 por página</button>
+        
+        <h3>Sección RAPs</h3>
+        <button onclick="testSectionState('raps', 'currentPage', 2)">RAPs - Página 2</button>
+        <button onclick="testSectionState('raps', 'recordsPerPage', 10)">RAPs - 10 por página</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Estado Global</h2>
+        <button onclick="testGlobalState('advancedFiltersOpen', true)">Filtros Avanzados - Abierto</button>
+        <button onclick="testGlobalState('advancedFiltersOpen', false)">Filtros Avanzados - Cerrado</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Resultados de Prueba</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Simulamos el objeto de estados como en el sistema real
+        const TestStates = {
+            disenos: { currentPage: 1, recordsPerPage: 10 },
+            competencias: { currentPage: 1, recordsPerPage: 10 },
+            raps: { currentPage: 1, recordsPerPage: 10 },
+            global: { advancedFiltersOpen: false }
+        };
+        
+        // Función para mostrar el estado actual
+        function displayCurrentState() {
+            const stateDiv = document.getElementById('current-state');
+            let html = '<h4>Estados en localStorage:</h4>';
+            
+            // Estados por sección
+            ['disenos', 'competencias', 'raps'].forEach(section => {
+                const key = `completarInfo_${section}_state`;
+                const state = localStorage.getItem(key);
+                html += `<strong>${section}:</strong> ${state || 'No definido'}<br>`;
+            });
+            
+            // Estado global
+            const globalKey = 'completarInfo_global_advancedFiltersOpen';
+            const globalState = localStorage.getItem(globalKey);
+            html += `<strong>Global (filtros avanzados):</strong> ${globalState || 'No definido'}<br>`;
+            
+            stateDiv.innerHTML = html;
+        }
+        
+        // Función para probar estado de sección
+        function testSectionState(section, property, value) {
+            // Obtener estado actual
+            const currentStateKey = `completarInfo_${section}_state`;
+            let currentState = {};
+            
+            try {
+                const stored = localStorage.getItem(currentStateKey);
+                if (stored) {
+                    currentState = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error('Error parsing state:', e);
+            }
+            
+            // Actualizar propiedad
+            currentState[property] = value;
+            TestStates[section][property] = value;
+            
+            // Guardar estado
+            localStorage.setItem(currentStateKey, JSON.stringify(currentState));
+            
+            // Mostrar resultado
+            logTestResult(`${section}.${property} = ${value}`, true);
+            
+            // Verificar que otras secciones no se vieron afectadas
+            verifyIndependence(section);
+            
+            displayCurrentState();
+        }
+        
+        // Función para probar estado global
+        function testGlobalState(property, value) {
+            const key = `completarInfo_global_${property}`;
+            localStorage.setItem(key, value);
+            TestStates.global[property] = value;
+            
+            logTestResult(`Global.${property} = ${value}`, true);
+            displayCurrentState();
+        }
+        
+        // Verificar independencia entre secciones
+        function verifyIndependence(changedSection) {
+            const sections = ['disenos', 'competencias', 'raps'];
+            const otherSections = sections.filter(s => s !== changedSection);
+            
+            let allIndependent = true;
+            
+            otherSections.forEach(section => {
+                const key = `completarInfo_${section}_state`;
+                const stored = localStorage.getItem(key);
+                
+                if (stored) {
+                    try {
+                        const state = JSON.parse(stored);
+                        // Verificar que los valores por defecto se mantengan si no se han cambiado
+                        const hasChanges = Object.keys(state).some(prop => {
+                            return state[prop] !== TestStates[section][prop];
+                        });
+                        
+                        if (hasChanges) {
+                            logTestResult(`❌ ${section} fue afectada por cambios en ${changedSection}`, false);
+                            allIndependent = false;
+                        }
+                    } catch (e) {
+                        logTestResult(`❌ Error verificando independencia de ${section}`, false);
+                        allIndependent = false;
+                    }
+                }
+            });
+            
+            if (allIndependent) {
+                logTestResult(`✅ Independencia verificada: ${changedSection} no afectó otras secciones`, true);
+            }
+        }
+        
+        // Función para mostrar resultados
+        function logTestResult(message, success) {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = success ? 'success' : 'error';
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${className}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            
+            resultsDiv.appendChild(logEntry);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        // Limpiar todos los estados
+        function clearAllStates() {
+            ['disenos', 'competencias', 'raps'].forEach(section => {
+                localStorage.removeItem(`completarInfo_${section}_state`);
+                TestStates[section] = { currentPage: 1, recordsPerPage: 10 };
+            });
+            
+            localStorage.removeItem('completarInfo_global_advancedFiltersOpen');
+            TestStates.global = { advancedFiltersOpen: false };
+            
+            logTestResult('🗑️ Todos los estados han sido limpiados', true);
+            displayCurrentState();
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            displayCurrentState();
+            logTestResult('🚀 Prueba de estados independientes iniciada', true);
+        });
+    </script>
+</body>
+</html>

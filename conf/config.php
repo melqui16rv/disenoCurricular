@@ -16,6 +16,14 @@ if (strpos($host, ':') !== false) {
     define('BASE_URL', $protocol . $host . '/');
 }
 
+// Configuración de base de datos
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'disenos_curriculares');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_PORT', 3306);
+define('DB_CHARSET', 'utf8mb4');
+
 // Mostrar errores generados por alguna acción
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
