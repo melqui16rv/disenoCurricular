@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Filtros de Tabla</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        
+        /* CSS básico para pruebas */
+        .table-controls { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .table-search-input, .table-filter-column, .table-sort-column { margin: 5px; padding: 5px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .table-row-hidden { display: none !important; }
+        .table-row-highlight { background-color: #fff3cd !important; }
+        .no-results-message { text-align: center; padding: 20px; color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Test: Filtros de Tabla - Completar Información</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Búsqueda en Tabla</h2>
+        <div class="table-controls" data-table="test">
+            <div class="table-search-container">
+                <div class="search-group">
+                    <label>Buscar:</label>
+                    <input type="text" class="table-search-input" placeholder="Buscar en tabla..." />
+                </div>
+                <div class="filter-group">
+                    <label>Filtrar por columna:</label>
+                    <select class="table-filter-column">
+                        <option value="all">Todas las columnas</option>
+                        <option value="0">Código</option>
+                        <option value="1">Programa</option>
+                        <option value="2">Versión</option>
+                    </select>
+                </div>
+                <div class="sort-group">
+                    <label>Ordenar:</label>
+                    <select class="table-sort-column">
+                        <option value="0-asc">Código A-Z</option>
+                        <option value="0-desc">Código Z-A</option>
+                        <option value="1-asc">Programa A-Z</option>
+                        <option value="1-desc">Programa Z-A</option>
+                    </select>
+                </div>
+                <button type="button" class="clear-table-filters">Limpiar</button>
+            </div>
+            <div class="table-info">
+                Mostrando <span class="visible-count">5</span> de <span class="total-count">5</span> registros
+            </div>
+        </div>
+        
+        <div id="tabla-test">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Programa</th>
+                        <th>Versión</th>
+                        <th>Campos Faltantes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ADSI-001</td>
+                        <td>Análisis y Desarrollo de Sistemas de Información</td>
+                        <td>101</td>
+                        <td>Línea Tecnológica, Red Conocimiento</td>
+                    </tr>
+                    <tr>
+                        <td>CONT-002</td>
+                        <td>Contabilización de Operaciones Comerciales</td>
+                        <td>102</td>
+                        <td>Horas Desarrollo</td>
+                    </tr>
+                    <tr>
+                        <td>GEST-003</td>
+                        <td>Gestión Empresarial</td>
+                        <td>103</td>
+                        <td>Requisitos Académicos</td>
+                    </tr>
+                    <tr>
+                        <td>MERCH-004</td>
+                        <td>Merchandising</td>
+                        <td>104</td>
+                        <td>Nivel Académico, Edad Mínima</td>
+                    </tr>
+                    <tr>
+                        <td>VENT-005</td>
+                        <td>Ventas de Productos y Servicios</td>
+                        <td>105</td>
+                        <td>Formación Trabajo Desarrollo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Persistencia de Filtros</h2>
+        <button onclick="testSaveFilters()">Guardar Estado Filtros</button>
+        <button onclick="testRestoreFilters()">Restaurar Estado Filtros</button>
+        <button onclick="testClearFilters()">Limpiar Estado</button>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Copiar las funciones principales del archivo completar_informacion.php
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTableControls();
+        });
+        
+        function initializeTableControls() {
+            document.querySelectorAll('.table-controls').forEach(control => {
+                const tableId = control.getAttribute('data-table');
+                const searchInput = control.querySelector('.table-search-input');
+                const filterSelect = control.querySelector('.table-filter-column');
+                const sortSelect = control.querySelector('.table-sort-column');
+                const clearButton = control.querySelector('.clear-table-filters');
+                
+                const table = document.getElementById(`tabla-${tableId}`)?.querySelector('table');
+                
+                if (!table) return;
+                
+                updateTableInfo(control, table);
+                
+                if (searchInput) {
+                    searchInput.addEventListener('input', debounce(() => {
+                        filterTable(table, control);
+                    }, 300));
+                }
+                
+                if (filterSelect) {
+                    filterSelect.addEventListener('change', () => {
+                        filterTable(table, control);
+                    });
+                }
+                
+                if (sortSelect) {
+                    sortSelect.addEventListener('change', () => {
+                        sortTable(table, control);
+                    });
+                }
+                
+                if (clearButton) {
+                    clearButton.addEventListener('click', () => {
+                        clearTableFilters(control, table);
+                    });
+                }
+            });
+        }
+        
+        function filterTable(table, control) {
+            const searchTerm = control.querySelector('.table-search-input').value.toLowerCase();
+            const filterColumn = control.querySelector('.table-filter-column').value;
+            const rows = table.querySelectorAll('tbody tr');
+            
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                let shouldShow = true;
+                
+                if (searchTerm) {
+                    let textToSearch = '';
+                    
+                    if (filterColumn === 'all') {
+                        textToSearch = row.textContent.toLowerCase();
+                    } else {
+                        const cells = row.querySelectorAll('td');
+                        const columnIndex = parseInt(filterColumn);
+                        if (cells[columnIndex]) {
+                            textToSearch = cells[columnIndex].textContent.toLowerCase();
+                        }
+                    }
+                    
+                    shouldShow = textToSearch.includes(searchTerm);
+                }
+                
+                if (shouldShow) {
+                    row.style.display = '';
+                    row.classList.remove('table-row-hidden');
+                    if (searchTerm) {
+                        row.classList.add('table-row-highlight');
+                    } else {
+                        row.classList.remove('table-row-highlight');
+                    }
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                    row.classList.add('table-row-hidden');
+                    row.classList.remove('table-row-highlight');
+                }
+            });
+            
+            updateTableInfo(control, table, visibleCount);
+            showNoResultsMessage(table, visibleCount === 0 && searchTerm);
+            saveTableFiltersState();
+        }
+        
+        function sortTable(table, control) {
+            const sortValue = control.querySelector('.table-sort-column').value;
+            const [columnIndex, direction] = sortValue.split('-');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            table.querySelectorAll('th .sort-indicator').forEach(indicator => {
+                indicator.remove();
+            });
+            
+            rows.sort((a, b) => {
+                const cellA = a.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
+                const cellB = b.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
+                
+                let comparison = cellA.localeCompare(cellB, 'es', { numeric: true, sensitivity: 'base' });
+                
+                return direction === 'desc' ? -comparison : comparison;
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+            
+            const headerCell = table.querySelectorAll('th')[columnIndex];
+            if (headerCell) {
+                const indicator = document.createElement('span');
+                indicator.className = `sort-indicator sort-${direction}`;
+                indicator.textContent = direction === 'asc' ? '↑' : '↓';
+                headerCell.appendChild(indicator);
+            }
+            
+            filterTable(table, control);
+            saveTableFiltersState();
+        }
+        
+        function clearTableFilters(control, table) {
+            control.querySelector('.table-search-input').value = '';
+            control.querySelector('.table-filter-column').value = 'all';
+            control.querySelector('.table-sort-column').selectedIndex = 0;
+            
+            table.querySelectorAll('tbody tr').forEach(row => {
+                row.style.display = '';
+                row.classList.remove('table-row-hidden', 'table-row-highlight');
+            });
+            
+            table.querySelectorAll('th .sort-indicator').forEach(indicator => {
+                indicator.remove();
+            });
+            
+            const noResultsMsg = table.parentElement.querySelector('.no-results-message');
+            if (noResultsMsg) {
+                noResultsMsg.remove();
+            }
+            
+            updateTableInfo(control, table);
+            clearTableFiltersState();
+        }
+        
+        function updateTableInfo(control, table, visibleCount = null) {
+            const totalRows = table.querySelectorAll('tbody tr').length;
+            const visibleRows = visibleCount !== null ? visibleCount : totalRows;
+            
+            const visibleCountSpan = control.querySelector('.visible-count');
+            const totalCountSpan = control.querySelector('.total-count');
+            
+            if (visibleCountSpan) visibleCountSpan.textContent = visibleRows;
+            if (totalCountSpan) totalCountSpan.textContent = totalRows;
+        }
+        
+        function showNoResultsMessage(table, show) {
+            const container = table.parentElement;
+            let message = container.querySelector('.no-results-message');
+            
+            if (show && !message) {
+                message = document.createElement('div');
+                message.className = 'no-results-message';
+                message.innerHTML = '🔍 No se encontraron resultados para la búsqueda actual.';
+                container.appendChild(message);
+            } else if (!show && message) {
+                message.remove();
+            }
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        function saveTableFiltersState() {
+            const tableStates = {};
+            
+            document.querySelectorAll('.table-controls').forEach(control => {
+                const tableId = control.getAttribute('data-table');
+                const searchInput = control.querySelector('.table-search-input');
+                const filterSelect = control.querySelector('.table-filter-column');
+                const sortSelect = control.querySelector('.table-sort-column');
+                
+                if (tableId) {
+                    tableStates[tableId] = {
+                        search: searchInput ? searchInput.value : '',
+                        filter: filterSelect ? filterSelect.value : 'all',
+                        sort: sortSelect ? sortSelect.value : (sortSelect ? sortSelect.options[0].value : '')
+                    };
+                }
+            });
+            
+            sessionStorage.setItem('tableFiltersState', JSON.stringify(tableStates));
+        }
+        
+        function restoreTableFiltersState() {
+            const savedState = sessionStorage.getItem('tableFiltersState');
+            if (!savedState) return false;
+            
+            try {
+                const tableStates = JSON.parse(savedState);
+                let hasRestoredFilters = false;
+                
+                document.querySelectorAll('.table-controls').forEach(control => {
+                    const tableId = control.getAttribute('data-table');
+                    const state = tableStates[tableId];
+                    
+                    if (state) {
+                        const searchInput = control.querySelector('.table-search-input');
+                        const filterSelect = control.querySelector('.table-filter-column');
+                        const sortSelect = control.querySelector('.table-sort-column');
+                        const table = document.getElementById(`tabla-${tableId}`)?.querySelector('table');
+                        
+                        if (searchInput && state.search) {
+                            searchInput.value = state.search;
+                            hasRestoredFilters = true;
+                        }
+                        
+                        if (filterSelect && state.filter) {
+                            filterSelect.value = state.filter;
+                            if (state.filter !== 'all') {
+                                hasRestoredFilters = true;
+                            }
+                        }
+                        
+                        if (sortSelect && state.sort) {
+                            sortSelect.value = state.sort;
+                        }
+                        
+                        if (table) {
+                            if (state.sort && state.sort !== sortSelect?.options[0]?.value) {
+                                sortTable(table, control);
+                                hasRestoredFilters = true;
+                            }
+                            
+                            if (state.search || (state.filter && state.filter !== 'all')) {
+                                filterTable(table, control);
+                                hasRestoredFilters = true;
+                            }
+                            
+                            updateTableInfo(control, table);
+                        }
+                    }
+                });
+                
+                return hasRestoredFilters;
+            } catch (e) {
+                console.error('Error restaurando filtros de tabla:', e);
+                sessionStorage.removeItem('tableFiltersState');
+                return false;
+            }
+        }
+        
+        function clearTableFiltersState() {
+            sessionStorage.removeItem('tableFiltersState');
+        }
+        
+        // Funciones de test
+        function testSaveFilters() {
+            saveTableFiltersState();
+            document.getElementById('test-results').innerHTML = '<span class="success">✓ Filtros guardados en sessionStorage</span>';
+        }
+        
+        function testRestoreFilters() {
+            const restored = restoreTableFiltersState();
+            const message = restored ? 
+                '<span class="success">✓ Filtros restaurados correctamente</span>' :
+                '<span class="info">ℹ No había filtros guardados para restaurar</span>';
+            document.getElementById('test-results').innerHTML = message;
+        }
+        
+        function testClearFilters() {
+            clearTableFiltersState();
+            document.getElementById('test-results').innerHTML = '<span class="info">ℹ Estado de filtros limpiado</span>';
+        }
+    </script>
+</body>
+</html>

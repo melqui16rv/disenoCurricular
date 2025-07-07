@@ -481,7 +481,7 @@ if (!function_exists('generarPaginacion')) {
         
         // Selector de registros por página
         $html .= '<div class="records-per-page">';
-        $html .= '<select data-seccion="' . $seccion_id . '" data-registros="true" class="records-selector">';
+        $html .= '<select data-seccion="' . $seccion_id . '" class="records-selector ajax-records-selector">';
         foreach ([5, 10, 25, 50, 100] as $option) {
             $selected = ($option == $registros_por_pagina) ? 'selected' : '';
             $html .= "<option value='{$option}' {$selected}>{$option} por página</option>";
@@ -495,14 +495,14 @@ if (!function_exists('generarPaginacion')) {
         
         // Botón Primera página
         if ($pagina_actual > 3) {
-            $html .= "<a href='javascript:void(0)' data-seccion='{$seccion_id}' data-pagina='1' class='page-btn first-btn' title='Primera página'>";
+            $html .= "<a href='#' data-seccion='{$seccion_id}' data-pagina='1' class='page-btn ajax-page-btn first-btn' title='Primera página'>";
             $html .= '<i class="fas fa-angle-double-left"></i></a>';
         }
         
         // Botón Anterior
         if ($pagina_actual > 1) {
             $prev = $pagina_actual - 1;
-            $html .= "<a href='javascript:void(0)' data-seccion='{$seccion_id}' data-pagina='{$prev}' class='page-btn prev-btn' title='Página anterior'>";
+            $html .= "<a href='#' data-seccion='{$seccion_id}' data-pagina='{$prev}' class='page-btn ajax-page-btn prev-btn' title='Página anterior'>";
             $html .= '<i class="fas fa-chevron-left"></i> Anterior</a>';
         }
         
@@ -511,7 +511,7 @@ if (!function_exists('generarPaginacion')) {
         $fin = min($total_paginas, $pagina_actual + 2);
         
         if ($inicio > 1) {
-            $html .= "<a href='javascript:void(0)' data-seccion='{$seccion_id}' data-pagina='1' class='page-btn'>1</a>";
+            $html .= "<a href='#' data-seccion='{$seccion_id}' data-pagina='1' class='page-btn ajax-page-btn'>1</a>";
             if ($inicio > 2) {
                 $html .= '<span class="page-ellipsis">...</span>';
             }
@@ -519,26 +519,26 @@ if (!function_exists('generarPaginacion')) {
         
         for ($i = $inicio; $i <= $fin; $i++) {
             $active = ($i == $pagina_actual) ? 'active' : '';
-            $html .= "<a href='javascript:void(0)' data-seccion='{$seccion_id}' data-pagina='{$i}' class='page-btn {$active}'>{$i}</a>";
+            $html .= "<a href='#' data-seccion='{$seccion_id}' data-pagina='{$i}' class='page-btn ajax-page-btn {$active}'>{$i}</a>";
         }
         
         if ($fin < $total_paginas) {
             if ($fin < $total_paginas - 1) {
                 $html .= '<span class="page-ellipsis">...</span>';
             }
-            $html .= "<a href='javascript:void(0)' data-seccion='{$seccion_id}' data-pagina='{$total_paginas}' class='page-btn'>{$total_paginas}</a>";
+            $html .= "<a href='#' data-seccion='{$seccion_id}' data-pagina='{$total_paginas}' class='page-btn ajax-page-btn'>{$total_paginas}</a>";
         }
         
         // Botón Siguiente
         if ($pagina_actual < $total_paginas) {
             $next = $pagina_actual + 1;
-            $html .= "<a href='javascript:void(0)' data-seccion='{$seccion_id}' data-pagina='{$next}' class='page-btn next-btn' title='Página siguiente'>";
+            $html .= "<a href='#' data-seccion='{$seccion_id}' data-pagina='{$next}' class='page-btn ajax-page-btn next-btn' title='Página siguiente'>";
             $html .= 'Siguiente <i class="fas fa-chevron-right"></i></a>';
         }
         
         // Botón Última página
         if ($pagina_actual < $total_paginas - 2) {
-            $html .= "<a href='javascript:void(0)' data-seccion='{$seccion_id}' data-pagina='{$total_paginas}' class='page-btn last-btn' title='Última página'>";
+            $html .= "<a href='#' data-seccion='{$seccion_id}' data-pagina='{$total_paginas}' class='page-btn ajax-page-btn last-btn' title='Última página'>";
             $html .= '<i class="fas fa-angle-double-right"></i></a>';
         }
         

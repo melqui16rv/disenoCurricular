@@ -307,7 +307,7 @@ try {
                     include 'vistas/listar_raps.php';
                     break;
                 case 'completar_informacion':
-                    include 'vistas/completar_informacion_new.php';
+                    include 'vistas/completar_informacion.php';
                     break;
                 case 'completar':
                     include 'vistas/completar_' . $tipo . '.php';

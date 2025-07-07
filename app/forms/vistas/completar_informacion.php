@@ -1,92 +1,191 @@
 <?php
 // Vista para completar información faltante en diseños, competencias y RAPs
 
+// Verificar que $metodos esté disponible
+if (!isset($metodos)) {
+    die('Error: Variable $metodos no está disponible. Asegúrate de que el archivo se incluya desde index.php');
+}
+
+// Incluir funciones auxiliares para AJAX y generación de HTML
+include_once 'completar_informacion_funciones.php';
+
 // Obtener filtros y paginación
 $filtro_seccion = $_GET['seccion'] ?? 'todas';
 $filtro_busqueda = $_GET['busqueda'] ?? '';
-$pagina_actual = max(1, (int)($_GET['pagina'] ?? 1));
-$registros_por_pagina = 10;
 
-// Función para detectar campos faltantes en diseños
-function obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina = 1, $registros_por_pagina = 10) {
-    $sql = "SELECT * FROM diseños WHERE 1=1";
-    $params = [];
+// Paginación independiente por sección
+$pagina_disenos = max(1, (int)($_GET['pagina_disenos'] ?? 1));
+$pagina_competencias = max(1, (int)($_GET['pagina_competencias'] ?? 1));
+$pagina_raps = max(1, (int)($_GET['pagina_raps'] ?? 1));
 
-    if (!empty($filtro_busqueda)) {
-        $sql .= " AND (codigoDiseño LIKE ? OR nombrePrograma LIKE ?)";
-        $params[] = "%$filtro_busqueda%";
-        $params[] = "%$filtro_busqueda%";
-    }
+// Registros por página independientes por sección
+$registros_disenos = (int)($_GET['registros_disenos'] ?? 10);
+$registros_competencias = (int)($_GET['registros_competencias'] ?? 10);
+$registros_raps = (int)($_GET['registros_raps'] ?? 10);
 
-    // Obtener todos los registros para filtrar campos faltantes
-    $diseños = $metodos->ejecutarConsulta($sql, $params);
-    $diseñosConFaltantes = [];
+// Filtros avanzados
+$filtro_horas_min = (float)($_GET['horas_min'] ?? 0);
+$filtro_horas_max = (float)($_GET['horas_max'] ?? 0);
+$filtro_tipo_programa = $_GET['tipo_programa'] ?? '';
+$filtro_nivel_academico = $_GET['nivel_academico'] ?? '';
+$filtro_estado = $_GET['estado'] ?? '';
+$filtro_fecha_desde = $_GET['fecha_desde'] ?? '';
+$filtro_fecha_hasta = $_GET['fecha_hasta'] ?? '';
 
-    foreach ($diseños as $diseño) {
-        $camposFaltantes = [];
-
-        // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
-
-        // 1. Campos de tecnología y conocimiento
-        if (empty($diseño['lineaTecnologica'])) $camposFaltantes[] = 'Línea Tecnológica';
-        if (empty($diseño['redTecnologica'])) $camposFaltantes[] = 'Red Tecnológica';
-        if (empty($diseño['redConocimiento'])) $camposFaltantes[] = 'Red de Conocimiento';
-
-        // 2. Validación de horas y meses (solo si NINGUNO de los dos sistemas está completo)
-        $horasLectiva = (float)($diseño['horasDesarrolloLectiva'] ?? 0);
-        $horasProductiva = (float)($diseño['horasDesarrolloProductiva'] ?? 0);
-        $mesesLectiva = (float)($diseño['mesesDesarrolloLectiva'] ?? 0);
-        $mesesProductiva = (float)($diseño['mesesDesarrolloProductiva'] ?? 0);
-
-        $tieneHorasCompletas = ($horasLectiva > 0 && $horasProductiva > 0);
-        $tieneMesesCompletos = ($mesesLectiva > 0 && $mesesProductiva > 0);
-
-        if (!$tieneHorasCompletas && !$tieneMesesCompletos) {
-            $camposFaltantes[] = 'Debe completar HORAS (Lectivas + Productivas) O MESES (Lectivos + Productivos)';
-        }
-
-        // 3. Campos académicos y requisitos
-        if (empty($diseño['nivelAcademicoIngreso'])) $camposFaltantes[] = 'Nivel Académico de Ingreso';
-        if (empty($diseño['gradoNivelAcademico']) || $diseño['gradoNivelAcademico'] == 0) $camposFaltantes[] = 'Grado del Nivel Académico';
-        if (empty($diseño['formacionTrabajoDesarrolloHumano'])) $camposFaltantes[] = 'Formación en Trabajo y Desarrollo Humano';
-        if (empty($diseño['edadMinima']) || $diseño['edadMinima'] == 0) $camposFaltantes[] = 'Edad Mínima';
-        if (empty($diseño['requisitosAdicionales'])) $camposFaltantes[] = 'Requisitos Adicionales';
-
-        if (!empty($camposFaltantes)) {
-            $diseño['camposFaltantes'] = $camposFaltantes;
-            $diseñosConFaltantes[] = $diseño;
-        }
-    }
-
-    // Aplicar paginación después del filtrado
-    $total_registros = count($diseñosConFaltantes);
-    $total_paginas = ceil($total_registros / $registros_por_pagina);
-    $offset = ($pagina - 1) * $registros_por_pagina;
-    
-    $diseñosPaginados = array_slice($diseñosConFaltantes, $offset, $registros_por_pagina);
-
-    return [
-        'datos' => $diseñosPaginados,
-        'total_registros' => $total_registros,
-        'total_paginas' => $total_paginas,
-        'pagina_actual' => $pagina,
-        'registros_por_pagina' => $registros_por_pagina
-    ];
+// Validar registros por página para cada sección
+$registros_permitidos = [5, 10, 25, 50, 100];
+if (!in_array($registros_disenos, $registros_permitidos)) {
+    $registros_disenos = 10;
+}
+if (!in_array($registros_competencias, $registros_permitidos)) {
+    $registros_competencias = 10;
+}
+if (!in_array($registros_raps, $registros_permitidos)) {
+    $registros_raps = 10;
 }
 
-// Función para detectar campos faltantes en competencias
-function obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina = 1, $registros_por_pagina = 10) {
+// Función para validar y corregir páginas fuera de rango
+function validarPagina($pagina_solicitada, $total_registros, $registros_por_pagina) {
+    if ($total_registros == 0) {
+        return 1;
+    }
+    
+    $total_paginas = ceil($total_registros / $registros_por_pagina);
+    $pagina_corregida = max(1, min($pagina_solicitada, $total_paginas));
+    
+    return $pagina_corregida;
+}
+
+// Función para detectar campos faltantes en diseños con filtros avanzados
+function obtenerDisenosConCamposFaltantes($metodos, $filtros_array = [], $pagina = 1, $registros_por_pagina = 10) {
+    try {
+        $sql = "SELECT * FROM diseños WHERE 1=1";
+        $params = [];
+
+        // Filtro básico de búsqueda
+        if (!empty($filtros_array['busqueda'])) {
+            $sql .= " AND (codigoDiseño LIKE ? OR nombrePrograma LIKE ?)";
+            $params[] = "%{$filtros_array['busqueda']}%";
+            $params[] = "%{$filtros_array['busqueda']}%";
+        }
+
+        // Filtro por tipo de programa
+        if (!empty($filtros_array['tipo_programa'])) {
+            $sql .= " AND tipoPrograma = ?";
+            $params[] = $filtros_array['tipo_programa'];
+        }
+
+        // Filtro por nivel académico
+        if (!empty($filtros_array['nivel_academico'])) {
+            $sql .= " AND nivelAcademicoIngreso = ?";
+            $params[] = $filtros_array['nivel_academico'];
+        }
+
+        // Filtro por rango de horas totales
+        if (!empty($filtros_array['horas_min']) && $filtros_array['horas_min'] > 0) {
+            $sql .= " AND (horasDesarrolloLectiva + horasDesarrolloProductiva) >= ?";
+            $params[] = $filtros_array['horas_min'];
+        }
+
+        if (!empty($filtros_array['horas_max']) && $filtros_array['horas_max'] > 0) {
+            $sql .= " AND (horasDesarrolloLectiva + horasDesarrolloProductiva) <= ?";
+            $params[] = $filtros_array['horas_max'];
+        }
+
+        // Obtener todos los registros para filtrar campos faltantes
+        $diseños = $metodos->ejecutarConsulta($sql, $params);
+        $diseñosConFaltantes = [];
+
+        foreach ($diseños as $diseño) {
+            $camposFaltantes = [];
+
+            // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
+
+            // 1. Campos de tecnología y conocimiento
+            if (empty($diseño['lineaTecnologica'])) $camposFaltantes[] = 'Línea Tecnológica';
+            if (empty($diseño['redTecnologica'])) $camposFaltantes[] = 'Red Tecnológica';
+            if (empty($diseño['redConocimiento'])) $camposFaltantes[] = 'Red de Conocimiento';
+
+            // 2. Validación de horas y meses (solo si NINGUNO de los dos sistemas está completo)
+            $horasLectiva = (float)($diseño['horasDesarrolloLectiva'] ?? 0);
+            $horasProductiva = (float)($diseño['horasDesarrolloProductiva'] ?? 0);
+            $mesesLectiva = (float)($diseño['mesesDesarrolloLectiva'] ?? 0);
+            $mesesProductiva = (float)($diseño['mesesDesarrolloProductiva'] ?? 0);
+
+            $tieneHorasCompletas = ($horasLectiva > 0 && $horasProductiva > 0);
+            $tieneMesesCompletos = ($mesesLectiva > 0 && $mesesProductiva > 0);
+
+            if (!$tieneHorasCompletas && !$tieneMesesCompletos) {
+                $camposFaltantes[] = 'Debe completar HORAS (Lectivas + Productivas) O MESES (Lectivos + Productivos)';
+            }
+
+            // 3. Campos académicos y requisitos
+            if (empty($diseño['nivelAcademicoIngreso'])) $camposFaltantes[] = 'Nivel Académico de Ingreso';
+            if (empty($diseño['gradoNivelAcademico']) || $diseño['gradoNivelAcademico'] == 0) $camposFaltantes[] = 'Grado del Nivel Académico';
+            if (empty($diseño['formacionTrabajoDesarrolloHumano'])) $camposFaltantes[] = 'Formación en Trabajo y Desarrollo Humano';
+            if (empty($diseño['edadMinima']) || $diseño['edadMinima'] == 0) $camposFaltantes[] = 'Edad Mínima';
+            if (empty($diseño['requisitosAdicionales'])) $camposFaltantes[] = 'Requisitos Adicionales';
+
+            if (!empty($camposFaltantes)) {
+                $diseño['camposFaltantes'] = $camposFaltantes;
+                $diseñosConFaltantes[] = $diseño;
+            }
+        }
+
+        // Aplicar paginación después del filtrado
+        $total_registros = count($diseñosConFaltantes);
+        $total_paginas = ceil($total_registros / $registros_por_pagina);
+        
+        // Validar y corregir página fuera de rango
+        $pagina_corregida = validarPagina($pagina, $total_registros, $registros_por_pagina);
+        
+        $offset = ($pagina_corregida - 1) * $registros_por_pagina;
+        $diseñosPaginados = array_slice($diseñosConFaltantes, $offset, $registros_por_pagina);
+
+        return [
+            'datos' => $diseñosPaginados,
+            'total_registros' => $total_registros,
+            'total_paginas' => $total_paginas,
+            'pagina_actual' => $pagina_corregida,
+            'registros_por_pagina' => $registros_por_pagina
+        ];
+    } catch (Exception $e) {
+        error_log("Error en obtenerDisenosConCamposFaltantes: " . $e->getMessage());
+        return [
+            'datos' => [],
+            'total_registros' => 0,
+            'total_paginas' => 0,
+            'pagina_actual' => 1,
+            'registros_por_pagina' => $registros_por_pagina
+        ];
+    }
+}
+
+// Función para detectar campos faltantes en competencias con filtros avanzados
+function obtenerCompetenciasConCamposFaltantes($metodos, $filtros_array = [], $pagina = 1, $registros_por_pagina = 10) {
     $sql = "SELECT c.*, d.nombrePrograma 
             FROM competencias c 
             LEFT JOIN diseños d ON SUBSTRING_INDEX(c.codigoDiseñoCompetenciaReporte, '-', 2) = d.codigoDiseño 
             WHERE 1=1";
     $params = [];
 
-    if (!empty($filtro_busqueda)) {
+    // Filtro básico de búsqueda
+    if (!empty($filtros_array['busqueda'])) {
         $sql .= " AND (c.codigoDiseñoCompetenciaReporte LIKE ? OR c.nombreCompetencia LIKE ? OR d.nombrePrograma LIKE ?)";
-        $params[] = "%$filtro_busqueda%";
-        $params[] = "%$filtro_busqueda%";
-        $params[] = "%$filtro_busqueda%";
+        $params[] = "%{$filtros_array['busqueda']}%";
+        $params[] = "%{$filtros_array['busqueda']}%";
+        $params[] = "%{$filtros_array['busqueda']}%";
+    }
+
+    // Filtro por rango de horas
+    if (!empty($filtros_array['horas_min']) && $filtros_array['horas_min'] > 0) {
+        $sql .= " AND c.horasDesarrolloCompetencia >= ?";
+        $params[] = $filtros_array['horas_min'];
+    }
+
+    if (!empty($filtros_array['horas_max']) && $filtros_array['horas_max'] > 0) {
+        $sql .= " AND c.horasDesarrolloCompetencia <= ?";
+        $params[] = $filtros_array['horas_max'];
     }
 
     $competencias = $metodos->ejecutarConsulta($sql, $params);
@@ -122,21 +221,24 @@ function obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda = '', 
     // Aplicar paginación después del filtrado
     $total_registros = count($competenciasConFaltantes);
     $total_paginas = ceil($total_registros / $registros_por_pagina);
-    $offset = ($pagina - 1) * $registros_por_pagina;
     
+    // Validar y corregir página fuera de rango
+    $pagina_corregida = validarPagina($pagina, $total_registros, $registros_por_pagina);
+    
+    $offset = ($pagina_corregida - 1) * $registros_por_pagina;
     $competenciasPaginadas = array_slice($competenciasConFaltantes, $offset, $registros_por_pagina);
 
     return [
         'datos' => $competenciasPaginadas,
         'total_registros' => $total_registros,
         'total_paginas' => $total_paginas,
-        'pagina_actual' => $pagina,
+        'pagina_actual' => $pagina_corregida,
         'registros_por_pagina' => $registros_por_pagina
     ];
 }
 
-// Función para detectar campos faltantes en RAPs
-function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina = 1, $registros_por_pagina = 10) {
+// Función para detectar campos faltantes en RAPs con filtros avanzados
+function obtenerRapsConCamposFaltantes($metodos, $filtros_array = [], $pagina = 1, $registros_por_pagina = 10) {
     $sql = "SELECT r.*, c.nombreCompetencia, d.nombrePrograma 
             FROM raps r 
             LEFT JOIN competencias c ON SUBSTRING_INDEX(r.codigoDiseñoCompetenciaReporteRap, '-', 3) = c.codigoDiseñoCompetenciaReporte 
@@ -144,12 +246,24 @@ function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina 
             WHERE 1=1";
     $params = [];
 
-    if (!empty($filtro_busqueda)) {
+    // Filtro básico de búsqueda
+    if (!empty($filtros_array['busqueda'])) {
         $sql .= " AND (r.codigoDiseñoCompetenciaReporteRap LIKE ? OR r.nombreRap LIKE ? OR c.nombreCompetencia LIKE ? OR d.nombrePrograma LIKE ?)";
-        $params[] = "%$filtro_busqueda%";
-        $params[] = "%$filtro_busqueda%";
-        $params[] = "%$filtro_busqueda%";
-        $params[] = "%$filtro_busqueda%";
+        $params[] = "%{$filtros_array['busqueda']}%";
+        $params[] = "%{$filtros_array['busqueda']}%";
+        $params[] = "%{$filtros_array['busqueda']}%";
+        $params[] = "%{$filtros_array['busqueda']}%";
+    }
+
+    // Filtro por rango de horas
+    if (!empty($filtros_array['horas_min']) && $filtros_array['horas_min'] > 0) {
+        $sql .= " AND r.horasDesarrolloRap >= ?";
+        $params[] = $filtros_array['horas_min'];
+    }
+
+    if (!empty($filtros_array['horas_max']) && $filtros_array['horas_max'] > 0) {
+        $sql .= " AND r.horasDesarrolloRap <= ?";
+        $params[] = $filtros_array['horas_max'];
     }
 
     $raps = $metodos->ejecutarConsulta($sql, $params);
@@ -160,13 +274,10 @@ function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina 
 
         // VALIDAR SOLO LOS CAMPOS ESPECIFICADOS EXACTAMENTE
 
-        // 1. Código RAP reporte (nuevo campo en lugar de codigoRapDiseño)
-        if (empty($rap['codigoRapReporte'])) $camposFaltantes[] = 'Código RAP Reporte';
-
-        // 2. Nombre del RAP
+        // 1. Nombre del RAP
         if (empty($rap['nombreRap'])) $camposFaltantes[] = 'Nombre del RAP';
 
-        // 3. Horas de desarrollo (debe ser > 0)
+        // 2. Horas de desarrollo (debe ser > 0)
         $horas = (float)($rap['horasDesarrolloRap'] ?? 0);
         if ($horas <= 0) $camposFaltantes[] = 'Horas de Desarrollo (debe ser > 0)';
 
@@ -179,21 +290,24 @@ function obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda = '', $pagina 
     // Aplicar paginación después del filtrado
     $total_registros = count($rapsConFaltantes);
     $total_paginas = ceil($total_registros / $registros_por_pagina);
-    $offset = ($pagina - 1) * $registros_por_pagina;
     
+    // Validar y corregir página fuera de rango
+    $pagina_corregida = validarPagina($pagina, $total_registros, $registros_por_pagina);
+    
+    $offset = ($pagina_corregida - 1) * $registros_por_pagina;
     $rapsPaginados = array_slice($rapsConFaltantes, $offset, $registros_por_pagina);
 
     return [
         'datos' => $rapsPaginados,
         'total_registros' => $total_registros,
         'total_paginas' => $total_paginas,
-        'pagina_actual' => $pagina,
+        'pagina_actual' => $pagina_corregida,
         'registros_por_pagina' => $registros_por_pagina
     ];
 }
 
-// Función para generar controles de paginación
-function generarPaginacion($resultado, $filtro_seccion, $filtro_busqueda, $seccion_id = '') {
+// Función para generar controles de paginación mejorada con independencia por sección
+function generarPaginacion($resultado, $filtros_array, $seccion_id = '') {
     if ($resultado['total_paginas'] <= 1) {
         return '';
     }
@@ -206,20 +320,62 @@ function generarPaginacion($resultado, $filtro_seccion, $filtro_busqueda, $secci
     $inicio_registro = (($pagina_actual - 1) * $registros_por_pagina) + 1;
     $fin_registro = min($pagina_actual * $registros_por_pagina, $total_registros);
     
-    $html = '<div class="pagination-container">';
+    // Construir query string EXCLUYENDO solo la página específica de la sección actual
+    $query_params = [];
+    $exclude_params = [
+        'pagina_' . $seccion_id  // Solo excluir la página de esta sección
+    ];
     
-    // Información de registros
+    foreach ($filtros_array as $key => $value) {
+        if (!empty($value) && !in_array($key, $exclude_params)) {
+            $query_params[] = urlencode($key) . '=' . urlencode($value);
+        }
+    }
+    
+    // Agregar parámetros de otras secciones Y registros de la sección actual para mantener su estado
+    $current_url_params = $_GET;
+    foreach ($current_url_params as $key => $value) {
+        // Incluir todos los parámetros de paginación y registros EXCEPTO la página de la sección actual
+        if ((strpos($key, 'pagina_') === 0 || strpos($key, 'registros_') === 0) && !in_array($key, $exclude_params) && !empty($value)) {
+            $query_params[] = urlencode($key) . '=' . urlencode($value);
+        }
+    }
+    
+    $base_url = '?' . implode('&', $query_params);
+    $separator = empty($query_params) ? '?' : '&';
+    
+    $html = '<div class="pagination-container" data-section="' . $seccion_id . '">';
+    
+    // Información de registros con opciones de visualización
+    $html .= '<div class="pagination-info-extended">';
     $html .= '<div class="pagination-info">';
     $html .= "Mostrando {$inicio_registro}-{$fin_registro} de {$total_registros} registros";
+    $html .= '</div>';
+    
+    // Selector de registros por página
+    $html .= '<div class="records-per-page">';
+    $html .= '<select onchange="cambiarRegistrosPorPaginaAjax(this.value, \'' . $seccion_id . '\')" class="records-selector">';
+    foreach ([5, 10, 25, 50, 100] as $option) {
+        $selected = ($option == $registros_por_pagina) ? 'selected' : '';
+        $html .= "<option value='{$option}' {$selected}>{$option} por página</option>";
+    }
+    $html .= '</select>';
+    $html .= '</div>';
     $html .= '</div>';
     
     // Controles de paginación
     $html .= '<div class="pagination-controls">';
     
+    // Botón Primera página
+    if ($pagina_actual > 3) {
+        $html .= "<a href='#' data-page='1' data-section='{$seccion_id}' class='page-btn ajax-page-btn first-btn' title='Primera página'>";
+        $html .= '<i class="fas fa-angle-double-left"></i></a>';
+    }
+    
     // Botón Anterior
     if ($pagina_actual > 1) {
         $prev = $pagina_actual - 1;
-        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina={$prev}' class='page-btn prev-btn'>";
+        $html .= "<a href='#' data-page='{$prev}' data-section='{$seccion_id}' class='page-btn ajax-page-btn prev-btn' title='Página anterior'>";
         $html .= '<i class="fas fa-chevron-left"></i> Anterior</a>';
     }
     
@@ -228,7 +384,7 @@ function generarPaginacion($resultado, $filtro_seccion, $filtro_busqueda, $secci
     $fin = min($total_paginas, $pagina_actual + 2);
     
     if ($inicio > 1) {
-        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina=1' class='page-btn'>1</a>";
+        $html .= "<a href='#' data-page='1' data-section='{$seccion_id}' class='page-btn ajax-page-btn'>1</a>";
         if ($inicio > 2) {
             $html .= '<span class="page-ellipsis">...</span>';
         }
@@ -236,21 +392,27 @@ function generarPaginacion($resultado, $filtro_seccion, $filtro_busqueda, $secci
     
     for ($i = $inicio; $i <= $fin; $i++) {
         $active = ($i == $pagina_actual) ? 'active' : '';
-        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina={$i}' class='page-btn {$active}'>{$i}</a>";
+        $html .= "<a href='#' data-page='{$i}' data-section='{$seccion_id}' class='page-btn ajax-page-btn {$active}'>{$i}</a>";
     }
     
     if ($fin < $total_paginas) {
         if ($fin < $total_paginas - 1) {
             $html .= '<span class="page-ellipsis">...</span>';
         }
-        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina={$total_paginas}' class='page-btn'>{$total_paginas}</a>";
+        $html .= "<a href='#' data-page='{$total_paginas}' data-section='{$seccion_id}' class='page-btn ajax-page-btn'>{$total_paginas}</a>";
     }
     
     // Botón Siguiente
     if ($pagina_actual < $total_paginas) {
         $next = $pagina_actual + 1;
-        $html .= "<a href='?accion=completar_informacion&seccion={$filtro_seccion}&busqueda=" . urlencode($filtro_busqueda) . "&pagina={$next}' class='page-btn next-btn'>";
+        $html .= "<a href='#' data-page='{$next}' data-section='{$seccion_id}' class='page-btn ajax-page-btn next-btn' title='Página siguiente'>";
         $html .= 'Siguiente <i class="fas fa-chevron-right"></i></a>';
+    }
+    
+    // Botón Última página
+    if ($pagina_actual < $total_paginas - 2) {
+        $html .= "<a href='#' data-page='{$total_paginas}' data-section='{$seccion_id}' class='page-btn ajax-page-btn last-btn' title='Última página'>";
+        $html .= '<i class="fas fa-angle-double-right"></i></a>';
     }
     
     $html .= '</div>';
@@ -259,21 +421,35 @@ function generarPaginacion($resultado, $filtro_seccion, $filtro_busqueda, $secci
     return $html;
 }
 
-// Obtener datos según filtros con paginación
-$resultadoDiseños = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_actual];
-$resultadoCompetencias = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_actual];
-$resultadoRaps = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_actual];
+// Construir array de filtros para URLs
+$filtros_array = [
+    'accion' => 'completar_informacion',
+    'seccion' => $filtro_seccion,
+    'busqueda' => $filtro_busqueda,
+    'horas_min' => $filtro_horas_min,
+    'horas_max' => $filtro_horas_max,
+    'tipo_programa' => $filtro_tipo_programa,
+    'nivel_academico' => $filtro_nivel_academico,
+    'estado' => $filtro_estado,
+    'fecha_desde' => $filtro_fecha_desde,
+    'fecha_hasta' => $filtro_fecha_hasta
+];
+
+// Obtener datos según filtros con paginación independiente por sección
+$resultadoDiseños = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_disenos];
+$resultadoCompetencias = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_competencias];
+$resultadoRaps = ['datos' => [], 'total_registros' => 0, 'total_paginas' => 0, 'pagina_actual' => $pagina_raps];
 
 if ($filtro_seccion === 'todas' || $filtro_seccion === 'disenos') {
-    $resultadoDiseños = obtenerDisenosConCamposFaltantes($metodos, $filtro_busqueda, $pagina_actual, $registros_por_pagina);
+    $resultadoDiseños = obtenerDisenosConCamposFaltantes($metodos, $filtros_array, $pagina_disenos, $registros_disenos);
 }
 
 if ($filtro_seccion === 'todas' || $filtro_seccion === 'competencias') {
-    $resultadoCompetencias = obtenerCompetenciasConCamposFaltantes($metodos, $filtro_busqueda, $pagina_actual, $registros_por_pagina);
+    $resultadoCompetencias = obtenerCompetenciasConCamposFaltantes($metodos, $filtros_array, $pagina_competencias, $registros_competencias);
 }
 
 if ($filtro_seccion === 'todas' || $filtro_seccion === 'raps') {
-    $resultadoRaps = obtenerRapsConCamposFaltantes($metodos, $filtro_busqueda, $pagina_actual, $registros_por_pagina);
+    $resultadoRaps = obtenerRapsConCamposFaltantes($metodos, $filtros_array, $pagina_raps, $registros_raps);
 }
 
 // Extraer datos para compatibilidad
@@ -337,12 +513,22 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
         </div>
     </div>
 
-    <!-- Filtros y búsqueda -->
+    <!-- Filtros y búsqueda mejorados -->
     <div class="filters-section">
+        <?php if ($filtro_busqueda || $filtro_horas_min || $filtro_horas_max || $filtro_tipo_programa || $filtro_nivel_academico || $filtro_estado): ?>
+            <div class="active-filters-indicator">
+                <i class="fas fa-filter"></i>
+                <span>Filtros activos</span>
+                <button type="button" class="filter-clear-btn" onclick="limpiarFiltros()" title="Limpiar todos los filtros">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        <?php endif; ?>
+        
         <form method="GET" class="filters-form" id="filtrosForm">
             <input type="hidden" name="accion" value="completar_informacion">
-            <input type="hidden" name="pagina" value="1"> <!-- Reset a página 1 al filtrar -->
 
+            <!-- Filtros básicos -->
             <div class="filter-group">
                 <label for="seccion">Sección:</label>
                 <select name="seccion" id="seccion" onchange="this.form.submit()">
@@ -358,13 +544,67 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
                 <input type="text" name="busqueda" id="busqueda" value="<?php echo htmlspecialchars($filtro_busqueda); ?>" placeholder="Código, nombre del programa...">
             </div>
 
-            <button type="submit" class="btn-filter">
-                <i class="fas fa-search"></i> Filtrar
+            <div class="filter-group">
+                <label for="estado">Estado:</label>
+                <select name="estado" id="estado">
+                    <option value="">Todos los estados</option>
+                    <option value="incompleto" <?php echo $filtro_estado === 'incompleto' ? 'selected' : ''; ?>>Solo Incompletos</option>
+                    <option value="completo" <?php echo $filtro_estado === 'completo' ? 'selected' : ''; ?>>Solo Completos</option>
+                </select>
+            </div>
+
+            <!-- Botón para mostrar filtros avanzados -->
+            <button type="button" class="advanced-filters-toggle" onclick="toggleAdvancedFilters()">
+                <i class="fas fa-sliders-h"></i> Filtros Avanzados
+                <i class="fas fa-chevron-down" id="advanced-arrow"></i>
             </button>
 
-            <a href="?accion=completar_informacion" class="btn-reset">
-                <i class="fas fa-times"></i> Limpiar
-            </a>
+            <!-- Filtros avanzados (ocultos por defecto) -->
+            <div class="advanced-filters-content" id="advanced-filters">
+                <div class="filter-group">
+                    <label for="horas_min">Horas mínimas:</label>
+                    <input type="number" name="horas_min" id="horas_min" value="<?php echo $filtro_horas_min; ?>" min="0" placeholder="0">
+                </div>
+
+                <div class="filter-group">
+                    <label for="horas_max">Horas máximas:</label>
+                    <input type="number" name="horas_max" id="horas_max" value="<?php echo $filtro_horas_max; ?>" min="0" placeholder="Sin límite">
+                </div>
+
+                <div class="filter-group">
+                    <label for="tipo_programa">Tipo de programa:</label>
+                    <select name="tipo_programa" id="tipo_programa">
+                        <option value="">Todos los tipos</option>
+                        <option value="Tecnólogo" <?php echo $filtro_tipo_programa === 'Tecnólogo' ? 'selected' : ''; ?>>Tecnólogo</option>
+                        <option value="Técnico" <?php echo $filtro_tipo_programa === 'Técnico' ? 'selected' : ''; ?>>Técnico</option>
+                        <option value="Especialización" <?php echo $filtro_tipo_programa === 'Especialización' ? 'selected' : ''; ?>>Especialización</option>
+                        <option value="Auxiliar" <?php echo $filtro_tipo_programa === 'Auxiliar' ? 'selected' : ''; ?>>Auxiliar</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="nivel_academico">Nivel académico:</label>
+                    <select name="nivel_academico" id="nivel_academico">
+                        <option value="">Todos los niveles</option>
+                        <option value="Primaria" <?php echo $filtro_nivel_academico === 'Primaria' ? 'selected' : ''; ?>>Primaria</option>
+                        <option value="Secundaria" <?php echo $filtro_nivel_academico === 'Secundaria' ? 'selected' : ''; ?>>Secundaria</option>
+                        <option value="Media" <?php echo $filtro_nivel_academico === 'Media' ? 'selected' : ''; ?>>Media</option>
+                        <option value="Técnico" <?php echo $filtro_nivel_academico === 'Técnico' ? 'selected' : ''; ?>>Técnico</option>
+                        <option value="Tecnólogo" <?php echo $filtro_nivel_academico === 'Tecnólogo' ? 'selected' : ''; ?>>Tecnólogo</option>
+                        <option value="Profesional" <?php echo $filtro_nivel_academico === 'Profesional' ? 'selected' : ''; ?>>Profesional</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="filter-actions">
+                <button type="submit" class="btn-filter">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+                <button type="button" class="btn-reset" onclick="limpiarFiltros()">
+                    <i class="fas fa-eraser"></i> Limpiar
+                </button>
+            </div>
         </form>
     </div>
 
@@ -380,9 +620,49 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
 
             <!-- Diseños con campos faltantes -->
             <?php if (!empty($diseñosConFaltantes) && ($filtro_seccion === 'todas' || $filtro_seccion === 'disenos')): ?>
-                <div class="section-results">
+                <div class="section-results" id="seccion-disenos">
                     <h3><i class="fas fa-graduation-cap"></i> Diseños con Campos Faltantes (<?php echo $totalDiseñosFaltantes; ?>)</h3>
-                    <div class="results-table">
+                    
+                    <!-- Paginación superior -->
+                    <?php echo generarPaginacion($resultadoDiseños, $filtros_array, 'disenos'); ?>
+                    
+                    <!-- Controles de búsqueda dentro de la tabla -->
+                    <div class="table-controls" data-table="disenos">
+                        <div class="table-search-container">
+                            <div class="search-group">
+                                <label for="search-disenos">Buscar en tabla:</label>
+                                <input type="text" id="search-disenos" class="table-search-input" placeholder="Buscar por código, programa, versión..." data-target="tabla-disenos">
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-disenos">Buscar en:</label>
+                                <select id="filter-disenos" class="table-filter-column">
+                                    <option value="all">Todas las columnas</option>
+                                    <option value="0">Código</option>
+                                    <option value="1">Programa</option>
+                                    <option value="2">Versión</option>
+                                </select>
+                            </div>
+                            <div class="sort-group">
+                                <label for="sort-disenos">Ordenar por:</label>
+                                <select id="sort-disenos" class="table-sort-column">
+                                    <option value="0-asc">Código (A-Z)</option>
+                                    <option value="0-desc">Código (Z-A)</option>
+                                    <option value="1-asc">Programa (A-Z)</option>
+                                    <option value="1-desc">Programa (Z-A)</option>
+                                    <option value="2-asc">Versión (A-Z)</option>
+                                    <option value="2-desc">Versión (Z-A)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="clear-table-filters" data-target="disenos">
+                                <i class="fas fa-times"></i> Limpiar
+                            </button>
+                        </div>
+                        <div class="table-info">
+                            <span class="visible-rows">Mostrando <span class="visible-count">0</span> de <span class="total-count">0</span> registros</span>
+                        </div>
+                    </div>
+                    
+                    <div class="results-table" id="tabla-disenos">
                         <table>
                             <thead>
                                 <tr>
@@ -417,34 +697,56 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
                         </table>
                     </div>
                     
-                    <!-- Controles de paginación para diseños -->
-                    <?php echo generarPaginacion($resultadoDiseños, $filtro_seccion, $filtro_busqueda, 'disenos'); ?>
-                </div>
-            <?php endif; ?>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        </td>
-                                        <td class="actions">
-                                            <a href="?accion=completar&tipo=disenos&codigo=<?php echo urlencode($diseño['codigoDiseño']); ?>" class="btn-edit">
-                                                <i class="fas fa-edit"></i> Completar
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Controles de paginación para diseños -->
-                    <?php echo generarPaginacion($resultadoDiseños, $filtro_seccion, $filtro_busqueda, 'disenos'); ?>
+                    <!-- Paginación inferior -->
+                    <?php echo generarPaginacion($resultadoDiseños, $filtros_array, 'disenos'); ?>
                 </div>
             <?php endif; ?>
 
             <!-- Competencias con campos faltantes -->
             <?php if (!empty($competenciasConFaltantes) && ($filtro_seccion === 'todas' || $filtro_seccion === 'competencias')): ?>
-                <div class="section-results">
+                <div class="section-results" id="seccion-competencias">
                     <h3><i class="fas fa-tasks"></i> Competencias con Campos Faltantes (<?php echo count($competenciasConFaltantes); ?>)</h3>
-                    <div class="results-table">
+                    
+                    <!-- Controles de paginación superiores para competencias -->
+                    <?php echo generarPaginacion($resultadoCompetencias, $filtros_array, 'competencias'); ?>
+                    
+                    <!-- Controles de búsqueda dentro de la tabla de competencias -->
+                    <div class="table-controls" data-table="competencias">
+                        <div class="table-search-container">
+                            <div class="search-group">
+                                <label for="search-competencias">Buscar en tabla:</label>
+                                <input type="text" id="search-competencias" class="table-search-input" placeholder="Buscar por código, competencia, programa..." data-target="tabla-competencias">
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-competencias">Buscar en:</label>
+                                <select id="filter-competencias" class="table-filter-column">
+                                    <option value="all">Todas las columnas</option>
+                                    <option value="0">Código</option>
+                                    <option value="1">Competencia</option>
+                                    <option value="2">Programa</option>
+                                </select>
+                            </div>
+                            <div class="sort-group">
+                                <label for="sort-competencias">Ordenar por:</label>
+                                <select id="sort-competencias" class="table-sort-column">
+                                    <option value="0-asc">Código (A-Z)</option>
+                                    <option value="0-desc">Código (Z-A)</option>
+                                    <option value="1-asc">Competencia (A-Z)</option>
+                                    <option value="1-desc">Competencia (Z-A)</option>
+                                    <option value="2-asc">Programa (A-Z)</option>
+                                    <option value="2-desc">Programa (Z-A)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="clear-table-filters" data-target="competencias">
+                                <i class="fas fa-times"></i> Limpiar
+                            </button>
+                        </div>
+                        <div class="table-info">
+                            <span class="visible-rows">Mostrando <span class="visible-count">0</span> de <span class="total-count">0</span> registros</span>
+                        </div>
+                    </div>
+                    
+                    <div class="results-table" id="tabla-competencias">
                         <table>
                             <thead>
                                 <tr>
@@ -480,15 +782,58 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
                     </div>
 
                     <!-- Controles de paginación para competencias -->
-                    <?php echo generarPaginacion($resultadoCompetencias, $filtro_seccion, $filtro_busqueda, 'competencias'); ?>
+                    <?php echo generarPaginacion($resultadoCompetencias, $filtros_array, 'competencias'); ?>
                 </div>
             <?php endif; ?>
 
             <!-- RAPs con campos faltantes -->
             <?php if (!empty($rapsConFaltantes) && ($filtro_seccion === 'todas' || $filtro_seccion === 'raps')): ?>
-                <div class="section-results">
+                <div class="section-results" id="seccion-raps">
                     <h3><i class="fas fa-list-ul"></i> RAPs con Campos Faltantes (<?php echo count($rapsConFaltantes); ?>)</h3>
-                    <div class="results-table">
+                    
+                    <!-- Controles de paginación superiores para RAPs -->
+                    <?php echo generarPaginacion($resultadoRaps, $filtros_array, 'raps'); ?>
+                    
+                    <!-- Controles de búsqueda dentro de la tabla de RAPs -->
+                    <div class="table-controls" data-table="raps">
+                        <div class="table-search-container">
+                            <div class="search-group">
+                                <label for="search-raps">Buscar en tabla:</label>
+                                <input type="text" id="search-raps" class="table-search-input" placeholder="Buscar por código, RAP, competencia..." data-target="tabla-raps">
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-raps">Buscar en:</label>
+                                <select id="filter-raps" class="table-filter-column">
+                                    <option value="all">Todas las columnas</option>
+                                    <option value="0">Código</option>
+                                    <option value="1">RAP</option>
+                                    <option value="2">Competencia</option>
+                                    <option value="3">Programa</option>
+                                </select>
+                            </div>
+                            <div class="sort-group">
+                                <label for="sort-raps">Ordenar por:</label>
+                                <select id="sort-raps" class="table-sort-column">
+                                    <option value="0-asc">Código (A-Z)</option>
+                                    <option value="0-desc">Código (Z-A)</option>
+                                    <option value="1-asc">RAP (A-Z)</option>
+                                    <option value="1-desc">RAP (Z-A)</option>
+                                    <option value="2-asc">Competencia (A-Z)</option>
+                                    <option value="2-desc">Competencia (Z-A)</option>
+                                    <option value="3-asc">Programa (A-Z)</option>
+                                    <option value="3-desc">Programa (Z-A)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="clear-table-filters" data-target="raps">
+                                <i class="fas fa-times"></i> Limpiar
+                            </button>
+                        </div>
+                        <div class="table-info">
+                            <span class="visible-rows">Mostrando <span class="visible-count">0</span> de <span class="total-count">0</span> registros</span>
+                        </div>
+                    </div>
+                    
+                    <div class="results-table" id="tabla-raps">
                         <table>
                             <thead>
                                 <tr>
@@ -526,7 +871,7 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
                     </div>
 
                     <!-- Controles de paginación para RAPs -->
-                    <?php echo generarPaginacion($resultadoRaps, $filtro_seccion, $filtro_busqueda, 'raps'); ?>
+                    <?php echo generarPaginacion($resultadoRaps, $filtros_array, 'raps'); ?>
                 </div>
             <?php endif; ?>
 
@@ -623,11 +968,39 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.filters-form {
+/* Indicador de filtros activos */
+.active-filters-indicator {
     display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.filter-clear-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-left: auto;
+}
+
+.filter-clear-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.filters-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
     align-items: end;
-    flex-wrap: wrap;
 }
 
 .filter-group {
@@ -649,6 +1022,68 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
     border-radius: 8px;
     font-size: 0.9rem;
     min-width: 200px;
+}
+
+/* Filtros avanzados */
+.advanced-filters-toggle {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.advanced-filters-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+#advanced-arrow {
+    transition: transform 0.3s ease;
+}
+
+.advanced-filters-content {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+    padding: 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.advanced-filters-content.show {
+    opacity: 1;
+    max-height: 500px;
+    overflow: visible;
+    border-color: #4facfe;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(79, 172, 254, 0.1);
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.filter-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
 }
 
 .btn-filter,
@@ -782,48 +1217,96 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-/* Paginación */
+/* Paginación mejorada */
 .pagination-container {
     display: flex;
     flex-direction: column;
     gap: 1rem;
     margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.pagination-info-extended {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .pagination-info {
-    color: #2c3e50;
+    color: #6c757d;
     font-size: 0.9rem;
+}
+
+.records-per-page {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.records-selector {
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    background: white;
 }
 
 .pagination-controls {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
 .page-btn {
-    background: #3498db;
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    color: #495057;
     text-decoration: none;
+    transition: all 0.2s ease;
     font-size: 0.9rem;
+    min-width: 40px;
+    text-align: center;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     transition: all 0.3s ease;
 }
 
 .page-btn:hover {
-    background: #2980b9;
+    background: #e9ecef;
+    border-color: #adb5bd;
 }
 
-.page-btn.prev-btn {
-    margin-right: auto;
+.page-btn.first-btn,
+.page-btn.last-btn {
+    font-weight: bold;
 }
 
+.page-btn.prev-btn,
 .page-btn.next-btn {
-    margin-left: auto;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+}
+
+.page-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+}
+
+.page-btn.active:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
 
 .page-btn.active {
@@ -836,34 +1319,449 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
     font-size: 1.2rem;
 }
 
-/* Responsive */
+/* Controles de búsqueda dentro de las tablas */
+.table-controls {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.table-controls.has-active-filters {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-color: #ffc107;
+}
+
+.table-controls.has-active-filters .table-search-container::before {
+    content: '🔍 Filtros activos';
+    display: block;
+    font-size: 0.8rem;
+    color: #856404;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.table-search-container {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 0.5rem;
+}
+
+.search-group,
+.filter-group,
+.sort-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.search-group label,
+.filter-group label,
+.sort-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.table-search-input,
+.table-filter-column,
+.table-sort-column {
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: white;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.table-search-input:focus,
+.table-filter-column:focus,
+.table-sort-column:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+    outline: 0;
+}
+
+.clear-table-filters {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    height: fit-content;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.clear-table-filters:hover {
+    background: #c82333;
+}
+
+.table-info {
+    color: #6c757d;
+    font-size: 0.85rem;
+    text-align: right;
+}
+
+.visible-count,
+.total-count {
+    font-weight: bold;
+    color: #495057;
+}
+
+/* Animaciones para mensajes y carga AJAX */
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(100%); }
+    10% { opacity: 1; transform: translateX(0); }
+    90% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes fadeInScale {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.ajax-loading-indicator {
+    animation: fadeInScale 0.3s ease-out;
+}
+
+.ajax-error-message {
+    animation: fadeInOut 4s ease-in-out forwards;
+}
+
+.filter-restored-message {
+    animation: fadeInOut 3s ease-in-out forwards;
+}
+
+/* Responsive para controles de tabla */
 @media (max-width: 768px) {
-    .statistics-panel {
+    .table-search-container {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
-
-    .filters-form {
-        flex-direction: column;
-        align-items: stretch;
+    
+    .search-group {
+        grid-column: 1 / -1;
     }
-
-    .filter-group select,
-    .filter-group input {
-        min-width: auto;
+    
+    .table-info {
+        text-align: center;
+        margin-top: 0.5rem;
     }
+}
 
-    .results-table {
-        font-size: 0.8rem;
+@media (max-width: 576px) {
+    .table-controls {
+        padding: 0.75rem;
     }
-
-    .results-table th,
-    .results-table td {
-        padding: 0.5rem;
-    }
-
-    .pagination-controls {
-        flex-direction: column;
+    
+    .table-search-container {
+        grid-template-columns: 1fr;
         gap: 0.5rem;
+    }
+    
+    .clear-table-filters {
+        width: 100%;
+        margin-top: 0.5rem;
     }
 }
 </style>
+
+<!-- Incluir JavaScript simplificado y sin conflictos -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inicializando funcionalidad AJAX para completar información...');
+    
+    // Event delegation para botones de paginación AJAX (más simple y directo)
+    document.addEventListener('click', function(e) {
+        const ajaxPageBtn = e.target.closest('.ajax-page-btn');
+        if (ajaxPageBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const page = ajaxPageBtn.getAttribute('data-pagina') || ajaxPageBtn.getAttribute('data-page');
+            const section = ajaxPageBtn.getAttribute('data-seccion') || ajaxPageBtn.getAttribute('data-section');
+            
+            console.log('Clic en paginación AJAX:', { page, section });
+            
+            if (page && section) {
+                loadPageAjax(section, page);
+            }
+        }
+        
+        // Guardar estado cuando se hace clic en enlaces de "Completar"
+        const link = e.target.closest('.btn-edit');
+        if (link) {
+            console.log('Guardando estado antes de navegar a completar');
+        }
+    });
+    
+    // Event delegation para selectores de registros por página
+    document.addEventListener('change', function(e) {
+        const selector = e.target.closest('.ajax-records-selector');
+        if (selector) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const seccion = selector.getAttribute('data-seccion');
+            const registros = selector.value;
+            
+            console.log('Cambio en registros por página:', { seccion, registros });
+            
+            if (seccion && registros) {
+                loadPageAjax(seccion, 1, registros);
+            }
+        }
+    });
+    
+    // Función principal para cargar página vía AJAX
+    function loadPageAjax(seccion, pagina, registros = null) {
+        console.log(`Cargando página AJAX: sección=${seccion}, página=${pagina}, registros=${registros}`);
+        
+        // Mostrar indicador de carga
+        const tablaContainer = document.getElementById(`tabla-${seccion}`);
+        if (tablaContainer) {
+            showLoadingIndicator(tablaContainer);
+        }
+        
+        // Construir parámetros
+        const params = new URLSearchParams();
+        params.append('seccion', seccion);
+        params.append('pagina', pagina);
+        
+        if (registros) {
+            params.append('registros', registros);
+        } else {
+            // Obtener registros por página actual de la sección
+            const registrosSelect = document.querySelector(`select.ajax-records-selector[data-seccion="${seccion}"]`);
+            if (registrosSelect) {
+                params.append('registros', registrosSelect.value);
+            } else {
+                params.append('registros', '10'); // Default
+            }
+        }
+        
+        // Añadir filtros de búsqueda globales
+        const searchInput = document.querySelector('input[name="busqueda"]');
+        if (searchInput && searchInput.value) {
+            params.append('search', searchInput.value);
+        }
+        
+        // Añadir otros filtros avanzados
+        ['horas_min', 'horas_max', 'tipo_programa', 'nivel_academico', 'estado', 'fecha_desde', 'fecha_hasta'].forEach(campo => {
+            const input = document.querySelector(`[name="${campo}"]`);
+            if (input && input.value) {
+                params.append(campo, input.value);
+            }
+        });
+        
+        console.log('Parámetros AJAX:', params.toString());
+        
+        // Realizar petición AJAX
+        fetch(`control/ajax_pagination.php?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('Respuesta AJAX recibida:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos AJAX procesados:', data);
+            if (data.success) {
+                updateTableContent(seccion, data);
+                console.log('Tabla actualizada exitosamente');
+            } else {
+                throw new Error(data.error || 'Error desconocido');
+            }
+        })
+        .catch(error => {
+            console.error('Error en paginación AJAX:', error);
+            showErrorMessage('Error al cargar la página: ' + error.message);
+        })
+        .finally(() => {
+            hideLoadingIndicator(tablaContainer);
+        });
+    }
+    
+    // Función para actualizar contenido de tabla
+    function updateTableContent(seccion, data) {
+        console.log('Actualizando contenido de tabla:', seccion);
+        
+        // Actualizar tabla - usar solo el tbody del HTML retornado
+        const tbody = document.querySelector(`#tabla-${seccion} table tbody`);
+        if (tbody && data.html_tabla) {
+            // Extraer solo el tbody del HTML retornado
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = data.html_tabla;
+            const tableElement = tempDiv.querySelector('table tbody');
+            if (tableElement) {
+                tbody.innerHTML = tableElement.innerHTML;
+            } else {
+                tbody.innerHTML = data.html_tabla;
+            }
+            console.log('Tabla actualizada');
+        }
+        
+        // Actualizar controles de paginación (buscar todos los contenedores)
+        const paginationContainers = document.querySelectorAll(`#seccion-${seccion} .pagination-container`);
+        console.log('Contenedores de paginación encontrados:', paginationContainers.length);
+        
+        paginationContainers.forEach(container => {
+            if (data.html_paginacion) {
+                container.outerHTML = data.html_paginacion;
+            }
+        });
+        
+        console.log('Paginación actualizada');
+    }
+    
+    // Funciones auxiliares para indicadores de carga
+    function showLoadingIndicator(container) {
+        const indicator = document.createElement('div');
+        indicator.className = 'ajax-loading-indicator';
+        indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+        indicator.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            font-weight: 600;
+            color: #007bff;
+        `;
+        
+        container.style.position = 'relative';
+        container.appendChild(indicator);
+    }
+    
+    function hideLoadingIndicator(container) {
+        if (container) {
+            const indicator = container.querySelector('.ajax-loading-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+    }
+    
+    function showErrorMessage(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'ajax-error-message';
+        errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+            z-index: 9999;
+            font-size: 0.9rem;
+            font-weight: 600;
+        `;
+        
+        document.body.appendChild(errorDiv);
+        
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 4000);
+    }
+    
+    // Función global para cambiar registros por página con AJAX (para compatibilidad)
+    window.cambiarRegistrosPorPaginaAjax = function(valor, seccion) {
+        console.log('Función de compatibilidad llamada:', { valor, seccion });
+        loadPageAjax(seccion, 1, valor);
+    };
+    
+    // Función global para limpiar filtros
+    window.limpiarFiltros = function() {
+        sessionStorage.clear();
+        window.location.href = '?accion=completar_informacion';
+    };
+    
+    // Función simple para guardar estado de filtros (compatible)
+    window.saveTableFiltersState = function() {
+        console.log('Guardando estado de filtros de tabla');
+    };
+    
+    // Exponer funciones globalmente para compatibilidad
+    window.loadPageAjax = loadPageAjax;
+    
+    console.log('Sistema AJAX inicializado correctamente');
+});
+</script>
+
+<!-- Funciones adicionales para manejo de filtros avanzados -->
+<script>
+// Funciones adicionales para compatibilidad y manejo de estado
+document.addEventListener('DOMContentLoaded', function() {
+    // Funcionalidad de filtros avanzados
+    window.toggleAdvancedFilters = function() {
+        const advancedFilters = document.getElementById('advanced-filters');
+        const arrow = document.getElementById('advanced-arrow');
+        
+        if (advancedFilters && arrow) {
+            const isVisible = advancedFilters.classList.contains('show');
+            
+            if (isVisible) {
+                advancedFilters.classList.remove('show');
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                advancedFilters.classList.add('show');
+                arrow.style.transform = 'rotate(180deg)';
+            }
+            
+            arrow.style.transition = 'transform 0.3s ease';
+        }
+    };
+    
+    // Auto-expandir filtros avanzados si hay filtros activos
+    function checkAdvancedFiltersActive() {
+        const fields = ['horas_min', 'horas_max', 'tipo_programa', 'nivel_academico', 'fecha_desde', 'fecha_hasta'];
+        return fields.some(field => {
+            const element = document.getElementById(field);
+            return element && element.value;
+        });
+    }
+    
+    if (checkAdvancedFiltersActive()) {
+        const advancedFilters = document.getElementById('advanced-filters');
+        const arrow = document.getElementById('advanced-arrow');
+        if (advancedFilters && arrow) {
+            advancedFilters.classList.add('show');
+            arrow.style.transform = 'rotate(180deg)';
+            arrow.style.transition = 'transform 0.3s ease';
+        }
+    }
+    
+    // Agregar event listener al botón de filtros avanzados
+    const toggleButton = document.querySelector('.advanced-filters-toggle');
+    if (toggleButton) {
+        toggleButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleAdvancedFilters();
+        });
+    }
+    
+    console.log('Funcionalidad AJAX completar_informacion inicializada correctamente');
+});
+</script>

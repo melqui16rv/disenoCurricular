@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AJAX Paginación</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Test de Paginación AJAX</h1>
+    
+    <div id="tabla-disenos">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Programa</th>
+                    <th>Campos Faltantes</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Cargando...</td><td>Cargando...</td><td>Cargando...</td><td>Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div id="paginacion-disenos">
+        <!-- La paginación se cargará aquí -->
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Inicializando test AJAX...');
+        
+        // Event delegation para botones de paginación AJAX
+        document.addEventListener('click', function(e) {
+            const ajaxPageBtn = e.target.closest('.ajax-page-btn');
+            if (ajaxPageBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const page = ajaxPageBtn.getAttribute('data-pagina') || ajaxPageBtn.getAttribute('data-page');
+                const section = ajaxPageBtn.getAttribute('data-seccion') || ajaxPageBtn.getAttribute('data-section');
+                
+                console.log('Clic en paginación AJAX:', { page, section });
+                
+                if (page && section) {
+                    loadPageAjax(section, page);
+                }
+            }
+        });
+        
+        // Event delegation para selectores de registros por página
+        document.addEventListener('change', function(e) {
+            const selector = e.target.closest('.ajax-records-selector');
+            if (selector) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const seccion = selector.getAttribute('data-seccion');
+                const registros = selector.value;
+                
+                console.log('Cambio en registros por página:', { seccion, registros });
+                
+                if (seccion && registros) {
+                    loadPageAjax(seccion, 1, registros);
+                }
+            }
+        });
+        
+        // Función principal para cargar página vía AJAX
+        function loadPageAjax(seccion, pagina, registros = null) {
+            console.log(`Cargando página AJAX: sección=${seccion}, página=${pagina}, registros=${registros}`);
+            
+            // Construir parámetros
+            const params = new URLSearchParams();
+            params.append('seccion', seccion);
+            params.append('pagina', pagina);
+            
+            if (registros) {
+                params.append('registros', registros);
+            } else {
+                params.append('registros', '10'); // Default
+            }
+            
+            console.log('Parámetros AJAX:', params.toString());
+            
+            // Realizar petición AJAX
+            fetch(`control/ajax_pagination.php?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Respuesta AJAX recibida:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Datos AJAX procesados:', data);
+                if (data.success) {
+                    updateTableContent(seccion, data);
+                    console.log('Tabla actualizada exitosamente');
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            })
+            .catch(error => {
+                console.error('Error en paginación AJAX:', error);
+                alert('Error al cargar la página: ' + error.message);
+            });
+        }
+        
+        // Función para actualizar contenido de tabla
+        function updateTableContent(seccion, data) {
+            console.log('Actualizando contenido de tabla:', seccion);
+            
+            // Actualizar tabla
+            const tbody = document.querySelector(`#tabla-${seccion} table tbody`);
+            if (tbody && data.html_tabla) {
+                // Extraer solo el contenido del tbody del HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.html_tabla;
+                const tableElement = tempDiv.querySelector('table tbody');
+                if (tableElement) {
+                    tbody.innerHTML = tableElement.innerHTML;
+                } else {
+                    tbody.innerHTML = data.html_tabla;
+                }
+                console.log('Tabla actualizada');
+            }
+            
+            // Actualizar controles de paginación
+            const paginationContainer = document.querySelector(`#paginacion-${seccion}`);
+            if (paginationContainer && data.html_paginacion) {
+                paginationContainer.innerHTML = data.html_paginacion;
+                console.log('Paginación actualizada');
+            }
+        }
+        
+        // Cargar primera página al iniciar
+        loadPageAjax('disenos', 1);
+        
+        console.log('Sistema AJAX inicializado correctamente');
+    });
+    </script>
+</body>
+</html>
