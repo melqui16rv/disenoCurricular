@@ -23,14 +23,8 @@ $registros_disenos = (int)($_GET['registros_disenos'] ?? 10);
 $registros_competencias = (int)($_GET['registros_competencias'] ?? 10);
 $registros_raps = (int)($_GET['registros_raps'] ?? 10);
 
-// Filtros avanzados
-$filtro_horas_min = (float)($_GET['horas_min'] ?? 0);
-$filtro_horas_max = (float)($_GET['horas_max'] ?? 0);
-$filtro_tipo_programa = $_GET['tipo_programa'] ?? '';
-$filtro_nivel_academico = $_GET['nivel_academico'] ?? '';
+// Filtro de estado
 $filtro_estado = $_GET['estado'] ?? '';
-$filtro_fecha_desde = $_GET['fecha_desde'] ?? '';
-$filtro_fecha_hasta = $_GET['fecha_hasta'] ?? '';
 
 // Validar registros por página para cada sección
 $registros_permitidos = [5, 10, 25, 50, 100];
@@ -553,49 +547,6 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
                 </select>
             </div>
 
-            <!-- Botón para mostrar filtros avanzados -->
-            <button type="button" class="advanced-filters-toggle" onclick="toggleAdvancedFilters()">
-                <i class="fas fa-sliders-h"></i> Filtros Avanzados
-                <i class="fas fa-chevron-down" id="advanced-arrow"></i>
-            </button>
-
-            <!-- Filtros avanzados (ocultos por defecto) -->
-            <div class="advanced-filters-content" id="advanced-filters">
-                <div class="filter-group">
-                    <label for="horas_min">Horas mínimas:</label>
-                    <input type="number" name="horas_min" id="horas_min" value="<?php echo $filtro_horas_min; ?>" min="0" placeholder="0">
-                </div>
-
-                <div class="filter-group">
-                    <label for="horas_max">Horas máximas:</label>
-                    <input type="number" name="horas_max" id="horas_max" value="<?php echo $filtro_horas_max; ?>" min="0" placeholder="Sin límite">
-                </div>
-
-                <div class="filter-group">
-                    <label for="tipo_programa">Tipo de programa:</label>
-                    <select name="tipo_programa" id="tipo_programa">
-                        <option value="">Todos los tipos</option>
-                        <option value="Tecnólogo" <?php echo $filtro_tipo_programa === 'Tecnólogo' ? 'selected' : ''; ?>>Tecnólogo</option>
-                        <option value="Técnico" <?php echo $filtro_tipo_programa === 'Técnico' ? 'selected' : ''; ?>>Técnico</option>
-                        <option value="Especialización" <?php echo $filtro_tipo_programa === 'Especialización' ? 'selected' : ''; ?>>Especialización</option>
-                        <option value="Auxiliar" <?php echo $filtro_tipo_programa === 'Auxiliar' ? 'selected' : ''; ?>>Auxiliar</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="nivel_academico">Nivel académico:</label>
-                    <select name="nivel_academico" id="nivel_academico">
-                        <option value="">Todos los niveles</option>
-                        <option value="Primaria" <?php echo $filtro_nivel_academico === 'Primaria' ? 'selected' : ''; ?>>Primaria</option>
-                        <option value="Secundaria" <?php echo $filtro_nivel_academico === 'Secundaria' ? 'selected' : ''; ?>>Secundaria</option>
-                        <option value="Media" <?php echo $filtro_nivel_academico === 'Media' ? 'selected' : ''; ?>>Media</option>
-                        <option value="Técnico" <?php echo $filtro_nivel_academico === 'Técnico' ? 'selected' : ''; ?>>Técnico</option>
-                        <option value="Tecnólogo" <?php echo $filtro_nivel_academico === 'Tecnólogo' ? 'selected' : ''; ?>>Tecnólogo</option>
-                        <option value="Profesional" <?php echo $filtro_nivel_academico === 'Profesional' ? 'selected' : ''; ?>>Profesional</option>
-                    </select>
-                </div>
-            </div>
-
             <!-- Botones de acción -->
             <div class="filter-actions">
                 <button type="submit" class="btn-filter">
@@ -640,6 +591,7 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
                                     <option value="0">Código</option>
                                     <option value="1">Programa</option>
                                     <option value="2">Versión</option>
+                                    <option value="3">Campos Faltantes</option>
                                 </select>
                             </div>
                             <div class="sort-group">
@@ -724,6 +676,7 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
                                     <option value="0">Código</option>
                                     <option value="1">Competencia</option>
                                     <option value="2">Programa</option>
+                                    <option value="3">Campos Faltantes</option>
                                 </select>
                             </div>
                             <div class="sort-group">
@@ -809,6 +762,7 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
                                     <option value="1">RAP</option>
                                     <option value="2">Competencia</option>
                                     <option value="3">Programa</option>
+                                    <option value="4">Campos Faltantes</option>
                                 </select>
                             </div>
                             <div class="sort-group">
@@ -1024,60 +978,6 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
     min-width: 200px;
 }
 
-/* Filtros avanzados */
-.advanced-filters-toggle {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin: 1rem 0;
-}
-
-.advanced-filters-toggle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
-}
-
-#advanced-arrow {
-    transition: transform 0.3s ease;
-}
-
-.advanced-filters-content {
-    grid-column: 1 / -1;
-    margin-top: 1rem;
-    padding: 0;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0;
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.advanced-filters-content.show {
-    opacity: 1;
-    max-height: 500px;
-    overflow: visible;
-    border-color: #4facfe;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(79, 172, 254, 0.1);
-    padding: 1rem;
-    gap: 1rem;
-}
-
 .filter-actions {
     grid-column: 1 / -1;
     display: flex;
@@ -1118,6 +1018,47 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
 .btn-reset:hover {
     background: #c0392b;
     transform: translateY(-2px);
+}
+
+/* Estilos adicionales para filtros de tabla */
+.table-row-highlight {
+    background-color: #fff3cd !important;
+}
+
+.table-row-hidden {
+    display: none !important;
+}
+
+.sort-indicator {
+    font-weight: bold;
+    color: #007bff;
+    margin-left: 5px;
+}
+
+.no-results-message {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.clear-table-filters {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.clear-table-filters:hover {
+    background: #c82333;
+    transform: translateY(-1px);
 }
 
 /* Resultados */
@@ -1552,14 +1493,6 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('search', searchInput.value);
         }
         
-        // Añadir otros filtros avanzados
-        ['horas_min', 'horas_max', 'tipo_programa', 'nivel_academico', 'estado', 'fecha_desde', 'fecha_hasta'].forEach(campo => {
-            const input = document.querySelector(`[name="${campo}"]`);
-            if (input && input.value) {
-                params.append(campo, input.value);
-            }
-        });
-        
         console.log('Parámetros AJAX:', params.toString());
         
         // Realizar petición AJAX
@@ -1706,62 +1639,227 @@ document.addEventListener('DOMContentLoaded', function() {
     // Exponer funciones globalmente para compatibilidad
     window.loadPageAjax = loadPageAjax;
     
+    // Inicializar controles de búsqueda en tablas
+    initializeTableControls();
+    
     console.log('Sistema AJAX inicializado correctamente');
-});
-</script>
-
-<!-- Funciones adicionales para manejo de filtros avanzados -->
-<script>
-// Funciones adicionales para compatibilidad y manejo de estado
-document.addEventListener('DOMContentLoaded', function() {
-    // Funcionalidad de filtros avanzados
-    window.toggleAdvancedFilters = function() {
-        const advancedFilters = document.getElementById('advanced-filters');
-        const arrow = document.getElementById('advanced-arrow');
-        
-        if (advancedFilters && arrow) {
-            const isVisible = advancedFilters.classList.contains('show');
+    
+    // Funciones para los filtros de tabla específicos por sección
+    function initializeTableControls() {
+        document.querySelectorAll('.table-controls').forEach(control => {
+            const tableId = control.getAttribute('data-table');
+            const searchInput = control.querySelector('.table-search-input');
+            const filterSelect = control.querySelector('.table-filter-column');
+            const sortSelect = control.querySelector('.table-sort-column');
+            const clearButton = control.querySelector('.clear-table-filters');
             
-            if (isVisible) {
-                advancedFilters.classList.remove('show');
-                arrow.style.transform = 'rotate(0deg)';
-            } else {
-                advancedFilters.classList.add('show');
-                arrow.style.transform = 'rotate(180deg)';
+            const table = document.getElementById(`tabla-${tableId}`)?.querySelector('table');
+            
+            if (!table) return;
+            
+            // Inicializar contador de registros
+            updateTableInfo(control, table);
+            
+            // Event listeners
+            if (searchInput) {
+                searchInput.addEventListener('input', debounce(() => {
+                    filterTable(table, control);
+                }, 300));
             }
             
-            arrow.style.transition = 'transform 0.3s ease';
-        }
-    };
-    
-    // Auto-expandir filtros avanzados si hay filtros activos
-    function checkAdvancedFiltersActive() {
-        const fields = ['horas_min', 'horas_max', 'tipo_programa', 'nivel_academico', 'fecha_desde', 'fecha_hasta'];
-        return fields.some(field => {
-            const element = document.getElementById(field);
-            return element && element.value;
+            if (filterSelect) {
+                filterSelect.addEventListener('change', () => {
+                    filterTable(table, control);
+                });
+            }
+            
+            if (sortSelect) {
+                sortSelect.addEventListener('change', () => {
+                    sortTable(table, control);
+                });
+            }
+            
+            if (clearButton) {
+                clearButton.addEventListener('click', () => {
+                    clearTableFilters(control, table);
+                });
+            }
         });
     }
     
-    if (checkAdvancedFiltersActive()) {
-        const advancedFilters = document.getElementById('advanced-filters');
-        const arrow = document.getElementById('advanced-arrow');
-        if (advancedFilters && arrow) {
-            advancedFilters.classList.add('show');
-            arrow.style.transform = 'rotate(180deg)';
-            arrow.style.transition = 'transform 0.3s ease';
+    // Función para filtrar tabla
+    function filterTable(table, control) {
+        const searchTerm = control.querySelector('.table-search-input').value.toLowerCase();
+        const filterColumn = control.querySelector('.table-filter-column').value;
+        const rows = table.querySelectorAll('tbody tr');
+        
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            let shouldShow = true;
+            
+            if (searchTerm) {
+                let textToSearch = '';
+                
+                if (filterColumn === 'all') {
+                    textToSearch = row.textContent.toLowerCase();
+                } else {
+                    const cells = row.querySelectorAll('td');
+                    const columnIndex = parseInt(filterColumn);
+                    if (cells[columnIndex]) {
+                        textToSearch = cells[columnIndex].textContent.toLowerCase();
+                    }
+                }
+                
+                shouldShow = textToSearch.includes(searchTerm);
+            }
+            
+            if (shouldShow) {
+                row.style.display = '';
+                row.classList.remove('table-row-hidden');
+                if (searchTerm) {
+                    row.classList.add('table-row-highlight');
+                } else {
+                    row.classList.remove('table-row-highlight');
+                }
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+                row.classList.add('table-row-hidden');
+                row.classList.remove('table-row-highlight');
+            }
+        });
+        
+        updateTableInfo(control, table, visibleCount);
+        showNoResultsMessage(table, visibleCount === 0 && searchTerm);
+    }
+    
+    // Función para ordenar tabla
+    function sortTable(table, control) {
+        const sortValue = control.querySelector('.table-sort-column').value;
+        const [columnIndex, direction] = sortValue.split('-');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        // Remover indicadores de ordenamiento anteriores
+        table.querySelectorAll('th .sort-indicator').forEach(indicator => {
+            indicator.remove();
+        });
+        
+        // Ordenar filas
+        rows.sort((a, b) => {
+            const cellA = a.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
+            const cellB = b.querySelectorAll('td')[columnIndex]?.textContent.trim() || '';
+            
+            let comparison = cellA.localeCompare(cellB, 'es', { numeric: true, sensitivity: 'base' });
+            
+            return direction === 'desc' ? -comparison : comparison;
+        });
+        
+        // Reordenar en el DOM
+        rows.forEach(row => tbody.appendChild(row));
+        
+        // Añadir indicador de ordenamiento
+        const headerCell = table.querySelectorAll('th')[columnIndex];
+        if (headerCell) {
+            const indicator = document.createElement('span');
+            indicator.className = `sort-indicator sort-${direction}`;
+            indicator.innerHTML = direction === 'asc' ? ' ↑' : ' ↓';
+            headerCell.appendChild(indicator);
+        }
+        
+        // Aplicar filtros después del ordenamiento si hay filtros activos
+        filterTable(table, control);
+    }
+    
+    // Función para limpiar filtros de tabla
+    function clearTableFilters(control, table) {
+        control.querySelector('.table-search-input').value = '';
+        control.querySelector('.table-filter-column').value = 'all';
+        control.querySelector('.table-sort-column').selectedIndex = 0;
+        
+        // Mostrar todas las filas
+        table.querySelectorAll('tbody tr').forEach(row => {
+            row.style.display = '';
+            row.classList.remove('table-row-hidden', 'table-row-highlight');
+        });
+        
+        // Remover indicadores de ordenamiento
+        table.querySelectorAll('th .sort-indicator').forEach(indicator => {
+            indicator.remove();
+        });
+        
+        // Remover mensaje de "sin resultados"
+        const noResultsMsg = table.parentElement.querySelector('.no-results-message');
+        if (noResultsMsg) {
+            noResultsMsg.remove();
+        }
+        
+        updateTableInfo(control, table);
+    }
+    
+    // Función para actualizar información de la tabla
+    function updateTableInfo(control, table, visibleCount = null) {
+        const totalRows = table.querySelectorAll('tbody tr').length;
+        const visibleRows = visibleCount !== null ? visibleCount : totalRows;
+        
+        const visibleCountSpan = control.querySelector('.visible-count');
+        const totalCountSpan = control.querySelector('.total-count');
+        
+        if (visibleCountSpan) visibleCountSpan.textContent = visibleRows;
+        if (totalCountSpan) totalCountSpan.textContent = totalRows;
+        
+        // Marcar si hay filtros activos
+        const searchInput = control.querySelector('.table-search-input');
+        const filterSelect = control.querySelector('.table-filter-column');
+        const sortSelect = control.querySelector('.table-sort-column');
+        
+        const hasActiveSearch = searchInput && searchInput.value.trim() !== '';
+        const hasActiveFilter = filterSelect && filterSelect.value !== 'all';
+        const hasActiveSort = sortSelect && sortSelect.selectedIndex !== 0;
+        
+        if (hasActiveSearch || hasActiveFilter || hasActiveSort) {
+            control.classList.add('has-active-filters');
+        } else {
+            control.classList.remove('has-active-filters');
         }
     }
     
-    // Agregar event listener al botón de filtros avanzados
-    const toggleButton = document.querySelector('.advanced-filters-toggle');
-    if (toggleButton) {
-        toggleButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleAdvancedFilters();
-        });
+    // Función para mostrar mensaje de "sin resultados"
+    function showNoResultsMessage(table, show) {
+        const container = table.parentElement;
+        let message = container.querySelector('.no-results-message');
+        
+        if (show && !message) {
+            message = document.createElement('div');
+            message.className = 'no-results-message';
+            message.innerHTML = '<i class="fas fa-search"></i> No se encontraron resultados para la búsqueda actual.';
+            message.style.cssText = `
+                text-align: center;
+                padding: 2rem;
+                color: #666;
+                font-style: italic;
+                background: #f8f9fa;
+                border-radius: 8px;
+                margin: 1rem 0;
+            `;
+            container.appendChild(message);
+        } else if (!show && message) {
+            message.remove();
+        }
     }
     
-    console.log('Funcionalidad AJAX completar_informacion inicializada correctamente');
+    // Función debounce para optimizar búsquedas
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 });
 </script>

@@ -34,13 +34,7 @@ try {
     
     // Obtener filtros de búsqueda
     $filtro_busqueda = $_GET['search'] ?? '';
-    $filtro_horas_min = (float)($_GET['horas_min'] ?? 0);
-    $filtro_horas_max = (float)($_GET['horas_max'] ?? 0);
-    $filtro_tipo_programa = $_GET['tipo_programa'] ?? '';
-    $filtro_nivel_academico = $_GET['nivel_academico'] ?? '';
     $filtro_estado = $_GET['estado'] ?? '';
-    $filtro_fecha_desde = $_GET['fecha_desde'] ?? '';
-    $filtro_fecha_hasta = $_GET['fecha_hasta'] ?? '';
     
     // Validar sección
     $secciones_validas = ['disenos', 'competencias', 'raps'];
@@ -53,13 +47,9 @@ try {
         'accion' => 'completar_informacion',
         'seccion' => $seccion,
         'busqueda' => $filtro_busqueda,
-        'horas_min' => $filtro_horas_min,
-        'horas_max' => $filtro_horas_max,
-        'tipo_programa' => $filtro_tipo_programa,
-        'nivel_academico' => $filtro_nivel_academico,
         'estado' => $filtro_estado,
-        'fecha_desde' => $filtro_fecha_desde,
-        'fecha_hasta' => $filtro_fecha_hasta
+        "pagina_{$seccion}" => $pagina,
+        "registros_{$seccion}" => $registros_por_pagina
     ];
     
     // Obtener datos según la sección usando las mismas funciones
