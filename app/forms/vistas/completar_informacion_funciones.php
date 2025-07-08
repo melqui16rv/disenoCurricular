@@ -109,6 +109,18 @@ if (!function_exists('obtenerDisenosConCamposFaltantes')) {
 
             // Aplicar paginación después del filtrado
             $total_registros = count($diseñosConFaltantes);
+            
+            // Manejar opción "Todos" (-1)
+            if ($registros_por_pagina == -1) {
+                return [
+                    'datos' => $diseñosConFaltantes,
+                    'total_registros' => $total_registros,
+                    'total_paginas' => 1,
+                    'pagina_actual' => 1,
+                    'registros_por_pagina' => $total_registros
+                ];
+            }
+            
             $total_paginas = ceil($total_registros / $registros_por_pagina);
             
             // Validar y corregir página fuera de rango
@@ -204,6 +216,18 @@ if (!function_exists('obtenerCompetenciasConCamposFaltantes')) {
 
         // Aplicar paginación después del filtrado
         $total_registros = count($competenciasConFaltantes);
+        
+        // Manejar opción "Todos" (-1)
+        if ($registros_por_pagina == -1) {
+            return [
+                'datos' => $competenciasConFaltantes,
+                'total_registros' => $total_registros,
+                'total_paginas' => 1,
+                'pagina_actual' => 1,
+                'registros_por_pagina' => $total_registros
+            ];
+        }
+        
         $total_paginas = ceil($total_registros / $registros_por_pagina);
         
         // Validar y corregir página fuera de rango
@@ -285,6 +309,18 @@ if (!function_exists('obtenerRapsConCamposFaltantes')) {
 
         // Aplicar paginación después del filtrado
         $total_registros = count($rapsConFaltantes);
+        
+        // Manejar opción "Todos" (-1)
+        if ($registros_por_pagina == -1) {
+            return [
+                'datos' => $rapsConFaltantes,
+                'total_registros' => $total_registros,
+                'total_paginas' => 1,
+                'pagina_actual' => 1,
+                'registros_por_pagina' => $total_registros
+            ];
+        }
+        
         $total_paginas = ceil($total_registros / $registros_por_pagina);
         
         // Validar y corregir página fuera de rango
@@ -313,8 +349,10 @@ function generarTablaSeccion($seccion, $datos) {
                 </div>';
     }
     
-    // CORRECCIÓN: Usar las mismas clases que la vista original
-    $html = '<table>
+    // Contenedor de tabla con altura adaptativa
+    $numRegistros = count($datos);
+    $html = '<div class="table-container" data-records="' . $numRegistros . '">';
+    $html .= '<table>
                     <thead>';
     
     // Headers según la sección
@@ -418,6 +456,7 @@ function generarTablaSeccion($seccion, $datos) {
     }
     
     $html .= '</tbody></table>';
+    $html .= '</div>'; // Cerrar table-container
     
     return $html;
 }
@@ -476,6 +515,9 @@ if (!function_exists('generarPaginacion')) {
             $selected = ($option == $registros_por_pagina) ? 'selected' : '';
             $html .= "<option value='{$option}' {$selected}>{$option} por página</option>";
         }
+        // Opción "Todos" 
+        $selected_todos = ($registros_por_pagina == -1 || $registros_por_pagina >= 999) ? 'selected' : '';
+        $html .= "<option value='-1' {$selected_todos}>Todos</option>";
         $html .= '</select>';
         $html .= '</div>';
         $html .= '</div>';

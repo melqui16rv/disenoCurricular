@@ -320,5 +320,7 @@ try {
     </div>
 
     <script src="<?php echo BASE_URL; ?>assets/js/forms/scripts.js"></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/forms/completar-informacion.js"></script>
+    <!-- <script src="<?php echo BASE_URL; ?>assets/js/forms/completar-informacion-mejorado.js"></script> -->
 </body>
 </html>

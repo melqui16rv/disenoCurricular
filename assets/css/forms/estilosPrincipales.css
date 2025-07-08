@@ -1387,11 +1387,6 @@ textarea.form-control {
     z-index: 11;
 }
 
-@keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
 /* Mejoras visuales para tablas recién cargadas */
 .results-table table tbody tr {
     transition: all 0.3s ease;
@@ -1411,4 +1406,322 @@ textarea.form-control {
     0% { box-shadow: 0 0 0 rgba(0, 123, 255, 0); }
     50% { box-shadow: 0 0 20px rgba(0, 123, 255, 0.3); }
     100% { box-shadow: 0 0 0 rgba(0, 123, 255, 0); }
+}
+
+/* ===============================================
+   SKELETON LOADING AVANZADO
+   =============================================== */
+
+/* Clase alias para compatibilidad */
+.skeleton-loader {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Estilos para errores AJAX inteligentes */
+.ajax-error-retry {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.ajax-error-retry .error-message {
+    flex: 1;
+    font-weight: 500;
+}
+
+.ajax-error-retry .retry-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 15px;
+}
+
+.ajax-error-retry .retry-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.skeleton-container {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.skeleton-header,
+.skeleton-cell {
+    height: 20px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 4px;
+    margin: 4px 0;
+}
+
+.skeleton-header {
+    height: 24px;
+    background: linear-gradient(90deg, #e0e0e0 25%, #d0d0d0 50%, #e0e0e0 75%);
+    background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.skeleton-loading {
+    pointer-events: none;
+    position: relative;
+}
+
+.skeleton-loading::before {
+    content: '🔄 Cargando datos...';
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid rgba(0, 123, 255, 0.2);
+    z-index: 10;
+}
+
+/* ===============================================
+   ERROR INTELIGENTE
+   =============================================== */
+
+.error-inteligente {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border: 2px solid #fc8181;
+    border-radius: 12px;
+    margin: 20px 0;
+    box-shadow: 0 4px 12px rgba(252, 129, 129, 0.15);
+}
+
+.error-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #fc8181, #f56565);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.error-content {
+    flex: 1;
+}
+
+.error-content h4 {
+    margin: 0 0 8px 0;
+    color: #742a2a;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.error-content p {
+    margin: 0 0 12px 0;
+    color: #9c4221;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.error-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-retry,
+.btn-reload {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-retry {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: white;
+}
+
+.btn-retry:hover {
+    background: linear-gradient(135deg, #38a169, #2f855a);
+    transform: translateY(-1px);
+}
+
+.btn-reload {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+    color: white;
+}
+
+.btn-reload:hover {
+    background: linear-gradient(135deg, #3182ce, #2b77cb);
+    transform: translateY(-1px);
+}
+
+/* ===============================================
+   ANIMACIONES DE ENTRADA
+   =============================================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translate3d(-10px, 0, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+/* ===============================================
+   INDICADORES DE ESTADO MEJORADOS
+   =============================================== */
+
+.section-results {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Contenedor de tabla con altura adaptativa */
+.section-results .table-container {
+    max-height: 600px; /* Altura máxima para mostrar ~10 filas */
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    position: relative;
+}
+
+/* Altura reducida cuando hay 5 registros o menos */
+.section-results[data-records="5"] .table-container,
+.section-results[data-records="4"] .table-container,
+.section-results[data-records="3"] .table-container,
+.section-results[data-records="2"] .table-container,
+.section-results[data-records="1"] .table-container {
+    max-height: 350px; /* Altura para mostrar ~5 filas sin scroll */
+    overflow-y: visible;
+}
+
+/* Scroll suave cuando es necesario */
+.section-results .table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.section-results .table-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.section-results .table-container::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.section-results .table-container::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Estados de carga y error */
+.section-results.loading {
+    opacity: 0.7;
+}
+
+.section-results.error {
+    border-left: 4px solid #fc8181;
+}
+
+.section-results.success {
+    border-left: 4px solid #48bb78;
+}
+
+/* Indicador de cache */
+.cache-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(72, 187, 120, 0.1);
+    color: #38a169;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border: 1px solid rgba(72, 187, 120, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cache-indicator.show {
+    opacity: 1;
+}
+
+.cache-indicator i {
+    margin-right: 4px;
+}
+
+/* ===============================================
+   MEJORAS RESPONSIVE
+   =============================================== */
+
+@media (max-width: 768px) {
+    .error-inteligente {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .error-actions {
+        justify-content: center;
+    }
+    
+    .skeleton-loading::before {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
 }

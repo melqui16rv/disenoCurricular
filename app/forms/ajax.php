@@ -67,12 +67,28 @@ try {
             
             // Obtener parámetros de paginación específicos por sección
             $pagina = max(1, (int)($_GET["pagina_{$seccion}"] ?? 1));
-            $registros = max(5, min(100, (int)($_GET["registros_{$seccion}"] ?? 10)));
+            $registros_param = $_GET["registros_{$seccion}"] ?? 10;
             
-            // Validar registros por página
-            $registros_permitidos = [5, 10, 25, 50, 100];
-            if (!in_array($registros, $registros_permitidos)) {
-                $registros = 10;
+            // Manejar opción "Todos" (-1)
+            if ($registros_param == -1) {
+                $registros = -1; // Señal para mostrar todos
+            } else {
+                $registros = max(5, min(100, (int)$registros_param));
+            }
+            
+            // LOGGING DETALLADO PARA DEBUG
+            error_log("🔍 AJAX DEBUG - Sección: $seccion");
+            error_log("🔍 AJAX DEBUG - Página solicitada: $pagina");
+            error_log("🔍 AJAX DEBUG - Registros solicitados: $registros");
+            error_log("🔍 AJAX DEBUG - Parámetros GET: " . json_encode($_GET));
+            
+            // Validar registros por página (excepto para "Todos")
+            if ($registros != -1) {
+                $registros_permitidos = [5, 10, 25, 50, 100];
+                if (!in_array($registros, $registros_permitidos)) {
+                    $registros = 10;
+                    error_log("⚠️ AJAX DEBUG - Registros corregidos a: $registros");
+                }
             }
             
             // Incluir funciones necesarias de la vista (mismo patrón)
@@ -92,6 +108,13 @@ try {
                     $resultado = obtenerRapsConCamposFaltantes($metodos, $filtros_array, $pagina, $registros);
                     break;
             }
+            
+            // LOGGING DE RESULTADO
+            error_log("📊 AJAX DEBUG - Total registros: " . $resultado['total_registros']);
+            error_log("📊 AJAX DEBUG - Total páginas: " . $resultado['total_paginas']);
+            error_log("📊 AJAX DEBUG - Página actual: " . $resultado['pagina_actual']);
+            error_log("📊 AJAX DEBUG - Registros por página: " . $resultado['registros_por_pagina']);
+            error_log("📊 AJAX DEBUG - Registros devueltos: " . count($resultado['datos']));
             
             // Generar HTML usando funciones existentes
             $tabla_html = generarTablaSeccion($seccion, $resultado['datos']);
