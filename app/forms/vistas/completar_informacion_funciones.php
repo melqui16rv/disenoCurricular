@@ -313,8 +313,8 @@ function generarTablaSeccion($seccion, $datos) {
                 </div>';
     }
     
-    $html = '<div class="table-responsive">
-                <table class="data-table">
+    // CORRECCIÓN: Usar las mismas clases que la vista original
+    $html = '<table>
                     <thead>';
     
     // Headers según la sección
@@ -323,8 +323,7 @@ function generarTablaSeccion($seccion, $datos) {
             $html .= '<tr>
                         <th>Código</th>
                         <th>Programa</th>
-                        <th>Tipo</th>
-                        <th>Horas Totales</th>
+                        <th>Versión</th>
                         <th>Campos Faltantes</th>
                         <th>Acciones</th>
                     </tr>';
@@ -335,7 +334,6 @@ function generarTablaSeccion($seccion, $datos) {
                         <th>Código</th>
                         <th>Competencia</th>
                         <th>Programa</th>
-                        <th>Horas</th>
                         <th>Campos Faltantes</th>
                         <th>Acciones</th>
                     </tr>';
@@ -347,7 +345,6 @@ function generarTablaSeccion($seccion, $datos) {
                         <th>RAP</th>
                         <th>Competencia</th>
                         <th>Programa</th>
-                        <th>Horas</th>
                         <th>Campos Faltantes</th>
                         <th>Acciones</th>
                     </tr>';
@@ -362,63 +359,56 @@ function generarTablaSeccion($seccion, $datos) {
         
         switch ($seccion) {
             case 'disenos':
-                $horas_lectiva = (float)($item['horasDesarrolloLectiva'] ?? 0);
-                $horas_productiva = (float)($item['horasDesarrolloProductiva'] ?? 0);
-                $total_horas = $horas_lectiva + $horas_productiva;
-                
-                $html .= '<td><code>' . htmlspecialchars($item['codigoDiseño'] ?? '') . '</code></td>';
-                $html .= '<td>' . htmlspecialchars($item['nombrePrograma'] ?? '') . '</td>';
-                $html .= '<td><span class="badge badge-info">' . htmlspecialchars($item['tipoPrograma'] ?? '') . '</span></td>';
-                $html .= '<td>' . number_format($total_horas) . ' hrs</td>';
+                $html .= '<td class="codigo">' . htmlspecialchars($item['codigoDiseño'] ?? '') . '</td>';
+                $html .= '<td class="programa">' . htmlspecialchars($item['nombrePrograma'] ?? 'Sin nombre') . '</td>';
+                $html .= '<td class="version">' . htmlspecialchars($item['versionPrograma'] ?? 'Sin versión') . '</td>';
                 break;
                 
             case 'competencias':
-                $html .= '<td><code>' . htmlspecialchars($item['codigoDiseñoCompetenciaReporte'] ?? '') . '</code></td>';
-                $html .= '<td>' . htmlspecialchars($item['nombreCompetencia'] ?? '') . '</td>';
-                $html .= '<td>' . htmlspecialchars($item['nombrePrograma'] ?? '') . '</td>';
-                $html .= '<td>' . number_format((float)($item['horasDesarrolloCompetencia'] ?? 0)) . ' hrs</td>';
+                $html .= '<td class="codigo">' . htmlspecialchars($item['codigoDiseñoCompetenciaReporte'] ?? '') . '</td>';
+                $html .= '<td class="competencia">' . htmlspecialchars($item['nombreCompetencia'] ?? 'Sin nombre') . '</td>';
+                $html .= '<td class="programa">' . htmlspecialchars($item['nombrePrograma'] ?? 'Sin programa') . '</td>';
                 break;
                 
             case 'raps':
-                $html .= '<td><code>' . htmlspecialchars($item['codigoDiseñoCompetenciaReporteRap'] ?? '') . '</code></td>';
-                $html .= '<td>' . htmlspecialchars($item['nombreRap'] ?? '') . '</td>';
-                $html .= '<td>' . htmlspecialchars($item['nombreCompetencia'] ?? '') . '</td>';
-                $html .= '<td>' . htmlspecialchars($item['nombrePrograma'] ?? '') . '</td>';
-                $html .= '<td>' . number_format((float)($item['horasDesarrolloRap'] ?? 0)) . ' hrs</td>';
+                $html .= '<td class="codigo">' . htmlspecialchars($item['codigoDiseñoCompetenciaReporteRap'] ?? '') . '</td>';
+                $html .= '<td class="rap">' . htmlspecialchars($item['nombreRap'] ?? 'Sin nombre') . '</td>';
+                $html .= '<td class="competencia">' . htmlspecialchars($item['nombreCompetencia'] ?? 'Sin competencia') . '</td>';
+                $html .= '<td class="programa">' . htmlspecialchars($item['nombrePrograma'] ?? 'Sin programa') . '</td>';
                 break;
         }
         
         // Campos faltantes (común para todas las secciones)
-        $html .= '<td><div class="campos-faltantes">';
+        $html .= '<td class="campos-faltantes"><div class="missing-fields">';
         if (!empty($item['camposFaltantes'])) {
             foreach ($item['camposFaltantes'] as $campo) {
-                $html .= '<span class="badge badge-warning">' . htmlspecialchars($campo) . '</span> ';
+                $html .= '<span class="missing-field">' . htmlspecialchars($campo) . '</span> ';
             }
         }
         $html .= '</div></td>';
         
         // Acciones (común para todas las secciones)
-        $html .= '<td>';
+        $html .= '<td class="actions">';
         switch ($seccion) {
             case 'disenos':
                 $codigo = $item['codigoDiseño'] ?? '';
-                $html .= '<a href="?accion=editar&tipo=disenos&codigo=' . urlencode($codigo) . '" 
-                           class="btn-action btn-edit" title="Editar diseño">
-                            <i class="fas fa-edit"></i>
+                $html .= '<a href="?accion=completar&tipo=disenos&codigo=' . urlencode($codigo) . '" 
+                           class="btn-edit" title="Completar diseño">
+                            <i class="fas fa-edit"></i> Completar
                           </a>';
                 break;
             case 'competencias':
                 $codigo = $item['codigoDiseñoCompetenciaReporte'] ?? '';
-                $html .= '<a href="?accion=editar&tipo=competencias&codigo=' . urlencode($codigo) . '" 
-                           class="btn-action btn-edit" title="Editar competencia">
-                            <i class="fas fa-edit"></i>
+                $html .= '<a href="?accion=completar&tipo=competencias&codigo=' . urlencode($codigo) . '" 
+                           class="btn-edit" title="Completar competencia">
+                            <i class="fas fa-edit"></i> Completar
                           </a>';
                 break;
             case 'raps':
                 $codigo = $item['codigoDiseñoCompetenciaReporteRap'] ?? '';
-                $html .= '<a href="?accion=editar&tipo=raps&codigo=' . urlencode($codigo) . '" 
-                           class="btn-action btn-edit" title="Editar RAP">
-                            <i class="fas fa-edit"></i>
+                $html .= '<a href="?accion=completar&tipo=raps&codigo=' . urlencode($codigo) . '" 
+                           class="btn-edit" title="Completar RAP">
+                            <i class="fas fa-edit"></i> Completar
                           </a>';
                 break;
         }
@@ -427,7 +417,7 @@ function generarTablaSeccion($seccion, $datos) {
         $html .= '</tr>';
     }
     
-    $html .= '</tbody></table></div>';
+    $html .= '</tbody></table>';
     
     return $html;
 }

@@ -198,6 +198,41 @@ textarea.form-control {
     font-size: 0.875rem;
 }
 
+/* Botones específicos para acciones en tablas */
+.btn-edit {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px;
+}
+
+.btn-edit:hover {
+    background: linear-gradient(45deg, #218838, #1e7e34);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-edit:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+}
+
+.btn-edit i {
+    font-size: 0.875rem;
+}
+
 /* Tabla */
 .table-container {
     overflow-x: auto;
@@ -811,7 +846,7 @@ textarea.form-control {
 }
 
 .btn-filter {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
 }
 
@@ -1275,4 +1310,105 @@ textarea.form-control {
         width: 32px;
         font-size: 14px;
     }
+}
+
+/* Estilos para campos faltantes en tablas */
+.missing-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.missing-field {
+    background: linear-gradient(45deg, #ffc107, #ff8800);
+    color: #212529;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    margin: 1px;
+    display: inline-block;
+    line-height: 1.2;
+}
+
+/* Celdas específicas para mejorar legibilidad */
+.table td.codigo {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #495057;
+    background: rgba(108, 117, 125, 0.1);
+}
+
+.table td.actions {
+    text-align: center;
+    white-space: nowrap;
+    width: 120px;
+}
+
+.table td.campos-faltantes {
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+/* Animaciones para actualizaciones AJAX */
+.section-results.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.section-results.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.section-results.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 11;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Mejoras visuales para tablas recién cargadas */
+.results-table table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.results-table table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+}
+
+/* Indicador visual de actualización exitosa */
+.section-results.updated {
+    animation: highlight 1.5s ease-out;
+}
+
+@keyframes highlight {
+    0% { box-shadow: 0 0 0 rgba(0, 123, 255, 0); }
+    50% { box-shadow: 0 0 20px rgba(0, 123, 255, 0.3); }
+    100% { box-shadow: 0 0 0 rgba(0, 123, 255, 0); }
 }

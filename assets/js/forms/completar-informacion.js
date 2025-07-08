@@ -23,8 +23,24 @@ const CompletarInformacion = {
         animationDelay: 100
     },
     
-    // Estados por sección (independientes)
-    sectionStates: {
+    // Estados por sección (independiente    const container = document.querySelector(`#seccion-${seccion}`);
+    if (container) {
+        // Quitar clase de carga
+        container.classList.remove('loading');
+        
+        // Añadir efecto de actualización exitosa
+        container.classList.add('updated');
+        setTimeout(() => {
+            container.classList.remove('updated');
+        }, 1500);
+        
+        // Re-habilitar botones de paginación de esta sección
+        const buttons = container.querySelectorAll('.pagination a, select');
+        buttons.forEach(btn => {
+            btn.style.pointerEvents = '';
+            btn.style.opacity = '';
+        });
+    }es: {
         disenos: {
             currentPage: 1,
             recordsPerPage: 10,
@@ -704,29 +720,6 @@ CompletarInformacion.mostrarCargandoSeccion = function(seccion) {
             btn.style.pointerEvents = 'none';
             btn.style.opacity = '0.6';
         });
-        
-        // Añadir overlay de carga si no existe
-        let overlay = container.querySelector('.loading-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.className = 'loading-overlay';
-            overlay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
-            overlay.style.cssText = `
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(255, 255, 255, 0.8);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-                border-radius: 8px;
-            `;
-            container.style.position = 'relative';
-            container.appendChild(overlay);
-        }
     }
 };
 
@@ -943,4 +936,46 @@ CompletarInformacion.bindDynamicEvents = function() {
             select.setAttribute('data-ajax-bound', 'true');
         }
     });
+    
+    // Re-aplicar estilos a botones de acción recién creados
+    document.querySelectorAll('.btn-edit:not([data-styled])').forEach(btn => {
+        btn.setAttribute('data-styled', 'true');
+        
+        // Añadir hover mejorado
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = '';
+        });
+    });
+    
+    // Re-aplicar animaciones a filas de tabla recién creadas
+    document.querySelectorAll('table tbody tr:not([data-animated])').forEach((fila, index) => {
+        fila.setAttribute('data-animated', 'true');
+        fila.style.opacity = '0';
+        fila.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            fila.style.transition = 'all 0.3s ease';
+            fila.style.opacity = '1';
+            fila.style.transform = 'translateY(0)';
+        }, index * 50);
+    });
+    
+    // Re-aplicar efectos a missing fields
+    document.querySelectorAll('.missing-field:not([data-styled])').forEach(field => {
+        field.setAttribute('data-styled', 'true');
+        
+        // Efecto sutil de pulsación
+        field.addEventListener('click', function() {
+            this.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+    
+    console.log('Eventos dinámicos vinculados correctamente');
 };
