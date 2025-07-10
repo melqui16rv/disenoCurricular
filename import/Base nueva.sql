@@ -85,32 +85,6 @@ ALTER TABLE `raps`
 -- - Separador de líneas: auto
 -- - Eliminar primera fila (headers) antes de importar
 --
-CREATE TABLE `reportes_complementaria` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ficha` int(11) NOT NULL,
-  `fecha_reporte` datetime NOT NULL,
-  `tipo_documento` varchar(10) NOT NULL,
-  `numero_documento` varchar(20) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `apellidos` varchar(100) NOT NULL,
-  `estado` varchar(50) NOT NULL,
-  `competencia` text NOT NULL,
-  `resultado_aprendizaje` text NOT NULL,
-  `juicio_evaluacion` varchar(50) NOT NULL,
-  `fecha_hora_juicio` datetime NOT NULL,
-  `funcionario_registro` varchar(200) NOT NULL,
-  `fecha_creacion` timestamp DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_ficha` (`ficha`),
-  KEY `idx_numero_documento` (`numero_documento`),
-  KEY `idx_estado` (`estado`),
-  KEY `idx_juicio_evaluacion` (`juicio_evaluacion`),
-  KEY `idx_fecha_reporte` (`fecha_reporte`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-COMMIT;
-
-
 
 CREATE TABLE grf_trj_complementaria_producion (
   ficha int DEFAULT NULL,
