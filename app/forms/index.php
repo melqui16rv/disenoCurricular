@@ -3,8 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$ruta_config = $_SERVER['DOCUMENT_ROOT'] . '/conf/config.php';
-require_once $ruta_config;
+require_once $_SERVER['DOCUMENT_ROOT'] . '/disenoCurricular/conf/config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDisenos.php';
 
 $metodos = new MetodosDisenos();
