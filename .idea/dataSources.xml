@@ -8,5 +8,19 @@
       <jdbc-url>jdbc:mysql://localhost:3306/disenos_curriculares</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="appscide_disenos_curriculares@appscide.com" uuid="7883b156-f83e-40f7-95c9-f94791ef49fb">
+      <driver-ref>mariadb</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mariadb://appscide.com:3306/appscide_disenos_curriculares</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="appscide_cfpi@appscide.com" uuid="dbfdcb05-5fd6-4598-97f3-2e821fad1bba">
+      <driver-ref>mariadb</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mariadb://appscide.com:3306/appscide_cfpi</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

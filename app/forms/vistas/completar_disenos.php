@@ -106,7 +106,7 @@
             <h3><i class="fas fa-clock"></i> Información de Desarrollo <span class="campo-requerido">* FALTA</span></h3>
             <div class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle"></i>
-                <strong>Complete uno de los dos grupos:</strong> Horas de desarrollo OR Meses de desarrollo
+                <strong>Complete uno de los dos grupos:</strong> Horas de desarrollo O Meses de desarrollo
             </div>
             
             <div class="desarrollo-opciones">

@@ -13,6 +13,14 @@ include_once 'completar_informacion_funciones.php';
 $filtro_seccion = $_GET['seccion'] ?? 'todas';
 $filtro_busqueda = $_GET['busqueda'] ?? '';
 
+// Filtros adicionales
+$filtro_horas_min = $_GET['horas_min'] ?? '';
+$filtro_horas_max = $_GET['horas_max'] ?? '';
+$filtro_tipo_programa = $_GET['tipo_programa'] ?? '';
+$filtro_nivel_academico = $_GET['nivel_academico'] ?? '';
+$filtro_fecha_desde = $_GET['fecha_desde'] ?? '';
+$filtro_fecha_hasta = $_GET['fecha_hasta'] ?? '';
+
 // Paginación independiente por sección
 $pagina_disenos = max(1, (int)($_GET['pagina_disenos'] ?? 1));
 $pagina_competencias = max(1, (int)($_GET['pagina_competencias'] ?? 1));
