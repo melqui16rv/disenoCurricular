@@ -23,6 +23,33 @@
     </div>
 </div>
 
+<?php
+// Incluir funciones de paginación
+require_once 'funciones_paginacion.php';
+
+// Preparar filtros para la función de paginación (solo filtros básicos para RAPs)
+$filtros_array = [
+    'busqueda' => $busqueda ?? '',
+    'horas_min' => $horas_min ?? '',
+    'horas_max' => $horas_max ?? '',
+    'tipo_programa' => '',
+    'nivel_academico' => '',
+    'red_tecnologica' => ''
+];
+
+// Generar filtros y paginación para RAPs
+echo generarFiltrosYPaginacion(
+    'ver_raps',
+    'raps',
+    $_GET['codigo'] ?? '',
+    $filtros_array,
+    $total_registros ?? 0,
+    $pagina ?? 1,
+    $registros_por_pagina ?? 10,
+    $total_paginas ?? 1
+);
+?>
+
 <?php if (!$competencia_actual): ?>
     <div class="alert alert-danger">
         <i class="fas fa-exclamation-triangle"></i>

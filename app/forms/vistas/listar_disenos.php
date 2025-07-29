@@ -10,6 +10,34 @@
     </div>
 </div>
 
+<?php
+// Incluir funciones de paginación
+require_once 'funciones_paginacion.php';
+
+// Preparar filtros para la función de paginación
+$filtros_array = [
+    'busqueda' => $busqueda ?? '',
+    'horas_min' => $horas_min ?? '',
+    'horas_max' => $horas_max ?? '',
+    'meses_min' => $meses_min ?? '',
+    'meses_max' => $meses_max ?? '',
+    'nivel_academico' => $nivel_academico ?? '',
+    'red_tecnologica' => $red_tecnologica ?? ''
+];
+
+// Generar filtros y paginación
+echo generarFiltrosYPaginacion(
+    'listar',
+    '',
+    '',
+    $filtros_array,
+    $total_registros ?? 0,
+    $pagina ?? 1,
+    $registros_por_pagina ?? 10,
+    $total_paginas ?? 1
+);
+?>
+
 <?php if (empty($diseños)): ?>
     <div class="text-center" style="padding: 3rem;">
         <i class="fas fa-folder-open" style="font-size: 4rem; color: #bdc3c7; margin-bottom: 1rem;"></i>

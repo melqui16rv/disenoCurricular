@@ -14,6 +14,23 @@ $tipo = $_GET['tipo'] ?? 'disenos';
 $mensaje = '';
 $tipoMensaje = '';
 
+// Parámetros de paginación y filtros
+$pagina = max(1, (int)($_GET['pagina'] ?? 1));
+$registros_por_pagina = (int)($_GET['registros_por_pagina'] ?? 10);
+$busqueda = $_GET['busqueda'] ?? '';
+$filtro_horas_min = $_GET['horas_min'] ?? '';
+$filtro_horas_max = $_GET['horas_max'] ?? '';
+$filtro_meses_min = $_GET['meses_min'] ?? '';
+$filtro_meses_max = $_GET['meses_max'] ?? '';
+$filtro_nivel_academico = $_GET['nivel_academico'] ?? '';
+$filtro_red_tecnologica = $_GET['red_tecnologica'] ?? '';
+
+// Validar registros por página
+$registros_permitidos = [5, 10, 25, 50, 100];
+if (!in_array($registros_por_pagina, $registros_permitidos)) {
+    $registros_por_pagina = 10;
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($accion === 'crear' && $tipo === 'disenos') {
@@ -135,7 +152,21 @@ try {
     $rap_actual = null;
 
     if ($accion === 'listar' || $accion === 'crear') {
-        $diseños = $metodos->obtenerTodosLosDiseños();
+        // Obtener datos con paginación y filtros
+        $filtros = [
+            'busqueda' => $busqueda,
+            'horas_min' => $filtro_horas_min,
+            'horas_max' => $filtro_horas_max,
+            'meses_min' => $filtro_meses_min,
+            'meses_max' => $filtro_meses_max,
+            'nivel_academico' => $filtro_nivel_academico,
+            'red_tecnologica' => $filtro_red_tecnologica
+        ];
+        
+        $resultadoDiseños = $metodos->obtenerDiseñosConPaginacion($pagina, $registros_por_pagina, $filtros);
+        $diseños = $resultadoDiseños['datos'];
+        $total_registros = $resultadoDiseños['total_registros'];
+        $total_paginas = ceil($total_registros / $registros_por_pagina);
 
         // Para crear competencias, cargar información del diseño
         if ($accion === 'crear' && $tipo === 'competencias') {
@@ -162,11 +193,33 @@ try {
     } elseif ($accion === 'ver_competencias') {
         $codigoDiseño = $_GET['codigo'] ?? '';
         $diseño_actual = $metodos->obtenerDiseñoPorCodigo($codigoDiseño);
-        $competencias = $metodos->obtenerCompetenciasPorDiseño($codigoDiseño);
+        
+        // Obtener competencias con paginación
+        $filtros = [
+            'busqueda' => $busqueda,
+            'horas_min' => $filtro_horas_min,
+            'horas_max' => $filtro_horas_max
+        ];
+        
+        $resultadoCompetencias = $metodos->obtenerCompetenciasConPaginacion($codigoDiseño, $pagina, $registros_por_pagina, $filtros);
+        $competencias = $resultadoCompetencias['datos'];
+        $total_registros = $resultadoCompetencias['total_registros'];
+        $total_paginas = ceil($total_registros / $registros_por_pagina);
     } elseif ($accion === 'ver_raps') {
         $codigoDiseñoCompetenciaReporte = $_GET['codigo'] ?? '';
         $competencia_actual = $metodos->obtenerCompetenciaPorCodigo($codigoDiseñoCompetenciaReporte);
-        $raps = $metodos->obtenerRapsPorCompetencia($codigoDiseñoCompetenciaReporte);
+        
+        // Obtener RAPs con paginación
+        $filtros = [
+            'busqueda' => $busqueda,
+            'horas_min' => $filtro_horas_min,
+            'horas_max' => $filtro_horas_max
+        ];
+        
+        $resultadoRaps = $metodos->obtenerRapsConPaginacion($codigoDiseñoCompetenciaReporte, $pagina, $registros_por_pagina, $filtros);
+        $raps = $resultadoRaps['datos'];
+        $total_registros = $resultadoRaps['total_registros'];
+        $total_paginas = ceil($total_registros / $registros_por_pagina);
     } elseif ($accion === 'editar') {
         if ($tipo === 'disenos') {
             $diseño_actual = $metodos->obtenerDiseñoPorCodigo($_GET['codigo'] ?? '');
@@ -240,6 +293,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Diseños Curriculares</title>
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/forms/estilosPrincipales.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/forms/filtros-paginacion.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>

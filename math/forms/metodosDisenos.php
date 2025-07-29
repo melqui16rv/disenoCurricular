@@ -20,6 +20,87 @@ class MetodosDisenos extends Conexion {
         }
     }
 
+    public function obtenerDiseñosConPaginacion($pagina = 1, $registros_por_pagina = 10, $filtros = []) {
+        try {
+            $offset = ($pagina - 1) * $registros_por_pagina;
+            
+            $where_conditions = [];
+            $params = [];
+            
+            // Aplicar filtros basados en las columnas reales
+            if (!empty($filtros['busqueda'])) {
+                $where_conditions[] = "(nombrePrograma LIKE ? OR codigoPrograma LIKE ? OR codigoDiseño LIKE ? OR redTecnologica LIKE ?)";
+                $params[] = '%' . $filtros['busqueda'] . '%';
+                $params[] = '%' . $filtros['busqueda'] . '%';
+                $params[] = '%' . $filtros['busqueda'] . '%';
+                $params[] = '%' . $filtros['busqueda'] . '%';
+            }
+            
+            // Filtro por horas de desarrollo (campo real: horasDesarrolloDiseño)
+            if (!empty($filtros['horas_min'])) {
+                $where_conditions[] = "horasDesarrolloDiseño >= ?";
+                $params[] = (float)$filtros['horas_min'];
+            }
+            
+            if (!empty($filtros['horas_max'])) {
+                $where_conditions[] = "horasDesarrolloDiseño <= ?";
+                $params[] = (float)$filtros['horas_max'];
+            }
+            
+            // Filtro por meses de desarrollo (campo real: mesesDesarrolloPrograma)
+            if (!empty($filtros['meses_min'])) {
+                $where_conditions[] = "mesesDesarrolloPrograma >= ?";
+                $params[] = (int)$filtros['meses_min'];
+            }
+            
+            if (!empty($filtros['meses_max'])) {
+                $where_conditions[] = "mesesDesarrolloPrograma <= ?";
+                $params[] = (int)$filtros['meses_max'];
+            }
+            
+            // Filtro por red tecnológica (campo real: redTecnologica)
+            if (!empty($filtros['red_tecnologica'])) {
+                $where_conditions[] = "redTecnologica LIKE ?";
+                $params[] = '%' . $filtros['red_tecnologica'] . '%';
+            }
+            
+            // Filtro por nivel académico de ingreso (campo real: nivelAcademicoIngreso)
+            if (!empty($filtros['nivel_academico'])) {
+                $where_conditions[] = "nivelAcademicoIngreso LIKE ?";
+                $params[] = '%' . $filtros['nivel_academico'] . '%';
+            }
+            
+            $where_clause = '';
+            if (!empty($where_conditions)) {
+                $where_clause = ' WHERE ' . implode(' AND ', $where_conditions);
+            }
+            
+            // Consulta para contar total de registros
+            $count_sql = "SELECT COUNT(*) as total FROM diseños" . $where_clause;
+            $count_stmt = $this->conexion->prepare($count_sql);
+            $count_stmt->execute($params);
+            $total_registros = $count_stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // Consulta principal con paginación (LIMIT y OFFSET deben ser valores directos)
+            $sql = "SELECT * FROM diseños" . $where_clause . " ORDER BY codigoDiseño DESC LIMIT " . (int)$registros_por_pagina . " OFFSET " . (int)$offset;
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute($params);
+            $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return [
+                'datos' => $datos,
+                'total_registros' => $total_registros,
+                'pagina_actual' => $pagina,
+                'registros_por_pagina' => $registros_por_pagina,
+                'total_paginas' => ceil($total_registros / $registros_por_pagina)
+            ];
+            
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener diseños con paginación: " . $e->getMessage());
+        }
+    }
+
     public function obtenerDiseñoPorCodigo($codigoDiseño) {
         try {
             $stmt = $this->conexion->prepare("SELECT * FROM diseños WHERE codigoDiseño = ?");
@@ -239,6 +320,58 @@ class MetodosDisenos extends Conexion {
         }
     }
 
+    public function obtenerCompetenciasConPaginacion($codigoDiseño, $pagina = 1, $registros_por_pagina = 10, $filtros = []) {
+        try {
+            $offset = ($pagina - 1) * $registros_por_pagina;
+            
+            $where_conditions = ["codigoDiseñoCompetenciaReporte LIKE ?"];
+            $params = [$codigoDiseño . '-%'];
+            
+            // Aplicar filtros
+            if (!empty($filtros['busqueda'])) {
+                $where_conditions[] = "(nombreCompetencia LIKE ? OR codigoCompetenciaReporte LIKE ?)";
+                $params[] = '%' . $filtros['busqueda'] . '%';
+                $params[] = '%' . $filtros['busqueda'] . '%';
+            }
+            
+            if (!empty($filtros['horas_min'])) {
+                $where_conditions[] = "horasDesarrolloCompetencia >= ?";
+                $params[] = (float)$filtros['horas_min'];
+            }
+            
+            if (!empty($filtros['horas_max'])) {
+                $where_conditions[] = "horasDesarrolloCompetencia <= ?";
+                $params[] = (float)$filtros['horas_max'];
+            }
+            
+            $where_clause = ' WHERE ' . implode(' AND ', $where_conditions);
+            
+            // Consulta para contar total de registros
+            $count_sql = "SELECT COUNT(*) as total FROM competencias" . $where_clause;
+            $count_stmt = $this->conexion->prepare($count_sql);
+            $count_stmt->execute($params);
+            $total_registros = $count_stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // Consulta principal con paginación (LIMIT y OFFSET deben ser valores directos)
+            $sql = "SELECT * FROM competencias" . $where_clause . " ORDER BY codigoDiseñoCompetenciaReporte LIMIT " . (int)$registros_por_pagina . " OFFSET " . (int)$offset;
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute($params);
+            $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return [
+                'datos' => $datos,
+                'total_registros' => $total_registros,
+                'pagina_actual' => $pagina,
+                'registros_por_pagina' => $registros_por_pagina,
+                'total_paginas' => ceil($total_registros / $registros_por_pagina)
+            ];
+            
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener competencias con paginación: " . $e->getMessage());
+        }
+    }
+
     public function insertarCompetencia($codigoDiseño, $datos) {
         try {
             // Función auxiliar para convertir valores vacíos a números
@@ -320,6 +453,58 @@ class MetodosDisenos extends Conexion {
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new Exception("Error al obtener RAPs: " . $e->getMessage());
+        }
+    }
+
+    public function obtenerRapsConPaginacion($codigoDiseñoCompetenciaReporte, $pagina = 1, $registros_por_pagina = 10, $filtros = []) {
+        try {
+            $offset = ($pagina - 1) * $registros_por_pagina;
+            
+            $where_conditions = ["codigoDiseñoCompetenciaReporteRap LIKE ?"];
+            $params = [$codigoDiseñoCompetenciaReporte . '-%'];
+            
+            // Aplicar filtros
+            if (!empty($filtros['busqueda'])) {
+                $where_conditions[] = "(nombreRap LIKE ? OR codigoRapReporte LIKE ?)";
+                $params[] = '%' . $filtros['busqueda'] . '%';
+                $params[] = '%' . $filtros['busqueda'] . '%';
+            }
+            
+            if (!empty($filtros['horas_min'])) {
+                $where_conditions[] = "horasDesarrolloRap >= ?";
+                $params[] = (float)$filtros['horas_min'];
+            }
+            
+            if (!empty($filtros['horas_max'])) {
+                $where_conditions[] = "horasDesarrolloRap <= ?";
+                $params[] = (float)$filtros['horas_max'];
+            }
+            
+            $where_clause = ' WHERE ' . implode(' AND ', $where_conditions);
+            
+            // Consulta para contar total de registros
+            $count_sql = "SELECT COUNT(*) as total FROM raps" . $where_clause;
+            $count_stmt = $this->conexion->prepare($count_sql);
+            $count_stmt->execute($params);
+            $total_registros = $count_stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // Consulta principal con paginación (LIMIT y OFFSET deben ser valores directos)
+            $sql = "SELECT * FROM raps" . $where_clause . " ORDER BY codigoDiseñoCompetenciaReporteRap LIMIT " . (int)$registros_por_pagina . " OFFSET " . (int)$offset;
+            
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute($params);
+            $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return [
+                'datos' => $datos,
+                'total_registros' => $total_registros,
+                'pagina_actual' => $pagina,
+                'registros_por_pagina' => $registros_por_pagina,
+                'total_paginas' => ceil($total_registros / $registros_por_pagina)
+            ];
+            
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener RAPs con paginación: " . $e->getMessage());
         }
     }
 
