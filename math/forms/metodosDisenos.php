@@ -1,7 +1,10 @@
 <?php
-require_once __DIR__ . '/../../sql/conexion.php';
+// Verificar si ya existe una clase Conexion antes de incluir el archivo
+if (!class_exists('Conexion')) {
+    require_once __DIR__ . '/../../sql/conexion.php';
+}
 
-class MetodosDisenos extends Conexion {
+class MetodosDisenos {
     private $conexion;
 
     public function __construct() {

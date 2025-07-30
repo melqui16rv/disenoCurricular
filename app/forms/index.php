@@ -1,10 +1,31 @@
 <?php
+
+ob_start();
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/disenoCurricular/conf/config.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDisenos.php';
+// Cargar configuración primero
+require_once '/home/appscide/public_html/disenoCurricular/conf/config.php';
+
+// Cargar autenticación (local temporal o viaticosApp)
+if (file_exists(VIATICOS_PATH . '/conf/auth.php') && file_exists(VIATICOS_PATH . '/math/gen/user.php')) {
+    // Usar autenticación de viaticosApp si está disponible
+    require_once VIATICOS_PATH . '/conf/auth.php';
+    require_once VIATICOS_PATH . '/math/gen/user.php';
+} else {
+    // Usar autenticación local temporal
+    require_once DISENO_CURRICULAR_PATH . '/conf/auth_local.php';
+}
+
+// Requerir rol de administrador (9)
+requireRole([9]);
+
+// Cargar métodos específicos de diseño curricular
+require_once DISENO_CURRICULAR_PATH . '/math/forms/metodosDisenos.php';
+
+ob_end_flush();
 
 $metodos = new MetodosDisenos();
 
@@ -295,10 +316,15 @@ try {
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/forms/estilosPrincipales.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/forms/filtros-paginacion.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="<?php echo VIATICOS_PATH; ?>/assets/img/public/logosena.png">
+    <link rel="stylesheet" href="<?php echo VIATICOS_PATH; ?>/assets/css/share/nav.css">
 </head>
 <body>
     <div class="container">
         <!-- Navegación -->
+        <?php
+            require_once VIATICOS_PATH . '/public/share/navDisenoCurricular.php';
+        ?>
         <?php include 'vistas/nav.php'; ?>
 
         <!-- Header -->
