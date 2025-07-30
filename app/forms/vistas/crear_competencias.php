@@ -97,7 +97,7 @@
             <label for="codigoCompetenciaPDF"><i class="fas fa-file-pdf"></i> Código Competencia PDF</label>
             <input type="number" id="codigoCompetenciaPDF" name="codigoCompetenciaPDF" class="form-control" 
                    placeholder="Código numérico opcional para referencia PDF" min="0" max="999999999">
-            <small class="text-muted">Campo opcional - Código numérico de referencia en documentos PDF (se guarda como texto)</small>
+            <small class="text-muted">Código numérico de referencia en documentos PDF (se guarda como texto)</small>
         </div>
     </div>
 
