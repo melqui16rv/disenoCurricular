@@ -4,7 +4,7 @@
  */
 
 .filtros-paginacion-container {
-    background: rgba(255, 255, 255, 0.1);
+    background: #32485d;
     backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 1.5rem;
