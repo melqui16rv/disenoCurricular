@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba AJAX - Comparación de RAPs</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 10px; }
+        .response-area { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .loading { border-color: #17a2b8; background: #d1ecf1; }
+        pre { background: #ffffff; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Prueba AJAX - Comparación de RAPs</h1>
+    
+    <div class="test-controls">
+        <h3>Controles de Prueba:</h3>
+        <button class="test-button" onclick="probarAjaxComparacion()">🔄 Probar Comparación AJAX</button>
+        <button class="test-button" onclick="probarConParametrosReales()">📊 Probar con Parámetros Reales</button>
+        <button class="test-button" onclick="probarSinParametros()">❌ Probar Sin Parámetros</button>
+        <button class="test-button" onclick="limpiarResultados()">🧹 Limpiar Resultados</button>
+    </div>
+    
+    <div class="response-area" id="responseArea">
+        <p><strong>🎯 Área de Resultados:</strong></p>
+        <p>Haz clic en uno de los botones de arriba para probar la funcionalidad AJAX.</p>
+    </div>
+    
+    <script>
+        function mostrarRespuesta(tipo, titulo, contenido) {
+            const area = document.getElementById('responseArea');
+            area.className = `response-area ${tipo}`;
+            area.innerHTML = `
+                <h4>${titulo}</h4>
+                <div>${contenido}</div>
+            `;
+        }
+        
+        function probarAjaxComparacion() {
+            mostrarRespuesta('loading', '⏳ Probando AJAX...', 'Enviando petición de comparación...');
+            
+            fetch('./control/ajax.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'accion_ajax=obtener_comparacion_raps&codigoCompetencia=1&disenoActual=112005-101'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                return response.text();
+            })
+            .then(responseText => {
+                console.log('Response text:', responseText);
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    mostrarRespuesta('success', '✅ Respuesta AJAX exitosa', `
+                        <p><strong>Estado:</strong> ${data.success ? 'Exitoso' : 'Fallido'}</p>
+                        <p><strong>Mensaje:</strong> ${data.message || 'Sin mensaje'}</p>
+                        <p><strong>Datos encontrados:</strong> ${data.data ? data.data.length : 0} diseños</p>
+                        <details>
+                            <summary>Ver respuesta completa JSON</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `);
+                } catch (parseError) {
+                    mostrarRespuesta('error', '❌ Error de formato JSON', `
+                        <p><strong>Error:</strong> ${parseError.message}</p>
+                        <p><strong>Respuesta del servidor:</strong></p>
+                        <pre>${responseText}</pre>
+                    `);
+                }
+            })
+            .catch(error => {
+                mostrarRespuesta('error', '❌ Error de conexión', `
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p>Verifica que el archivo ajax.php exista y sea accesible.</p>
+                `);
+            });
+        }
+        
+        function probarConParametrosReales() {
+            mostrarRespuesta('loading', '⏳ Probando con parámetros reales...', 'Enviando petición con datos del ejemplo real...');
+            
+            // Simular los datos reales de un RAP
+            const codigoRapCompleto = '112005-101-1-01';
+            const partes = codigoRapCompleto.split('-');
+            const codigoCompetenciaReal = partes[2]; // Debería ser '1'
+            const disenoActual = partes[0] + '-' + partes[1]; // Debería ser '112005-101'
+            
+            fetch('./control/ajax.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `accion_ajax=obtener_comparacion_raps&codigoCompetencia=${codigoCompetenciaReal}&disenoActual=${disenoActual}`
+            })
+            .then(response => response.text())
+            .then(responseText => {
+                try {
+                    const data = JSON.parse(responseText);
+                    mostrarRespuesta('success', '✅ Prueba con parámetros reales', `
+                        <p><strong>Código RAP completo:</strong> ${codigoRapCompleto}</p>
+                        <p><strong>Código competencia extraído:</strong> ${codigoCompetenciaReal}</p>
+                        <p><strong>Diseño actual extraído:</strong> ${disenoActual}</p>
+                        <p><strong>Estado:</strong> ${data.success ? 'Exitoso' : 'Fallido'}</p>
+                        <p><strong>Mensaje:</strong> ${data.message || 'Sin mensaje'}</p>
+                        <details>
+                            <summary>Ver respuesta completa</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `);
+                } catch (parseError) {
+                    mostrarRespuesta('error', '❌ Error con parámetros reales', `
+                        <p><strong>Error:</strong> ${parseError.message}</p>
+                        <pre>${responseText}</pre>
+                    `);
+                }
+            })
+            .catch(error => {
+                mostrarRespuesta('error', '❌ Error de conexión', error.message);
+            });
+        }
+        
+        function probarSinParametros() {
+            mostrarRespuesta('loading', '⏳ Probando sin parámetros...', 'Enviando petición sin parámetros para verificar validación...');
+            
+            fetch('./control/ajax.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'accion_ajax=obtener_comparacion_raps'
+            })
+            .then(response => response.text())
+            .then(responseText => {
+                try {
+                    const data = JSON.parse(responseText);
+                    mostrarRespuesta('success', '✅ Respuesta de validación', `
+                        <p><strong>Estado:</strong> ${data.success ? 'Exitoso' : 'Fallido (esperado)'}</p>
+                        <p><strong>Mensaje:</strong> ${data.message || 'Sin mensaje'}</p>
+                        <p><strong>Tipo de error:</strong> ${data.error_type || 'N/A'}</p>
+                        <p>Esta prueba debe fallar porque no enviamos el parámetro obligatorio.</p>
+                        <details>
+                            <summary>Ver respuesta</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `);
+                } catch (parseError) {
+                    mostrarRespuesta('error', '❌ Error en prueba de validación', `
+                        <p><strong>Error:</strong> ${parseError.message}</p>
+                        <pre>${responseText}</pre>
+                    `);
+                }
+            })
+            .catch(error => {
+                mostrarRespuesta('error', '❌ Error de conexión', error.message);
+            });
+        }
+        
+        function limpiarResultados() {
+            mostrarRespuesta('', '🧹 Resultados limpiados', 'Haz clic en uno de los botones de arriba para ejecutar una nueva prueba.');
+        }
+    </script>
+</body>
+</html>

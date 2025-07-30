@@ -13,10 +13,10 @@ error_reporting(0);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, must-revalidate');
 
-// Verificar que sea una petición AJAX (opcional pero recomendado)
-if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Solo se permiten peticiones AJAX']);
+// Opcional: validar que sea POST para mayor seguridad
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
     exit;
 }
 
@@ -24,9 +24,11 @@ if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQ
 $ruta_config = $_SERVER['DOCUMENT_ROOT'] . '/conf/config.php';
 require_once $ruta_config;
 require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosDisenos.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/math/forms/metodosComparacion.php';
 
 // Inicializar métodos (mismo patrón que index.php)
 $metodos = new MetodosDisenos();
+$metodosComparacion = new comparacion();
 
 try {
     // Obtener acción AJAX
@@ -167,6 +169,50 @@ try {
                 'success' => true,
                 'estadisticas' => $estadisticas
             ]);
+            break;
+            
+        case 'obtener_comparacion_raps':
+            // Usar la clase especializada de comparación
+            $codigoCompetencia = $_POST['codigoCompetencia'] ?? $_GET['codigoCompetencia'] ?? '';
+            $disenoActual = $_POST['disenoActual'] ?? $_GET['disenoActual'] ?? '';
+            
+            if (empty($codigoCompetencia)) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Código de competencia requerido',
+                    'error_type' => 'missing_parameter'
+                ], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+            
+            try {
+                // Usar la clase especializada metodosComparacion
+                $comparacion = $metodosComparacion->obtenerComparacionRaps($codigoCompetencia, $disenoActual);
+                
+                echo json_encode([
+                    'success' => true,
+                    'data' => $comparacion,
+                    'message' => 'Comparación obtenida exitosamente',
+                    'totalDisenos' => count($comparacion),
+                    'debug' => [
+                        'codigoCompetencia' => $codigoCompetencia,
+                        'disenoActual' => $disenoActual,
+                        'metodoUsado' => 'metodosComparacion->obtenerComparacionRaps()',
+                        'totalComparaciones' => count($comparacion)
+                    ]
+                ], JSON_UNESCAPED_UNICODE);
+                
+            } catch (Exception $e) {
+                error_log("Error en obtener_comparacion_raps: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Error al obtener comparación de RAPs',
+                    'error_type' => 'server_error',
+                    'error_details' => $e->getMessage()
+                ], JSON_UNESCAPED_UNICODE);
+            }
             break;
             
         default:

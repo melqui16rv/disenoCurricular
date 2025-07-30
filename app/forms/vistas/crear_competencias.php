@@ -159,7 +159,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Validación de formulario
     document.getElementById('formCompetencia').addEventListener('submit', function(e) {
-        const codigoCompetencia = document.getElementById('codigoCompetencia').value.trim();
+        const codigoCompetencia = document.getElementById('codigoCompetenciaReporte').value.trim();
         const nombreCompetencia = document.getElementById('nombreCompetencia').value.trim();
         const horas = parseFloat(document.getElementById('horasDesarrolloCompetencia').value) || 0;
         
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Mostrar vista previa del código completo
-    document.getElementById('codigoCompetencia').addEventListener('input', function() {
+    document.getElementById('codigoCompetenciaReporte').addEventListener('input', function() {
         const codigoDiseño = '<?php echo htmlspecialchars($_GET['codigoDiseño'] ?? ''); ?>';
         const codigoCompetencia = this.value.trim();
         const codigoCompleto = codigoDiseño + (codigoCompetencia ? '-' + codigoCompetencia : '');

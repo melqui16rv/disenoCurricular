@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AJAX - Comparación RAPs</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-section { margin: 20px 0; padding: 15px; border: 2px solid #e9ecef; border-radius: 6px; }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .info { border-color: #17a2b8; background: #d1ecf1; }
+        button { padding: 10px 20px; margin: 10px 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
+        .loading { text-align: center; padding: 20px; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test AJAX - Comparación de RAPs</h1>
+        <p>Herramienta para probar la funcionalidad AJAX de comparación de RAPs</p>
+        
+        <div class="test-section info">
+            <h3>📋 Configuración del Test</h3>
+            <label for="codigoCompetencia">Código de Competencia:</label>
+            <input type="text" id="codigoCompetencia" value="1" style="margin: 5px; padding: 5px; width: 100px;">
+            
+            <label for="disenoActual">Diseño Actual (opcional):</label>
+            <input type="text" id="disenoActual" value="112005-101" style="margin: 5px; padding: 5px; width: 150px;">
+            
+            <br><br>
+            <button class="btn-primary" onclick="testAjaxBasico()">🚀 Test Básico</button>
+            <button class="btn-success" onclick="testConHeaders()">📡 Test con Headers</button>
+            <button class="btn-warning" onclick="testErrores()">⚠️ Test Errores</button>
+        </div>
+        
+        <div id="resultados" class="test-section">
+            <h3>📊 Resultados</h3>
+            <p>Presiona un botón para ejecutar las pruebas</p>
+        </div>
+    </div>
+
+    <script>
+        function mostrarResultado(titulo, contenido, tipo = 'info') {
+            const div = document.getElementById('resultados');
+            div.className = `test-section ${tipo}`;
+            div.innerHTML = `
+                <h3>${titulo}</h3>
+                <pre>${contenido}</pre>
+            `;
+        }
+        
+        function mostrarCargando(mensaje) {
+            mostrarResultado('⏳ Ejecutando Test', `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    ${mensaje}
+                </div>
+            `);
+        }
+        
+        async function testAjaxBasico() {
+            mostrarCargando('Realizando petición AJAX básica...');
+            
+            const codigoCompetencia = document.getElementById('codigoCompetencia').value;
+            const disenoActual = document.getElementById('disenoActual').value;
+            
+            try {
+                const response = await fetch('ajax.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `accion_ajax=obtener_comparacion_raps&codigoCompetencia=${codigoCompetencia}&disenoActual=${disenoActual}`
+                });
+                
+                const responseText = await response.text();
+                
+                let resultado = `
+🔍 DETALLES DE LA PETICIÓN:
+URL: ajax.php
+Método: POST
+Código Competencia: ${codigoCompetencia}
+Diseño Actual: ${disenoActual}
+
+📨 RESPUESTA DEL SERVIDOR:
+Status: ${response.status} ${response.statusText}
+Content-Type: ${response.headers.get('content-type')}
+
+📄 CONTENIDO:
+${responseText}
+
+🧪 ANÁLISIS:`;
+                
+                if (response.ok) {
+                    try {
+                        const data = JSON.parse(responseText);
+                        resultado += `
+✅ JSON válido recibido
+✅ Estructura: ${typeof data}
+${data.success ? '✅' : '❌'} Success: ${data.success}
+📊 Datos: ${data.data ? `${data.data.length} registros` : 'Sin datos'}
+💬 Mensaje: ${data.message || 'Sin mensaje'}`;
+                        mostrarResultado('✅ Test Básico - EXITOSO', resultado, 'success');
+                    } catch (e) {
+                        resultado += `
+❌ Error al parsear JSON: ${e.message}
+⚠️ La respuesta no es JSON válido`;
+                        mostrarResultado('❌ Test Básico - ERROR JSON', resultado, 'error');
+                    }
+                } else {
+                    resultado += `
+❌ Error HTTP: ${response.status}
+❌ El servidor rechazó la petición`;
+                    mostrarResultado('❌ Test Básico - ERROR HTTP', resultado, 'error');
+                }
+                
+            } catch (error) {
+                mostrarResultado('❌ Test Básico - ERROR CONEXIÓN', `
+🚨 ERROR DE CONEXIÓN:
+${error.message}
+
+🔧 POSIBLES CAUSAS:
+- Archivo ajax.php no existe
+- Error de permisos
+- Error de configuración del servidor
+- Problema de red
+                `, 'error');
+            }
+        }
+        
+        async function testConHeaders() {
+            mostrarCargando('Realizando petición con headers AJAX...');
+            
+            const codigoCompetencia = document.getElementById('codigoCompetencia').value;
+            const disenoActual = document.getElementById('disenoActual').value;
+            
+            try {
+                const response = await fetch('ajax.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `accion_ajax=obtener_comparacion_raps&codigoCompetencia=${codigoCompetencia}&disenoActual=${disenoActual}`
+                });
+                
+                const responseText = await response.text();
+                
+                let resultado = `
+🔍 PETICIÓN CON HEADERS AJAX:
+X-Requested-With: XMLHttpRequest
+Content-Type: application/x-www-form-urlencoded
+
+📨 RESPUESTA:
+Status: ${response.status} ${response.statusText}
+
+📄 CONTENIDO:
+${responseText}`;
+                
+                if (response.ok) {
+                    try {
+                        const data = JSON.parse(responseText);
+                        resultado += `
+
+✅ Headers AJAX reconocidos
+✅ JSON válido recibido
+${data.success ? '✅' : '❌'} Success: ${data.success}`;
+                        mostrarResultado('✅ Test Headers - EXITOSO', resultado, 'success');
+                    } catch (e) {
+                        mostrarResultado('❌ Test Headers - ERROR', resultado + `
+❌ Error JSON: ${e.message}`, 'error');
+                    }
+                } else {
+                    mostrarResultado('❌ Test Headers - ERROR HTTP', resultado, 'error');
+                }
+                
+            } catch (error) {
+                mostrarResultado('❌ Test Headers - ERROR', `Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testErrores() {
+            mostrarCargando('Probando manejo de errores...');
+            
+            try {
+                // Test 1: Sin acción
+                const response1 = await fetch('ajax.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'codigoCompetencia=1'
+                });
+                
+                const text1 = await response1.text();
+                
+                // Test 2: Sin código de competencia
+                const response2 = await fetch('ajax.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'accion_ajax=obtener_comparacion_raps'
+                });
+                
+                const text2 = await response2.text();
+                
+                mostrarResultado('⚠️ Test Errores - COMPLETADO', `
+📋 TEST 1: Sin acción AJAX
+Status: ${response1.status}
+Respuesta: ${text1}
+
+📋 TEST 2: Sin código de competencia  
+Status: ${response2.status}
+Respuesta: ${text2}
+
+🎯 ANÁLISIS:
+${response1.status >= 400 || response2.status >= 400 ? '✅' : '❌'} Manejo correcto de errores
+${text1.includes('error') || text2.includes('error') ? '✅' : '❌'} Mensajes de error apropiados
+                `, response1.status >= 400 || response2.status >= 400 ? 'success' : 'error');
+                
+            } catch (error) {
+                mostrarResultado('❌ Test Errores - ERROR', `Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
