@@ -30,8 +30,8 @@ require_once 'funciones_paginacion.php';
 // Preparar filtros para la función de paginación (solo filtros básicos para RAPs)
 $filtros_array = [
     'busqueda' => $busqueda ?? '',
-    'horas_min' => $horas_min ?? '',
-    'horas_max' => $horas_max ?? '',
+    'horas_min' => $filtro_horas_min ?? '',
+    'horas_max' => $filtro_horas_max ?? '',
     'tipo_programa' => '',
     'nivel_academico' => '',
     'red_tecnologica' => ''

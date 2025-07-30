@@ -154,6 +154,13 @@ const CompletarInformacionCorregido = {
     // ===============================================
     
     bindEvents: function() {
+        // VERIFICACIÓN: Solo ejecutar si estamos en completar_informacion
+        const currentURL = window.location.href;
+        if (!currentURL.includes('accion=completar_informacion')) {
+            console.log('⏭️ Saltando bindEvents - no estamos en completar_informacion');
+            return;
+        }
+
         // Guardar filtros al cambiar inputs
         document.addEventListener('change', (e) => {
             if (e.target.closest('#filtrosForm')) {
@@ -224,6 +231,8 @@ const CompletarInformacionCorregido = {
                 this.cargarSeccionAjax(seccion, params);
             }
         });
+
+        console.log('🔗 Event listeners registrados para completar_informacion');
     },
     
     // ===============================================
@@ -418,17 +427,20 @@ const CompletarInformacionCorregido = {
         
         const queryString = params.toString();
         
-        // Actualizar links de navegación
-        document.querySelectorAll('a[href*="completar_informacion"]').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href && !href.includes('completar&')) {
-                const separator = href.includes('?') ? '&' : '?';
-                const newHref = queryString ? href + separator + queryString : href;
-                link.setAttribute('href', newHref);
-            }
-        });
-        
-        console.log('🔗 Links de navegación actualizados');
+        // Actualizar links de navegación SOLO si estamos en la página de completar información
+        const currentURL = window.location.href;
+        if (currentURL.includes('accion=completar_informacion')) {
+            document.querySelectorAll('a[href*="completar_informacion"]').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && !href.includes('completar&')) {
+                    const separator = href.includes('?') ? '&' : '?';
+                    const newHref = queryString ? href + separator + queryString : href;
+                    link.setAttribute('href', newHref);
+                }
+            });
+            
+            console.log('🔗 Links de navegación actualizados para completar_informacion');
+        }
     }
 };
 
@@ -437,9 +449,17 @@ const CompletarInformacionCorregido = {
 // ===============================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    CompletarInformacionCorregido.init();
-    console.log('✅ Sistema Corregido inicializado');
+    // SOLO inicializar si estamos en la página de completar información
+    const currentURL = window.location.href;
+    if (currentURL.includes('accion=completar_informacion')) {
+        CompletarInformacionCorregido.init();
+        console.log('✅ Sistema Corregido inicializado para completar_informacion');
+    } else {
+        console.log('⏭️ Saltando inicialización - no estamos en completar_informacion');
+    }
 });
 
-// Compatibilidad con código existente
-window.CompletarInformacion = CompletarInformacionCorregido;
+// Compatibilidad con código existente - SOLO si estamos en la página correcta
+if (window.location.href.includes('accion=completar_informacion')) {
+    window.CompletarInformacion = CompletarInformacionCorregido;
+}

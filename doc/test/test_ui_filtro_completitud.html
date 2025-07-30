@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Filtro de Completitud</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .filter-container { background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        select, input, button { margin: 5px; padding: 8px; }
+        .resultado { background: #e8f5e8; padding: 10px; margin: 10px 0; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Prueba del Filtro de Estado de Completitud</h1>
+    
+    <div class="filter-container">
+        <h3>Filtros disponibles para la acción 'listar':</h3>
+        <form id="filtrosForm">
+            <label for="busqueda">Búsqueda general:</label>
+            <input type="text" id="busqueda" name="busqueda" placeholder="Código, programa, red...">
+            
+            <label for="red_tecnologica">Red Tecnológica:</label>
+            <input type="text" id="red_tecnologica" name="red_tecnologica" placeholder="Red tecnológica">
+            
+            <label for="nivel_academico">Nivel Académico:</label>
+            <input type="text" id="nivel_academico" name="nivel_academico" placeholder="Nivel académico">
+            
+            <label for="estado_completitud"><strong>Estado de Completitud:</strong></label>
+            <select id="estado_completitud" name="estado_completitud">
+                <option value="">Todos los registros</option>
+                <option value="completo">Solo con información completa</option>
+                <option value="incompleto">Solo con información incompleta</option>
+            </select>
+            
+            <br><br>
+            <button type="button" onclick="aplicarFiltros()">Aplicar Filtros</button>
+            <button type="button" onclick="limpiarFiltros()">Limpiar Filtros</button>
+        </form>
+    </div>
+    
+    <div id="resultados">
+        <p>Selecciona un filtro y haz clic en "Aplicar Filtros" para ver los resultados.</p>
+    </div>
+    
+    <script>
+        function aplicarFiltros() {
+            const formData = new FormData(document.getElementById('filtrosForm'));
+            const params = new URLSearchParams();
+            
+            // Construir parámetros de URL
+            for (let [key, value] of formData.entries()) {
+                if (value.trim() !== '') {
+                    params.append(key, value);
+                }
+            }
+            
+            // Simular la URL que se generaría
+            const baseUrl = 'index.php?accion=listar';
+            const urlCompleta = baseUrl + (params.toString() ? '&' + params.toString() : '');
+            
+            // Mostrar resultado simulado
+            let resultado = `<div class="resultado">
+                <h3>URL generada para la acción 'listar':</h3>
+                <code>${urlCompleta}</code>
+                
+                <h4>Parámetros que se enviarían:</h4>
+                <ul>`;
+            
+            for (let [key, value] of params.entries()) {
+                resultado += `<li><strong>${key}:</strong> ${value}</li>`;
+            }
+            
+            if (params.toString() === '') {
+                resultado += '<li><em>Sin filtros aplicados - mostrará todos los registros</em></li>';
+            }
+            
+            resultado += `</ul>
+                
+                <h4>Comportamiento esperado:</h4>`;
+            
+            const estadoCompletitud = params.get('estado_completitud');
+            if (estadoCompletitud === 'completo') {
+                resultado += `<p>✅ Mostrará <strong>solo</strong> los diseños que tengan información completa</p>`;
+            } else if (estadoCompletitud === 'incompleto') {
+                resultado += `<p>❌ Mostrará <strong>solo</strong> los diseños que aún necesiten completar información</p>`;
+            } else {
+                resultado += `<p>📋 Mostrará <strong>todos</strong> los diseños sin filtrar por completitud</p>`;
+            }
+            
+            resultado += `<p><strong>🔒 Importante:</strong> Este filtro NO redirigirá a 'completar_informacion', permanecerá en la vista 'listar'</p>
+            </div>`;
+            
+            document.getElementById('resultados').innerHTML = resultado;
+        }
+        
+        function limpiarFiltros() {
+            document.getElementById('filtrosForm').reset();
+            document.getElementById('resultados').innerHTML = '<p>Filtros limpiados. Selecciona un filtro y haz clic en "Aplicar Filtros" para ver los resultados.</p>';
+        }
+        
+        // Ejemplo automático al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simular selección del filtro de incompletos
+            document.getElementById('estado_completitud').value = 'incompleto';
+            document.getElementById('busqueda').value = 'sistemas';
+            
+            setTimeout(() => {
+                aplicarFiltros();
+                alert('Ejemplo cargado: Filtro por "sistemas" + "información incompleta"');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

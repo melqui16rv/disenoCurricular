@@ -8,18 +8,21 @@ if (!isset($metodos)) {
 
 // Incluir funciones auxiliares para AJAX y generación de HTML
 include_once 'completar_informacion_funciones.php';
+// Incluir filtros específicos para completar información
+include_once 'filtros_completar_informacion.php';
 
 // Obtener filtros y paginación
 $filtro_seccion = $_GET['seccion'] ?? 'todas';
 $filtro_busqueda = $_GET['busqueda'] ?? '';
 
-// Filtros adicionales
+// Filtros adicionales específicos para completar información
 $filtro_horas_min = $_GET['horas_min'] ?? '';
 $filtro_horas_max = $_GET['horas_max'] ?? '';
 $filtro_tipo_programa = $_GET['tipo_programa'] ?? '';
 $filtro_nivel_academico = $_GET['nivel_academico'] ?? '';
 $filtro_fecha_desde = $_GET['fecha_desde'] ?? '';
 $filtro_fecha_hasta = $_GET['fecha_hasta'] ?? '';
+$filtro_estado = $_GET['estado'] ?? '';
 
 // Paginación independiente por sección
 $pagina_disenos = max(1, (int)($_GET['pagina_disenos'] ?? 1));
@@ -30,9 +33,6 @@ $pagina_raps = max(1, (int)($_GET['pagina_raps'] ?? 1));
 $registros_disenos = (int)($_GET['registros_disenos'] ?? 10);
 $registros_competencias = (int)($_GET['registros_competencias'] ?? 10);
 $registros_raps = (int)($_GET['registros_raps'] ?? 10);
-
-// Filtro de estado
-$filtro_estado = $_GET['estado'] ?? '';
 
 // Validar registros por página para cada sección
 $registros_permitidos = [5, 10, 25, 50, 100];
@@ -515,57 +515,22 @@ $totalRegistrosFaltantes = $totalDiseñosFaltantes + $totalCompetenciasFaltantes
         </div>
     </div>
 
-    <!-- Filtros y búsqueda mejorados -->
-    <div class="filters-section">
-        <?php if ($filtro_busqueda || $filtro_horas_min || $filtro_horas_max || $filtro_tipo_programa || $filtro_nivel_academico || $filtro_estado): ?>
-            <div class="active-filters-indicator">
-                <i class="fas fa-filter"></i>
-                <span>Filtros activos</span>
-                <button type="button" class="filter-clear-btn" onclick="limpiarFiltros()" title="Limpiar todos los filtros">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        <?php endif; ?>
-        
-        <form method="GET" class="filters-form" id="filtrosForm">
-            <input type="hidden" name="accion" value="completar_informacion">
-
-            <!-- Filtros básicos -->
-            <div class="filter-group">
-                <label for="seccion">Sección:</label>
-                <select name="seccion" id="seccion" onchange="this.form.submit()">
-                    <option value="todas" <?php echo $filtro_seccion === 'todas' ? 'selected' : ''; ?>>Todas las Secciones</option>
-                    <option value="disenos" <?php echo $filtro_seccion === 'disenos' ? 'selected' : ''; ?>>Solo Diseños</option>
-                    <option value="competencias" <?php echo $filtro_seccion === 'competencias' ? 'selected' : ''; ?>>Solo Competencias</option>
-                    <option value="raps" <?php echo $filtro_seccion === 'raps' ? 'selected' : ''; ?>>Solo RAPs</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label for="busqueda">Buscar:</label>
-                <input type="text" name="busqueda" id="busqueda" value="<?php echo htmlspecialchars($filtro_busqueda); ?>" placeholder="Código, nombre del programa...">
-            </div>
-
-            <div class="filter-group">
-                <label for="estado">Estado:</label>
-                <select name="estado" id="estado">
-                    <option value="">Todos los estados</option>
-                    <option value="incompleto" <?php echo $filtro_estado === 'incompleto' ? 'selected' : ''; ?>>Solo Incompletos</option>
-                    <option value="completo" <?php echo $filtro_estado === 'completo' ? 'selected' : ''; ?>>Solo Completos</option>
-                </select>
-            </div>
-
-            <!-- Botones de acción -->
-            <div class="filter-actions">
-                <button type="submit" class="btn-filter">
-                    <i class="fas fa-search"></i> Filtrar
-                </button>
-                <button type="button" class="btn-reset" onclick="limpiarFiltros()">
-                    <i class="fas fa-eraser"></i> Limpiar
-                </button>
-            </div>
-        </form>
-    </div>
+    <!-- Filtros específicos para completar información -->
+    <?php 
+    $filtros_para_render = [
+        'seccion' => $filtro_seccion,
+        'busqueda' => $filtro_busqueda,
+        'horas_min' => $filtro_horas_min,
+        'horas_max' => $filtro_horas_max,
+        'tipo_programa' => $filtro_tipo_programa,
+        'nivel_academico' => $filtro_nivel_academico,
+        'estado' => $filtro_estado,
+        'fecha_desde' => $filtro_fecha_desde,
+        'fecha_hasta' => $filtro_fecha_hasta
+    ];
+    
+    echo generarFiltrosCompletarInformacion($filtros_para_render, $totalRegistrosFaltantes, 1, 10, 1);
+    ?>
 
     <!-- Resultados -->
     <div class="results-section">

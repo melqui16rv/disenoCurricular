@@ -5,6 +5,11 @@
  */
 
 function generarFiltrosYPaginacion($accion, $tipo = '', $codigo = '', $filtros = [], $total_registros = 0, $pagina_actual = 1, $registros_por_pagina = 10, $total_paginas = 1) {
+    // Esta función solo debe usarse para las acciones de listar (no para completar_informacion)
+    if ($accion === 'completar_informacion') {
+        return '<!-- Use filtros_completar_informacion.php para la acción completar_informacion -->';
+    }
+    
     $busqueda = $filtros['busqueda'] ?? '';
     $horas_min = $filtros['horas_min'] ?? '';
     $horas_max = $filtros['horas_max'] ?? '';
@@ -95,6 +100,17 @@ function generarFiltrosYPaginacion($accion, $tipo = '', $codigo = '', $filtros =
                         </label>
                         <input type="text" name="red_tecnologica" value="<?php echo htmlspecialchars($red_tecnologica); ?>" 
                                placeholder="Ej: Informática" class="form-control">
+                    </div>
+                    
+                    <div>
+                        <label>
+                            <i class="fas fa-tasks"></i> Estado de Información
+                        </label>
+                        <select name="estado_completitud" class="form-control">
+                            <option value="">Todos los estados</option>
+                            <option value="completo" <?php echo (($_GET['estado_completitud'] ?? '') === 'completo') ? 'selected' : ''; ?>>Información Completa</option>
+                            <option value="incompleto" <?php echo (($_GET['estado_completitud'] ?? '') === 'incompleto') ? 'selected' : ''; ?>>Información Faltante</option>
+                        </select>
                     </div>
                 <?php endif; ?>
             </div>

@@ -23,7 +23,7 @@ class MetodosDisenos {
         }
     }
 
-    public function obtenerDiseñosConPaginacion($pagina = 1, $registros_por_pagina = 10, $filtros = []) {
+    public function obtenerDiseñosConPaginacion($pagina = 1, $registros_por_pagina = 10, $filtros = [], $estado_completitud = null) {
         try {
             $offset = ($pagina - 1) * $registros_por_pagina;
             
@@ -78,18 +78,32 @@ class MetodosDisenos {
                 $where_clause = ' WHERE ' . implode(' AND ', $where_conditions);
             }
             
-            // Consulta para contar total de registros
-            $count_sql = "SELECT COUNT(*) as total FROM diseños" . $where_clause;
-            $count_stmt = $this->conexion->prepare($count_sql);
-            $count_stmt->execute($params);
-            $total_registros = $count_stmt->fetch(PDO::FETCH_ASSOC)['total'];
-            
-            // Consulta principal con paginación (LIMIT y OFFSET deben ser valores directos)
-            $sql = "SELECT * FROM diseños" . $where_clause . " ORDER BY codigoDiseño DESC LIMIT " . (int)$registros_por_pagina . " OFFSET " . (int)$offset;
-            
+            // Consulta principal para obtener datos (sin paginación aún si hay filtro de completitud)
+            $sql = "SELECT * FROM diseños" . $where_clause . " ORDER BY codigoDiseño DESC";
             $stmt = $this->conexion->prepare($sql);
             $stmt->execute($params);
-            $datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $todos_los_datos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Filtrar por estado de completitud si se especifica
+            $filtro_completitud = $estado_completitud ?? $filtros['estado_completitud'] ?? null;
+            if (!empty($filtro_completitud)) {
+                $datos_filtrados = [];
+                foreach ($todos_los_datos as $diseño) {
+                    $es_completo = $this->verificarCompletitudDiseño($diseño);
+                    
+                    if (($filtro_completitud === 'completo' || $filtro_completitud === 'completos') && $es_completo) {
+                        $datos_filtrados[] = $diseño;
+                    } elseif (($filtro_completitud === 'incompleto' || $filtro_completitud === 'incompletos') && !$es_completo) {
+                        $datos_filtrados[] = $diseño;
+                    }
+                }
+                $todos_los_datos = $datos_filtrados;
+            }
+            
+            // Calcular paginación con datos filtrados
+            $total_registros = count($todos_los_datos);
+            $offset = ($pagina - 1) * $registros_por_pagina;
+            $datos = array_slice($todos_los_datos, $offset, $registros_por_pagina);
             
             return [
                 'datos' => $datos,
@@ -619,6 +633,43 @@ class MetodosDisenos {
         } catch (PDOException $e) {
             throw new Exception("Error al ejecutar consulta: " . $e->getMessage());
         }
+    }
+    
+    // Método para verificar si un diseño tiene información completa
+    public function verificarCompletitudDiseño($diseño) {
+        // Verificar campos obligatorios según la lógica de completar_informacion.php
+        
+        // 1. Campos de tecnología y conocimiento
+        if (empty($diseño['lineaTecnologica']) || 
+            empty($diseño['redTecnologica']) || 
+            empty($diseño['redConocimiento'])) {
+            return false;
+        }
+        
+        // 2. Validación de horas y meses (debe tener AL MENOS uno de los dos sistemas completo)
+        $horasLectiva = (float)($diseño['horasDesarrolloLectiva'] ?? 0);
+        $horasProductiva = (float)($diseño['horasDesarrolloProductiva'] ?? 0);
+        $mesesLectiva = (float)($diseño['mesesDesarrolloLectiva'] ?? 0);
+        $mesesProductiva = (float)($diseño['mesesDesarrolloProductiva'] ?? 0);
+
+        $tieneHorasCompletas = ($horasLectiva > 0 && $horasProductiva > 0);
+        $tieneMesesCompletos = ($mesesLectiva > 0 && $mesesProductiva > 0);
+
+        if (!$tieneHorasCompletas && !$tieneMesesCompletos) {
+            return false;
+        }
+        
+        // 3. Campos académicos y requisitos
+        if (empty($diseño['nivelAcademicoIngreso']) || 
+            empty($diseño['gradoNivelAcademico']) || $diseño['gradoNivelAcademico'] == 0 ||
+            empty($diseño['formacionTrabajoDesarrolloHumano']) || 
+            empty($diseño['edadMinima']) || $diseño['edadMinima'] == 0 ||
+            empty($diseño['requisitosAdicionales'])) {
+            return false;
+        }
+        
+        // Si llegamos aquí, el diseño tiene información completa
+        return true;
     }
 }
 ?>

@@ -17,12 +17,13 @@ require_once 'funciones_paginacion.php';
 // Preparar filtros para la función de paginación
 $filtros_array = [
     'busqueda' => $busqueda ?? '',
-    'horas_min' => $horas_min ?? '',
-    'horas_max' => $horas_max ?? '',
-    'meses_min' => $meses_min ?? '',
-    'meses_max' => $meses_max ?? '',
-    'nivel_academico' => $nivel_academico ?? '',
-    'red_tecnologica' => $red_tecnologica ?? ''
+    'horas_min' => $filtro_horas_min ?? '',
+    'horas_max' => $filtro_horas_max ?? '',
+    'meses_min' => $filtro_meses_min ?? '',
+    'meses_max' => $filtro_meses_max ?? '',
+    'nivel_academico' => $filtro_nivel_academico ?? '',
+    'red_tecnologica' => $filtro_red_tecnologica ?? '',
+    'estado_completitud' => $filtro_estado_completitud ?? ''
 ];
 
 // Generar filtros y paginación

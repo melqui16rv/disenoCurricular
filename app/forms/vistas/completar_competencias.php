@@ -135,6 +135,18 @@
                            placeholder="0.00">
                 </div>
             </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="codigoCompetenciaPDF">
+                        <i class="fas fa-file-pdf"></i> Código Competencia PDF
+                    </label>
+                    <input type="number" id="codigoCompetenciaPDF" name="codigoCompetenciaPDF" class="form-control" 
+                           placeholder="Código numérico opcional para referencia PDF" min="0" max="999999999"
+                           value="<?php echo htmlspecialchars($competencia_actual['codigoCompetenciaPDF'] ?? ''); ?>">
+                    <small class="text-muted">Campo opcional - Código numérico de referencia en documentos PDF</small>
+                </div>
+            </div>
         </div>
 
         <!-- Norma y unidad de competencia -->

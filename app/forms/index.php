@@ -45,6 +45,7 @@ $filtro_meses_min = $_GET['meses_min'] ?? '';
 $filtro_meses_max = $_GET['meses_max'] ?? '';
 $filtro_nivel_academico = $_GET['nivel_academico'] ?? '';
 $filtro_red_tecnologica = $_GET['red_tecnologica'] ?? '';
+$filtro_estado_completitud = $_GET['estado_completitud'] ?? '';
 
 // Validar registros por página
 $registros_permitidos = [5, 10, 25, 50, 100];
@@ -181,7 +182,8 @@ try {
             'meses_min' => $filtro_meses_min,
             'meses_max' => $filtro_meses_max,
             'nivel_academico' => $filtro_nivel_academico,
-            'red_tecnologica' => $filtro_red_tecnologica
+            'red_tecnologica' => $filtro_red_tecnologica,
+            'estado_completitud' => $filtro_estado_completitud
         ];
         
         $resultadoDiseños = $metodos->obtenerDiseñosConPaginacion($pagina, $registros_por_pagina, $filtros);
